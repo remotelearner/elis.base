@@ -1,0 +1,15 @@
+diff --git a/lib/editor/htmlarea/dialog.js b/lib/editor/htmlarea/dialog.js
+index 2a9f8a3..da0b810 100644
+--- a/lib/editor/htmlarea/dialog.js
++++ b/lib/editor/htmlarea/dialog.js
+@@ -31,7 +31,10 @@ Dialog._geckoOpenModal = function(url, action, init) {
+     var x,y;
+     switch(file) {
+         case "insert_image": x = 730; y = 560; break;
++        // Added for NanoGong HTML editor and filter
++        case "insert_sound": x = 300; y = 200; break;
+         case "dlg_ins_smile": x = 330; y = 320; break;
++        case "dlg_ins_dragmath": x = 540; y = 373; break;
+         case "dlg_ins_char": x = 480; y = 290; break;
+         case "select_color": x = 238; y = 195; break;
+         case "insert_table": x = 420; y = 250; break;

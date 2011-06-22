@@ -1,0 +1,35 @@
+diff --git a/lib/javascript.php b/lib/javascript.php
+index e131922..92b7d59 100644
+--- a/lib/javascript.php
++++ b/lib/javascript.php
+@@ -26,9 +26,28 @@
+ <script type="text/javascript" src="<?php echo $CFG->httpswwwroot ?>/lib/ufo.js"></script>
+ <script type="text/javascript" src="<?php echo $CFG->httpswwwroot ?>/lib/dropdown.js"></script>  
+ 
+-<script type="text/javascript" defer="defer">
++<script type="text/javascript">
+ //<![CDATA[
+-setTimeout('fix_column_widths()', 20);
++/**
++ * Trigger the fixing of column widths
++ */
++function trigger_fix_column_widths() {
++    //sanity check - this should already be satisfied
++    if (document.readyState == "interactive") {
++        fix_column_widths();
++    }
++}
++
++//fix column widths via JS
++if (document.addEventListener) {
++    //for most browsers
++    document.addEventListener("DOMContentLoaded", fix_column_widths, false);
++} else {
++    //for IE
++    document.onreadystatechange = function() {
++        trigger_fix_column_widths();
++    }
++}
+ //]]>
+ </script>
+ <script type="text/javascript">

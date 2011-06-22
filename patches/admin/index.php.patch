@@ -1,0 +1,14 @@
+diff --git a/admin/index.php b/admin/index.php
+index be634ac..9c4ef6e 100644
+--- a/admin/index.php
++++ b/admin/index.php
+@@ -484,6 +484,9 @@
+ /// Check all admin report plugins and upgrade if necessary
+     upgrade_plugins('report', $CFG->admin.'/report', "$CFG->wwwroot/$CFG->admin/index.php");
+ 
++/// Check all ELIS report plugins and upgrade if necessary
++    upgrade_plugins('elis', 'elis', "$CFG->wwwroot/$CFG->admin/index.php");
++
+ 
+ /// just make sure upgrade logging is properly terminated
+     upgrade_log_finish();

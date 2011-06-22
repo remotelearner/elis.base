@@ -1,0 +1,86 @@
+diff --git a/lib/moodlelib.php b/lib/moodlelib.php
+index 0cf8118..d892bb7 100644
+--- a/lib/moodlelib.php
++++ b/lib/moodlelib.php
+@@ -1122,6 +1122,7 @@ function get_user_preferences($name=NULL, $default=NULL, $otheruserid=NULL) {
+  */
+ function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0, $timezone=99, $applydst=true) {
+ 
++    $passedtimezone = $timezone;
+     $strtimezone = NULL;
+     if (!is_numeric($timezone)) {
+         $strtimezone = $timezone;
+@@ -1134,13 +1135,12 @@ function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0,
+     } else {
+         $time = gmmktime((int)$hour, (int)$minute, (int)$second, (int)$month, (int)$day, (int)$year);
+         $time = usertime($time, $timezone);
+-        if($applydst) {
++        if ($applydst && ($passedtimezone == 99 || !is_numeric($passedtimezone))) {
+             $time -= dst_offset_on($time, $strtimezone);
+         }
+     }
+ 
+     return $time;
+-
+ }
+ 
+ /**
+@@ -1247,7 +1247,9 @@ function userdate($date, $format='', $timezone=99, $fixday = true) {
+         $fixday = ($formatnoday != $format);
+     }
+ 
++    if ($timezone == 99 || !is_numeric($timezone)) {
+     $date += dst_offset_on($date, $strtimezone);
++    }
+ 
+     $timezone = get_user_timezone_offset($timezone);
+ 
+@@ -1471,7 +1473,7 @@ function get_user_timezone($tz = 99) {
+ 
+     $tz = 99;
+ 
+-    while(($tz == '' || $tz == 99 || $tz == NULL) && $next = each($timezones)) {
++    while(($tz === '' || $tz == 99 || $tz === NULL) && $next = each($timezones)) {
+         $tz = $next['value'];
+     }
+ 
+@@ -5293,18 +5295,24 @@ function clean_getstring_data( $a ) {
+ function places_to_search_for_lang_strings() {
+     global $CFG;
+ 
+-    return array(
++    static $places = null;
++
++    if ($places === null) {
++        $places = array(
+         '__exceptions' => array('moodle', 'langconfig'),
+         'assignment_' => array('mod/assignment/type'),
+         'auth_' => array('auth'),
+         'block_' => array('blocks'),
++        'crlm_' => array('curriculum/plugins'),
+         'datafield_' => array('mod/data/field'),
+         'datapreset_' => array('mod/data/preset'),
++        'elis_' => array('elis'),
+         'enrol_' => array('enrol'),
+         'filter_' => array('filter'),
+         'format_' => array('course/format'),
+         'qtype_' => array('question/type'),
+         'report_' => array($CFG->admin.'/report', 'course/report', 'mod/quiz/report'),
++        'rlreport_' => array('blocks/php_report/instances'),
+         'resource_' => array('mod/resource/type'),
+         'gradereport_' => array('grade/report'),
+         'gradeimport_' => array('grade/import'),
+@@ -5313,6 +5321,13 @@ function places_to_search_for_lang_strings() {
+         'profilefield_' => array('user/profile/field'),
+         '' => array('mod')
+     );
++        $elis_plugins = get_list_of_plugins('elis');
++        foreach ($elis_plugins as $plugin) {
++            $places["elis:{$plugin}_"] = array('elis/{$plugin}/plugins');
++        }
++    }
++
++    return $places;
+ }
+ 
+ /**

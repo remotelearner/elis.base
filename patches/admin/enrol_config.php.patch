@@ -1,0 +1,35 @@
+diff --git a/admin/enrol_config.php b/admin/enrol_config.php
+index 0ed836f..9600750 100644
+--- a/admin/enrol_config.php
++++ b/admin/enrol_config.php
+@@ -52,6 +52,30 @@
+     print_simple_box_start("center", "80%");
+     print_heading($options[$enrol]);
+ 
++/// ELIS release version
++    if (!property_exists($enrolment, 'release')) {
++        $versionfile = "{$CFG->dirroot}/enrol/{$enrol}/version.php";
++        if (file_exists($versionfile)) {
++            if (is_readable($versionfile)) {
++                $module = new stdClass;
++                $plugin = new stdClass;
++                include($versionfile);
++                if (property_exists($module, 'release')) {
++                    $enrolment->release = $module->release;
++                } else if (property_exists($plugin, 'release')) {
++                    $enrolment->release = $plugin->release;
++                }
++            } else {
++                error_log("admin/enrol_config.php: version file '$versionfile' not readable!");
++            }
++        }
++    }
++    if (property_exists($enrolment, 'release')) {
++        echo '<center><div class="settingsform elisrelease"><p>';
++        echo get_string('elis_release', 'block_elis_info').$enrolment->release;
++        echo '</p></div></center>';
++    }
++
+     print_simple_box_start("center", "60%", '', 5, 'informationbox');
+     print_string("description", "enrol_$enrol");
+     print_simple_box_end();

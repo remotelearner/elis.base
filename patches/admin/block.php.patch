@@ -1,0 +1,18 @@
+diff --git a/admin/block.php b/admin/block.php
+index f516532..b8800e6 100644
+--- a/admin/block.php
++++ b/admin/block.php
+@@ -54,6 +54,13 @@
+ 
+     print_heading($strblockname);
+ 
++    // ELIS release version
++    if (property_exists($block, 'release')) {
++        echo '<center><div class="settingsform elisrelease"><p>';
++        echo get_string('elis_release', 'block_elis_info').$block->release;
++        echo '</p></div></center>';
++    }
++
+     print_simple_box(get_string('configwarning', 'admin'), 'center', '50%');
+     echo '<br />';
+ 

@@ -1,0 +1,37 @@
+diff --git a/admin/auth_config.php b/admin/auth_config.php
+index 0281b12..1e300bf 100644
+--- a/admin/auth_config.php
++++ b/admin/auth_config.php
+@@ -70,6 +70,32 @@ echo "<input type=\"hidden\" name=\"auth\" value=\"".$auth."\" />\n";
+ // auth plugin description
+ print_simple_box_start('center', '80%');
+ print_heading($authtitle);
++
++// ELIS release version
++if (!property_exists($authplugin, 'release')) {
++    // check for version.php file in auth directory
++    $versionfile = "{$CFG->dirroot}/auth/{$auth}/version.php";
++    if (file_exists($versionfile)) {
++        if (is_readable($versionfile)) {
++            $module = new stdClass;
++            $plugin = new stdClass;
++            include($versionfile);
++            if (property_exists($module, 'release')) {
++                $authplugin->release = $module->release;
++            } else if (property_exists($plugin, 'release')) {
++                $authplugin->release = $plugin->release;
++            }
++        } else {
++            error_log("admin/auth_config.php: version file '$versionfile' not readable!");
++        }
++    }
++}
++if (property_exists($authplugin, 'release')) {
++    echo '<center><div class="settingsform elisrelease"><p>';
++    echo get_string('elis_release', 'block_elis_info').$authplugin->release;
++    echo '</p></div></center>';
++}
++
+ print_simple_box_start('center', '80%', '', 5, 'informationbox');
+ echo $authdescription;
+ print_simple_box_end();

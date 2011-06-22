@@ -1,0 +1,61 @@
+diff --git a/admin/settings.php b/admin/settings.php
+index 1ee4358..97e546b 100644
+--- a/admin/settings.php
++++ b/admin/settings.php
+@@ -139,6 +139,56 @@ if (empty($SITE->fullname)) {
+     echo '<input type="hidden" name="return" value="'.$return.'" />';
+     print_heading($page->visiblename);
+ 
++    // ELIS-1752: Display plugin release if exists
++    if (strpos($section, 'setting') !== false) {
++        $pluginparts = explode('setting', $section);
++        if ($pluginparts[0] == 'filter') {
++            // Note: filter sections of form section=filtersettingfiltercensor
++            //       we require parts[0]=filter and parts[1]=censor
++            $pluginparts[1] = str_replace($pluginparts[0], '', $pluginparts[1]);
++        }
++        // Check for version.php file first
++        $plugin_obj = new stdClass;
++        $versionfile = "{$CFG->dirroot}/{$pluginparts[0]}/{$pluginparts[1]}/version.php";
++        if (file_exists($versionfile)) {
++            if (is_readable($versionfile)) {
++                $module = new stdClass;
++                $plugin = new stdClass;
++                include($versionfile);
++                $plugin_obj = property_exists($module, 'release')
++                              ? $module : $plugin; // modules : filters
++            } else {
++                error_log("admin/settings.php: version file '$versionfile' not readable!");
++            }
++        }
++        if (!property_exists($plugin_obj, 'release')) {
++            if ($pluginparts[0] == 'auth') {
++                $plugin_obj = get_auth_plugin($pluginparts[1]);
++            } else if ($pluginparts[0] == 'enrol') {
++                require_once("{$CFG->dirroot}/enrol/enrol.class.php");
++                $plugin_obj = enrolment_factory::factory($pluginparts[1]);
++            } else {
++                $classname = "{$pluginparts[0]}_{$pluginparts[1]}";
++                $classfile = "{$CFG->dirroot}/{$pluginparts[0]}/{$pluginparts[1]}/{$classname}.php";
++                if (!class_exists($classname) && file_exists($classfile)) {
++                    if (is_readable($classfile)) {
++                        include_once($classfile);
++                    } else {
++                        error_log("admin/settings.php: class file '$classfile' not readable!");
++                    }
++                }
++                if (class_exists($classname)) {
++                    $plugin_obj = new $classname; // blocks
++                }
++            }
++        }
++        if (property_exists($plugin_obj, 'release')) {
++            echo '<center><div class="settingsform elisrelease">';
++            echo get_string('elis_release', 'block_elis_info').$plugin_obj->release;
++            echo '</div></center>';
++        }
++    }
++
+     echo $page->output_html();
+ 
+     echo '<div class="form-buttons"><input class="form-submit" type="submit" value="'.get_string('savechanges','admin').'" /></div>';

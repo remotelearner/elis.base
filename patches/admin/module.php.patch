@@ -1,0 +1,87 @@
+diff --git a/admin/module.php b/admin/module.php
+index e503b82..1ff5f6c 100644
+--- a/admin/module.php
++++ b/admin/module.php
+@@ -7,22 +7,22 @@
+ /// If data submitted, then process and store.
+ 
+     if ($config = data_submitted()) {
+-        $module = optional_param('module', '', PARAM_SAFEDIR);
++        $modname = optional_param('module', '', PARAM_SAFEDIR);
+ 
+         if (!confirm_sesskey()) {
+             print_error('confirmsesskeybad', 'error');
+         }
+ 
+-        if ($module != '') {
+-            include_once("$CFG->dirroot/mod/$module/lib.php");
+-            admin_externalpage_setup('modsetting'.$module);
++        if ($modname != '') {
++            include_once("$CFG->dirroot/mod/$modname/lib.php");
++            admin_externalpage_setup('modsetting'.$modname);
+             // if the config.html contains a hidden form field giving
+             // the module name then the form does not have to prefix all
+             // its variable names, we will do it here.
+-            $moduleprefix = $module.'_';
++            $moduleprefix = $modname.'_';
+             // let the module process the form data if it has to,
+             // $config is passed to this function by reference
+-            $moduleconfig = $module.'_process_options';
++            $moduleconfig = $modname.'_process_options';
+             if (function_exists($moduleconfig)) {
+                 $moduleconfig($config);
+             }
+@@ -43,25 +43,47 @@
+     }
+ 
+ /// Otherwise print the form.
+-    $module = required_param('module', PARAM_SAFEDIR);
+-    include_once("$CFG->dirroot/mod/$module/lib.php");
+-    admin_externalpage_setup('modsetting'.$module);
++    $modname = required_param('module', PARAM_SAFEDIR);
++    include_once("$CFG->dirroot/mod/$modname/lib.php");
++    admin_externalpage_setup('modsetting'.$modname);
+ 
+-    $strmodulename = get_string("modulename", $module);
++    $strmodulename = get_string("modulename", $modname);
+ 
+     // $CFG->pagepath is used to generate the body and id attributes for the body tag
+     // of the page. It is also used to generate the link to the Moodle Docs for this view.
+-    $CFG->pagepath = 'mod/' . $module . '/config';
++    $CFG->pagepath = 'mod/' . $modname . '/config';
+ 
+     admin_externalpage_print_header();
+ 
+     print_heading($strmodulename);
+ 
++    // ELIS release version
++    $versionfile = "{$CFG->dirroot}/mod/{$modname}/version.php";
++    $elis_release = '';
++    if (file_exists($versionfile)) {
++        if (is_readable($versionfile)) {
++            $plugin = new stdClass;
++            $module = new stdClass;
++            include($versionfile);
++            $elis_release = property_exists($plugin, 'release')
++                            ? $plugin->release
++                            : (property_exists($module, 'release')
++                               ? $module->release : '');
++        } else {
++            error_log("admin/module.php: version file '$versionfile' not readable!");
++        }
++    }
++    if (!empty($elis_release)) {
++        echo '<center><div class="settingsform elisrelease"><p>';
++        echo get_string('elis_release', 'block_elis_info').$elis_release;
++        echo '</p></div></center>';
++    }
++
+     print_simple_box(get_string("configwarning", 'admin'), "center", "60%");
+     echo "<br />";
+ 
+     print_simple_box_start("center", "");
+-    include("$CFG->dirroot/mod/$module/config.html");
++    include("$CFG->dirroot/mod/$modname/config.html");
+     print_simple_box_end();
+ 
+     admin_externalpage_print_footer();

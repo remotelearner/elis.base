@@ -1,0 +1,22 @@
+diff --git a/admin/roles/assign.php b/admin/roles/assign.php
+index c191e6a..95aba0f 100755
+--- a/admin/roles/assign.php
++++ b/admin/roles/assign.php
+@@ -399,7 +399,16 @@
+ 		//Back to Assign Roles button
+ 		echo "<br/>";
+ 		echo "<div class='continuebutton'>";
+-		print_single_button('assign.php', array('contextid' => $contextid), get_string('assignrolesin', 'role', print_context_name($context)));
++
++		// keep track of user and course information so we can get back to
++		// the generic role assignment page
++		$options = array('contextid' => $contextid);
++		if ($userid != 0 && $courseid != 0) {
++		    $options['userid'] = $userid;
++		    $options['courseid'] = $courseid;
++		}
++
++		print_single_button('assign.php', $options, get_string('assignrolesin', 'role', print_context_name($context)));
+ 		echo "</div>";
+ 
+     } else {   // Print overview table

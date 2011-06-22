@@ -1,0 +1,13 @@
+diff --git a/lib/javascript-static.js b/lib/javascript-static.js
+index 5841864..11eed69 100644
+--- a/lib/javascript-static.js
++++ b/lib/javascript-static.js
+@@ -526,7 +526,7 @@ function fix_column_widths() {
+ function fix_column_width(colName) {
+     if(column = document.getElementById(colName)) {
+         if(!column.offsetWidth) {
+-            setTimeout("fix_column_width('" + colName + "')", 20);
++            //sanity check - this should be set
+             return;
+         }
+ 

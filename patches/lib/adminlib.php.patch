@@ -1,0 +1,65 @@
+diff --git a/lib/adminlib.php b/lib/adminlib.php
+index 2efe8a8..f115471 100644
+--- a/lib/adminlib.php
++++ b/lib/adminlib.php
+@@ -54,6 +54,8 @@ function upgrade_blocks_savepoint($result, $version, $type) {
+ function upgrade_plugins($type, $dir, $return) {
+     global $CFG, $db;
+ 
++    require_once ($CFG->dirroot.'/elis/core/lib/tasklib.php');
++
+ /// Let's know if the header has been printed, so the funcion is being called embedded in an outer page
+     $embedded = defined('HEADER_PRINTED');
+ 
+@@ -115,6 +117,10 @@ function upgrade_plugins($type, $dir, $return) {
+             set_config($pluginversion, 0);
+         }
+ 
++        if (!property_exists($plugin, 'version')) {
++            error_log("lib/adminlib.php: no version for plugin: {$plugin->name}");
++            continue;
++        }
+         if ($CFG->$pluginversion == $plugin->version) {
+             // do nothing
+         } else if ($CFG->$pluginversion < $plugin->version) {
+@@ -154,6 +160,9 @@ function upgrade_plugins($type, $dir, $return) {
+                 /// Install events
+                     events_update_definition($type.'/'.$plug);
+ 
++                /// Install tasks
++                    elis_tasks_update_definition($type.'/'.$plug);
++
+                 /// Run local install function if there is one
+                     if (is_readable($fullplug .'/lib.php')) {
+                         include_once($fullplug .'/lib.php');
+@@ -202,6 +211,7 @@ function upgrade_plugins($type, $dir, $return) {
+                     if (!update_capabilities($type.'/'.$plug)) {
+                         error('Could not update '.$plugin->name.' capabilities!');
+                     }
++                    elis_tasks_update_definition($type.'/'.$plug);
+                     events_update_definition($type.'/'.$plug);
+                     notify(get_string('modulesuccess', '', $plugin->name), 'notifysuccess');
+                 } else {
+@@ -3184,6 +3194,8 @@ class admin_setting_special_editorhidebuttons extends admin_setting {
+     var $items;
+ 
+     function admin_setting_special_editorhidebuttons() {
++        global $CFG;
++
+         parent::admin_setting('editorhidebuttons', get_string('editorhidebuttons', 'admin'),
+                               get_string('confeditorhidebuttons', 'admin'), array());
+         // weird array... buttonname => buttonimage (assume proper path appended). if you leave buttomimage blank, text will be printed instead
+@@ -3221,6 +3233,13 @@ class admin_setting_special_editorhidebuttons extends admin_setting {
+                          'insertimage' => 'ed_image.gif',
+                          'inserttable' => 'insert_table.gif',
+                          'insertsmile' => 'em.icon.smile.gif',
++            );
++
++        if(defined('DRAGMATH') && DRAGMATH) {
++            $this->items['insertdragmath'] = DRAGMATH . '/images/em.icon.dragmath.gif';
++        }
++
++        $this->items += array(
+                          'insertchar' => 'icon_ins_char.gif',
+                          'spellcheck' => 'spell-check.gif',
+                          'htmlmode' => 'ed_html.gif',

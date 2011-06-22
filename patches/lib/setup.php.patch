@@ -1,0 +1,33 @@
+diff --git a/lib/setup.php b/lib/setup.php
+index 9a71075..fcb3121 100644
+--- a/lib/setup.php
++++ b/lib/setup.php
+@@ -211,6 +211,28 @@ global $HTTPSPAGEREQUIRED;
+ /// Increase memory limits if possible
+     raise_memory_limit('96M');    // We should never NEED this much but just in case...
+ 
++// begin Remote-Learner edit
++// detect DragMath plugin
++    if (!defined('DRAGMATH')) {
++        // determine if and where DragMath is installed
++        if (file_exists($CFG->dirroot.'/blocks/dragmath/popups/dlg_ins_dragmath.php')) {
++            define('DRAGMATH', '../../../../blocks/dragmath/');
++        } elseif (file_exists($CFG->libdir.'/editor/htmlarea/popups/dlg_ins_dragmath.php')) {
++            define('DRAGMATH', '../');
++        }
++    }
++
++// detect NanoGong plugin
++    if (!defined('NANOGONG')) {
++        // determine if and where NanoGong is installed
++        if (file_exists($CFG->dirroot.'/blocks/nanogong/popups/insert_sound.php')) {
++            define('NANOGONG', '../../../../blocks/nanogong');
++        } elseif (file_exists($CFG->libdir.'/editor/htmlarea/popups/insert_sound.php')) {
++            define('NANOGONG', '..');
++        }
++    }
++// end Remote-Learner edit
++
+ /// Load up standard libraries
+ 
+     require_once($CFG->libdir .'/textlib.class.php');   // Functions to handle multibyte strings

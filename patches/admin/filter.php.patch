@@ -1,0 +1,33 @@
+diff --git a/admin/filter.php b/admin/filter.php
+index ce75068..1974d42 100644
+--- a/admin/filter.php
++++ b/admin/filter.php
+@@ -66,6 +66,28 @@
+     admin_externalpage_print_header();
+     print_heading( $filtername );
+ 
++    // ELIS release version
++    $versionfile = "{$CFG->dirroot}/filter/{$filtername}/version.php";
++    $elis_release = '';
++    if (file_exists($versionfile)) {
++        if (is_readable($versionfile)) {
++            $module = new stdClass;
++            $plugin = new stdClass;
++            include($versionfile);
++            $elis_release = property_exists($plugin, 'release')
++                            ? $plugin->release
++                            : (property_exists($module, 'release')
++                               ? $module->release : '');
++        } else {
++            error_log("admin/filter.php: version file '$versionfile' not readable!");
++        }
++    }
++    if (!empty($elis_release)) {
++        echo '<center><div class="settingsform elisrelease"><p>';
++        echo get_string('elis_release', 'block_elis_info').$elis_release;
++        echo '</p></div></center>';
++    }
++
+     print_simple_box(get_string("configwarning", "admin"), "center", "50%");
+     echo "<br />";
+ 
