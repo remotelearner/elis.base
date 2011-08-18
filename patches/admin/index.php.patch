@@ -1,5 +1,5 @@
 diff --git a/admin/index.php b/admin/index.php
-index be634ac..9c4ef6e 100644
+index 0874183..66a29b2 100644
 --- a/admin/index.php
 +++ b/admin/index.php
 @@ -484,6 +484,9 @@

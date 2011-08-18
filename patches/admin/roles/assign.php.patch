@@ -1,5 +1,5 @@
 diff --git a/admin/roles/assign.php b/admin/roles/assign.php
-index c191e6a..95aba0f 100755
+index baf7976..b47b2cb 100755
 --- a/admin/roles/assign.php
 +++ b/admin/roles/assign.php
 @@ -399,7 +399,16 @@

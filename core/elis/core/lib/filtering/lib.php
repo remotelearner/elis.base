@@ -27,12 +27,6 @@ class generalized_filtering {
             $form_prefix = 'report_instance_prefix' . $id;
         }
 
-        if(!empty($this->_id)) {
-            $filtering_array =& $SESSION->user_index_filtering[$this->_id];
-        } else {
-            $filtering_array =& $SESSION->user_filtering;
-        }
-
         if (!isset($filtering_array)) {
             $filtering_array = array();
         }
@@ -50,50 +44,6 @@ class generalized_filtering {
             }
 
         }
-
-        // first the new filter form
-        $this->_addform = new user_add_filter_form($baseurl, array('fields'=>$this->_fields, 'extraparams'=>$extraparams), 'post', '', array('formprefix' => $form_prefix));
-        if ($adddata = $this->_addform->get_data(false)) {
-            foreach($this->_fields as $fname=>$field) {
-                $data = $field->check_data($adddata);
-                if ($data === false) {
-                    continue; // nothing new
-                }
-                if (!array_key_exists($fname, $filtering_array)) {
-                    $filtering_array[$fname] = array();
-                }
-                $filtering_array[$fname][] = $data;
-            }
-            // clear the form
-            $_POST = array();
-            $this->_addform = new user_add_filter_form($baseurl, array('fields'=>$this->_fields, 'extraparams'=>$extraparams), 'post', '', array('formprefix' => $form_prefix));
-        }
-
-        // now the active filters
-
-        $this->_activeform = new user_multi_active_filter_form($baseurl, array('fields'=>$this->_fields, 'extraparams'=>$extraparams, 'id' => $this->_id), 'post', '', array('formprefix' => $form_prefix));
-        if ($adddata = $this->_activeform->get_data(false)) {
-            if (!empty($adddata->removeall)) {
-                $filtering_array = array();
-
-            } else if (!empty($adddata->removeselected) and !empty($adddata->filter)) {
-                foreach($adddata->filter as $fname=>$instances) {
-                    foreach ($instances as $i=>$val) {
-                        if (empty($val)) {
-                            continue;
-                        }
-                        unset($filtering_array[$fname][$i]);
-                    }
-                    if (empty($filtering_array[$fname])) {
-                        unset($filtering_array[$fname]);
-                    }
-                }
-            }
-            // clear+reload the form
-            $_POST = array();
-            $this->_activeform = new user_multi_active_filter_form($baseurl, array('fields'=>$this->_fields, 'extraparams'=>$extraparams, 'id' => $this->_id), 'post', '', array('formprefix' => $form_prefix));
-        }
-        // now the active filters
     }
 
     /**
@@ -328,53 +278,4 @@ class generalized_filter_entry {
         $this->options = $options;
     }
 
-}
-
-/**
- * This class adds support for having multiple filters active
- * at the same time
- */
-class user_multi_active_filter_form extends moodleform {
-
-    function definition() {
-        global $SESSION; // this is very hacky :-(
-
-        if(!empty($this->_customdata['id'])) {
-            $filtering_array =& $SESSION->user_index_filtering[$this->_customdata['id']];
-        } else {
-            $filtering_array =& $SESSION->user_filtering;
-        }
-
-        $mform       =& $this->_form;
-        $fields      = $this->_customdata['fields'];
-        $extraparams = $this->_customdata['extraparams'];
-
-        if (!empty($filtering_array)) {
-            // add controls for each active filter in the active filters group
-            $mform->addElement('header', 'actfilterhdr', get_string('actfilterhdr','filters'));
-
-            foreach ($filtering_array as $fname=>$datas) {
-                if (!array_key_exists($fname, $fields)) {
-                    continue; // filter not used
-                }
-                $field = $fields[$fname];
-                foreach($datas as $i=>$data) {
-                    $description = $field->get_label($data);
-                    $mform->addElement('checkbox', 'filter['.$fname.']['.$i.']', null, $description);
-                }
-            }
-
-            if ($extraparams) {
-                foreach ($extraparams as $key=>$value) {
-                    $mform->addElement('hidden', $key, $value);
-                    $mform->setType($key, PARAM_RAW);
-                }
-            }
-
-            $objs = array();
-            $objs[] = &$mform->createElement('submit', 'removeselected', get_string('removeselected','filters'));
-            $objs[] = &$mform->createElement('submit', 'removeall', get_string('removeall','filters'));
-            $mform->addElement('group', 'actfiltergrp', '', $objs, ' ', false);
-        }
-    }
 }
