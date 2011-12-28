@@ -1,0 +1,123 @@
+
+System Requirements
+===================
+
+Aside from the requirements for [Moodle itself](http://docs.moodle.org/20/en/Environment#Moodle_version_1.9) ELIS has some specific extra requirements:
+
+* PHP v5 with the following additional modules installed:
+ * OpenSSL
+ * SOAP
+ * Curl
+ * XML-RPC
+* MySQL v5
+ * *NOTE:* ELIS is currently not fully compatible with PostgreSQL.
+
+Alfresco
+--------
+
+Remote-Learner works exclusively with the Enterprise version of Alfresco. Our integration should work with the community release but has not been tested against that codebase. Currently the Alfresco integration is only compatible with the 3.2 release series of Alfresco. Support for the 3.3 and 3.4 releases is coming soon.
+
+General Structure
+=================
+
+Each repository is structured this way:
+
+1. "addons" subdirectory - specific plug-ins used by the integration.
+2. "core" subdirectory - files and subdirectories added directly to the Moodle application that do not  overwrite existing Moodle files.
+3. " patches" subdirectory - diff patches to be applied to specific Moodle core files.
+4. "version.php" - the specific version of Moodle this archive was applied to.
+
+The patches "should" work against your version of Moodle, but there may be other differences that could affect it. It may be necessary to examine your code with the patch file to correctly apply it.
+
+Component Repositories
+======================
+
+elis.base
+---------
+
+This repository contains some base modifications to Moodle which are required for other ELIS components.
+
+elis.cm
+-------
+
+This repository contains the ELIS Curriculum Management component.
+
+### [Component documentation](http://rlcommunity.remote-learner.net/mod/book/view.php?id=1)
+
+elis.alfresco
+-------------
+
+This repository contains the ELIS Alfresco Integration component.
+
+### [Component documentation](http://rlcommunity.remote-learner.net/mod/book/view.php?id=17)
+
+### Alfresco special setup instructions
+
+The Remote-Learner Alfresco integration requires some custom web scripts to be deployed into the Alfresco repository. These scripts are found within the elis.alfresco repository in the following path:
+
+* */core/file/repository/alfresco/webscripts/*
+
+All of those files need to be installed within the Alfresco repository. There are two ways of doing this current:
+
+1. Install directly into the Alfresco application file structure:
+ 1. Shutdown the Alfresco instance
+ 2. Copy all of the web scripts into the following location on the filesystem (assuming Alfresco is installed at _/opt/alfresco/_): _/opt/alfresco/tomcat/shared/classes/alfresco/extension/templates/webscripts/moodle/_
+ 3. Start the Alfresco instance
+ 4. Visit the following URL on your Alfresco install (assuming the Alfresco web application is accessible via http://myalfrescourl:8080/alfresco/): http://myalfrescourl:8080/alfresco/s/
+ 5. Click on the Refresh Web Scripts button
+ 6. When this process has finished it should report no errors and tell you that it has found more web scripts than were previously already there
+2. Install into the repository itself
+ 1. Log into the Alfresco web application with an administrator account
+ 2. Navigate to the following path in the repository: _/Company Home/Data Dictionary/Web Scripts Extensions/_
+ 3. Create the the following directory structure within the *Web Scripts Extensions* folder: _org/moodle_ (so that you end up with the following hierarchy: _Web Scripts Extensions/org/moodle_)
+ 4. Upload all of the webscripts files into the new *moodle* folder
+ 5. Visit the following URL on your Alfresco install (assuming the Alfresco web application is accessible via http://myalfrescourl:8080/alfresco/):
+  * http://myalfrescourl:8080/alfresco/s/
+ 6. Click on the Refresh Web Scripts button
+ 7. When this process has finished it should report no errors and tell you that it has found more web scripts than were previously already there
+
+
+elis.reporting
+--------------
+
+This repository contains the ELIS Reporting component.
+
+### [Component documentation](http://rlcommunity.remote-learner.net/mod/book/view.php?id=1&chapterid=32)
+
+elis.openid
+-----------
+
+This repository contains the OpenID authentication add-on.
+
+### [Component documentation](http://rlcommunity.remote-learner.net/mod/book/view.php?id=26)
+
+Dependencies
+============
+
+The OpenID component does not depend on anything other than having a functioning Moodle install. The dependency chart below explains how each of the components depends on one another and Moodle itself.
+
+![ELIS Community Dependencies](https://github.com/downloads/remotelearner/elis.base/elis_community_dependencies.png)
+
+
+How to get the code
+===================
+
+The code is currently available in Remote-Learner's Github repositories. You can browse the code via our Github account here -- (https://github.com/remotelearner)
+
+Direct access to each of the Remote-Learner ELIS Community repositories is available at the following URLs:
+
+* elis.alfresco --- https://github.com/remotelearner/elis.alfresco
+* elis.base --- https://github.com/remotelearner/elis.base
+* elis.cm --- https://github.com/remotelearner/elis.cm
+* elis.openid --- https://github.com/remotelearner/elis.openid
+* elis.reporting --- https://github.com/remotelearner/elis.reporting
+
+Each repository includes the ability to both fork or clone the code via Git itself or download a zip or tarball package of the code.
+
+The direct download zip archive links for the latest version of the code in each ELIS community repository are as follows:
+
+* elis.alfresco --- https://github.com/remotelearner/elis.alfresco/zipball/master
+* elis.base --- https://github.com/remotelearner/elis.base/zipball/master
+* elis.cm --- https://github.com/remotelearner/elis.cm/zipball/master
+* elis.openid --- https://github.com/remotelearner/elis.openid/zipball/master
+* elis.reporting --- https://github.com/remotelearner/elis.reporting/zipball/master
