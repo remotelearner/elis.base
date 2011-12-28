@@ -1,0 +1,556 @@
+diff --git a/lib/graphlib.php b/lib/graphlib.php
+index ec677de..d801378 100644
+--- a/lib/graphlib.php
++++ b/lib/graphlib.php
+@@ -1,34 +1,41 @@
+-<?php  // $Id$
+-
+-/*
+-Graph Class. PHP Class to draw line, point, bar, and area graphs, including numeric x-axis and double y-axis.
+-Version: 1.6.3
+-Copyright (C) 2000  Herman Veluwenkamp
+-
+-This library is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-This library is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with this library; if not, write to the Free Software
+-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++<?php
++
++/**
++ * Graph Class. PHP Class to draw line, point, bar, and area graphs, including numeric x-axis and double y-axis.
++ * Version: 1.6.3
++ * Copyright (C) 2000  Herman Veluwenkamp
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ * Copy of GNU Lesser General Public License at: http://www.gnu.org/copyleft/lesser.txt
++ * Contact author at: hermanV@mindless.com
++ *
++ * @package    core
++ * @subpackage lib
++ */
+ 
+-Copy of GNU Lesser General Public License at: http://www.gnu.org/copyleft/lesser.txt
+-Contact author at: hermanV@mindless.com
+-*/
++defined('MOODLE_INTERNAL') || die();
+ 
+ /* This file contains modifications by Martin Dougiamas
+  * as part of Moodle (http://moodle.com).  Modified lines
+  * are marked with "Moodle".
+  */
+ 
+-
++/**
++ * @package moodlecore
++ */
+ class graph {
+   var $image;
+   var $debug             =   FALSE;        // be careful!!
+@@ -147,9 +154,8 @@ class graph {
+   var $offset_relation   =   null;         // array of offsets for different sets of data
+ 
+ 
+-
+-// init all text - title, labels, and axis text.
+-function init() {
++    // init all text - title, labels, and axis text.
++    function init() {
+ 
+   /// Moodle mods:  overrides the font path and encodings
+ 
+@@ -220,9 +226,9 @@ function init() {
+   $this->init_data();
+   $this->init_x_ticks();
+   $this->init_y_ticks();
+-}
++    }
+ 
+-function draw_text() {
++    function draw_text() {
+   $colour = $this->parameter['outer_background'];
+   if ($colour != 'none') $this->draw_rectangle($this->calculated['outer_border'], $colour, 'fill'); // graph background
+ 
+@@ -247,9 +253,9 @@ function draw_text() {
+   // draw border around image
+   $colour = $this->parameter['inner_border'];
+   if ($colour != 'none') $this->draw_rectangle($this->calculated['inner_border'], $colour, $this->parameter['inner_border_type']); // graph border
+-}
++    }
+ 
+-function draw_stack() {
++    function draw_stack() {
+   $this->init();
+   $this->draw_text();
+ 
+@@ -263,17 +269,17 @@ function draw_stack() {
+   $this->y_order = $yOrder; // revert y_order data.
+ 
+   $this->output();
+-}
++    }
+ 
+-function draw() {
++    function draw() {
+   $this->init();
+   $this->draw_text();
+   $this->draw_data();
+   $this->output();
+-}
++    }
+ 
+-// draw a data set
+-function draw_set($order, $set, $offset) {
++    // draw a data set
++    function draw_set($order, $set, $offset) {
+   if ($offset) @$this->init_variable($colour, $this->y_format[$set]['shadow'], $this->parameter['shadow']);
+   else $colour  = $this->y_format[$set]['colour'];
+   @$this->init_variable($point,      $this->y_format[$set]['point'],      'none');
+@@ -329,9 +335,9 @@ function draw_set($order, $set, $offset) {
+     $lastX = $thisX;
+     $lastY = $thisY;
+   }
+-}
++    }
+ 
+-function draw_data() {
++    function draw_data() {
+   // cycle thru y data to be plotted
+   // first check for drop shadows...
+   foreach ($this->y_order as $order => $set) {
+@@ -345,9 +351,9 @@ function draw_data() {
+   foreach ($this->y_order as $order => $set) {
+     $this->draw_set($order, $set, 0);
+   }
+-}
++    }
+ 
+-function draw_legend() {
++    function draw_legend() {
+   $position      = $this->parameter['legend'];
+   if ($position == 'none') return; // abort if no border
+ 
+@@ -424,7 +430,7 @@ function draw_legend() {
+       $left   = $this->calculated['boundary_box']['left'];
+       $right  = $this->calculated['boundary_box']['right'] + $this->calculated['legend']['boundary_box_all']['width'];
+ 
+-}
++    }
+   // legend border
+   if($borderColour!='none') $this->draw_rectangle(array('top' => $top,
+                                                         'left' => $left,
+@@ -460,9 +466,9 @@ function draw_legend() {
+     }
+   }
+ 
+-}
++    }
+ 
+-function draw_y_label_right() {
++    function draw_y_label_right() {
+   if (!$this->parameter['y_label_right']) return;
+   $x = $this->calculated['boundary_box']['right'] + $this->parameter['y_inner_padding'];
+   if ($this->parameter['y_axis_text_right']) $x += $this->calculated['y_axis_right']['boundary_box_max']['width']
+@@ -473,10 +479,10 @@ function draw_y_label_right() {
+   $coords = array('x' => $x, 'y' => $y, 'reference' => 'left-center');
+   $this->update_boundaryBox($label['boundary_box'], $coords);
+   $this->print_TTF($label);
+-}
++    }
+ 
+ 
+-function draw_y_label_left() {
++    function draw_y_label_left() {
+   if (!$this->parameter['y_label_left']) return;
+   $x = $this->calculated['boundary_box']['left'] - $this->parameter['y_inner_padding'];
+   if ($this->parameter['y_axis_text_left']) $x -= $this->calculated['y_axis_left']['boundary_box_max']['width']
+@@ -487,9 +493,9 @@ function draw_y_label_left() {
+   $coords = array('x' => $x, 'y' => $y, 'reference' => 'right-center');
+   $this->update_boundaryBox($label['boundary_box'], $coords);
+   $this->print_TTF($label);
+-}
++    }
+ 
+-function draw_title() {
++    function draw_title() {
+   if (!$this->parameter['title']) return;
+   //$y = $this->calculated['outside_border']['top'] + $this->parameter['outer_padding'];
+   $y = $this->calculated['boundary_box']['top'] - $this->parameter['outer_padding'];
+@@ -498,9 +504,9 @@ function draw_title() {
+   $coords = array('x' => $x, 'y' => $y, 'reference' => 'bottom-center');
+   $this->update_boundaryBox($label['boundary_box'], $coords);
+   $this->print_TTF($label);
+-}
++    }
+ 
+-function draw_x_label() {
++    function draw_x_label() {
+   if (!$this->parameter['x_label']) return;
+   $y = $this->calculated['boundary_box']['bottom'] + $this->parameter['x_inner_padding'];
+   if ($this->parameter['x_axis_text']) $y += $this->calculated['x_axis']['boundary_box_max']['height']
+@@ -510,25 +516,25 @@ function draw_x_label() {
+   $coords = array('x' => $x, 'y' => $y, 'reference' => 'top-center');
+   $this->update_boundaryBox($label['boundary_box'], $coords);
+   $this->print_TTF($label);
+-}
++    }
+ 
+-function draw_zero_axis_left() {
++    function draw_zero_axis_left() {
+   $colour = $this->parameter['zero_axis'];
+   if ($colour == 'none') return;
+   // draw zero axis on left hand side
+   $this->calculated['zero_axis'] = round($this->calculated['boundary_box']['top']  + ($this->calculated['y_axis_left']['max'] * $this->calculated['y_axis_left']['factor']));
+   ImageLine($this->image, $this->calculated['boundary_box']['left'], $this->calculated['zero_axis'], $this->calculated['boundary_box']['right'], $this->calculated['zero_axis'], $this->colour[$colour]);
+-}
++    }
+ 
+-function draw_zero_axis_right() {
++    function draw_zero_axis_right() {
+   $colour = $this->parameter['zero_axis'];
+   if ($colour == 'none') return;
+   // draw zero axis on right hand side
+   $this->calculated['zero_axis'] = round($this->calculated['boundary_box']['top']  + ($this->calculated['y_axis_right']['max'] * $this->calculated['y_axis_right']['factor']));
+   ImageLine($this->image, $this->calculated['boundary_box']['left'], $this->calculated['zero_axis'], $this->calculated['boundary_box']['right'], $this->calculated['zero_axis'], $this->colour[$colour]);
+-}
++    }
+ 
+-function draw_x_axis() {
++    function draw_x_axis() {
+   $gridColour  = $this->colour[$this->parameter['grid_colour']];
+   $tickColour  = $this->colour[$this->parameter['x_ticks_colour']];
+   $axis_colour  = $this->parameter['axis_colour'];
+@@ -584,9 +590,9 @@ function draw_x_axis() {
+       $this->print_TTF($axisTag);
+     }
+   }
+-}
++    }
+ 
+-function draw_y_axis() {
++    function draw_y_axis() {
+   $gridColour  = $this->colour[$this->parameter['grid_colour']];
+   $tickColour  = $this->colour[$this->parameter['y_ticks_colour']];
+   $axis_colour  = $this->parameter['axis_colour'];
+@@ -690,9 +696,9 @@ function draw_y_axis() {
+       }
+     }
+   }
+-}
++    }
+ 
+-function init_data() {
++    function init_data() {
+   $this->calculated['y_plot'] = array(); // array to hold pixel plotting coords for y axis
+   $height = $this->calculated['boundary_box']['bottom'] - $this->calculated['boundary_box']['top'];
+   $width  = $this->calculated['boundary_box']['right'] - $this->calculated['boundary_box']['left'];
+@@ -774,9 +780,9 @@ function init_data() {
+   }
+ 
+ 
+-}
++    }
+ 
+-function init_x_ticks() {
++    function init_x_ticks() {
+   // get coords for x axis ticks and data plots
+   //$xGrid       = $this->parameter['x_grid'];
+   $xStep       = $this->calculated['x_axis']['step'];
+@@ -823,9 +829,9 @@ function init_x_ticks() {
+   //expand_pre($this->calculated['boundary_box']);
+   //print "factor ".$this->calculated['x_axis']['factor']."<br />";
+   //expand_pre($this->calculated['x_plot']);
+-}
++    }
+ 
+-function init_y_ticks() {
++    function init_y_ticks() {
+   // get coords for y axis ticks
+ 
+   $yStep      = $this->calculated['y_axis']['step'];
+@@ -837,9 +843,9 @@ function init_y_ticks() {
+     $tickY   -= $yStep;
+   }
+ 
+-}
++    }
+ 
+-function init_labels() {
++    function init_labels() {
+   if ($this->parameter['title']) {
+     $size = $this->get_boundaryBox(
+       array('points' => $this->parameter['title_size'],
+@@ -900,10 +906,10 @@ function init_labels() {
+ 
+   } else $this->calculated['x_label']['boundary_box'] = $this->get_null_size();
+ 
+-}
++    }
+ 
+ 
+-function init_legend() {
++    function init_legend() {
+   $this->calculated['legend'] = array(); // array to hold calculated values for legend.
+   //$this->calculated['legend']['boundary_box_max'] = array('height' => 0, 'width' => 0);
+   $this->calculated['legend']['boundary_box_max'] = $this->get_null_size();
+@@ -945,7 +951,6 @@ function init_legend() {
+   $width = $padding * 2 + $textWidth + $textHeight * 2;  // left and right padding + maximum text width + space for square
+   $height = ($padding + $textHeight) * $numSets + $padding; // top and bottom padding + padding between text + text.
+ 
+-
+   $this->calculated['legend']['boundary_box_all'] = array('width'     => $width,
+                                                         'height'    => $height,
+                                                         'offset'    => $offset,
+@@ -968,9 +973,9 @@ function init_legend() {
+       $this->calculated['boundary_box']['bottom']      -= $offset + $height; // move in right hand side
+       break;
+   }
+-}
++    }
+ 
+-function init_y_axis() {
++    function init_y_axis() {
+   $this->calculated['y_axis_left'] = array(); // array to hold calculated values for y_axis on left.
+   $this->calculated['y_axis_left']['boundary_box_max'] = $this->get_null_size();
+   $this->calculated['y_axis_right'] = array(); // array to hold calculated values for y_axis on right.
+@@ -1072,9 +1077,9 @@ function init_y_axis() {
+     $this->calculated['boundary_box']['right'] -= $this->calculated['y_axis_right']['boundary_box_max']['width']
+                                                 + $this->parameter['y_inner_padding'];
+   }
+-}
++    }
+ 
+-function init_x_axis() {
++    function init_x_axis() {
+   $this->calculated['x_axis'] = array(); // array to hold calculated values for x_axis.
+   $this->calculated['x_axis']['boundary_box_max'] = array('height' => 0, 'width' => 0);
+ 
+@@ -1139,10 +1144,10 @@ function init_x_axis() {
+   if ($this->parameter['x_axis_text'])
+     $this->calculated['boundary_box']['bottom'] -= $this->calculated['x_axis']['boundary_box_max']['height']
+                                                   + $this->parameter['x_inner_padding'];
+-}
++    }
+ 
+-// find max and min values for a data array given the resolution.
+-function find_range($data, $min, $max, $resolution) {
++    // find max and min values for a data array given the resolution.
++    function find_range($data, $min, $max, $resolution) {
+   if (sizeof($data) == 0 ) return array('min' => 0, 'max' => 0);
+   foreach ($data as $key => $value) {
+     if ($value=='none') continue;
+@@ -1166,9 +1171,9 @@ function find_range($data, $min, $max, $resolution) {
+   //print "max=$max, min=$min<br />";
+ 
+   return array('min' => $min, 'max' => $max);
+-}
++    }
+ 
+-function graph() {
++    function graph() {
+   if (func_num_args() == 2) {
+     $this->parameter['width']  = func_get_arg(0);
+     $this->parameter['height'] = func_get_arg(1);
+@@ -1183,9 +1188,9 @@ function graph() {
+   $this->init_colours();
+ 
+   //ImageColorTransparent($this->image, $this->colour['white']); // colour for transparency
+-}
++    }
+ 
+-function print_TTF($message) {
++    function print_TTF($message) {
+   $points    = $message['points'];
+   $angle     = $message['angle'];
+   $text      = $message['text'];
+@@ -1246,10 +1251,10 @@ function print_TTF($message) {
+   $text = $textlib->utf8_to_entities($text, true, true); //does not work with hex entities!
+   // end of Moodle addition
+   ImageTTFText($this->image, $points, $angle, $x, $y, $colour, $font, $text);
+-}
++    }
+ 
+-// move boundaryBox to coordinates specified
+-function update_boundaryBox(&$boundaryBox, $coords) {
++    // move boundaryBox to coordinates specified
++    function update_boundaryBox(&$boundaryBox, $coords) {
+   $width      = $boundaryBox['width'];
+   $height     = $boundaryBox['height'];
+   $x          = $coords['x'];
+@@ -1316,18 +1321,18 @@ function update_boundaryBox(&$boundaryBox, $coords) {
+                                                  'x'         => $x,
+                                                  'y'         => $y,
+                                                  'reference' => $reference));
+-}
++    }
+ 
+-function get_null_size() {
++    function get_null_size() {
+   return array('width'      => 0,
+                'height'     => 0,
+                'offsetX'    => 0,
+                'offsetY'    => 0,
+                //'fontHeight' => 0
+                );
+-}
++    }
+ 
+-function get_boundaryBox($message) {
++    function get_boundaryBox($message) {
+   $points  = $message['points'];
+   $angle   = $message['angle'];
+   $font    = $this->parameter['path_to_fonts'].$message['font'];
+@@ -1379,9 +1384,9 @@ function get_boundaryBox($message) {
+                'offsetY'    => $offsetY,
+                //'fontHeight' => $fontHeight
+                );
+-}
++    }
+ 
+-function draw_rectangle($border, $colour, $type) {
++    function draw_rectangle($border, $colour, $type) {
+   $colour = $this->colour[$colour];
+   switch ($type) {
+     case 'fill':    // fill the rectangle
+@@ -1411,9 +1416,9 @@ function draw_rectangle($border, $colour, $type) {
+       break;
+ 
+   }
+-}
++    }
+ 
+-function init_colours() {
++    function init_colours() {
+   $this->image              = ImageCreate($this->parameter['width'], $this->parameter['height']);
+   // standard colours
+   $this->colour['white']    = ImageColorAllocate ($this->image, 0xFF, 0xFF, 0xFF); // first colour is background colour.
+@@ -1451,9 +1456,9 @@ function init_colours() {
+ 
+   $this->colour['none']   = 'none';
+   return true;
+-}
++    }
+ 
+-function output() {
++    function output() {
+   if ($this->debug) { // for debugging purposes.
+     //expandPre($this->graph);
+     //expandPre($this->y_data);
+@@ -1505,17 +1510,17 @@ function output() {
+ 
+     ImageDestroy($this->image);
+   }
+-} // function output
++    } // function output
+ 
+-function init_variable(&$variable, $value, $default) {
++    function init_variable(&$variable, $value, $default) {
+   if (!empty($value)) $variable = $value;
+   else if (isset($default)) $variable = $default;
+   else unset($variable);
+-}
++    }
+ 
+-// plot a point. options include square, circle, diamond, triangle, and dot. offset is used for drawing shadows.
+-// for diamonds and triangles the size should be an even number to get nice look. if odd the points are crooked.
+-function plot($x, $y, $type, $size, $colour, $offset) {
++    // plot a point. options include square, circle, diamond, triangle, and dot. offset is used for drawing shadows.
++    // for diamonds and triangles the size should be an even number to get nice look. if odd the points are crooked.
++    function plot($x, $y, $type, $size, $colour, $offset) {
+   //print("drawing point of type: $type, at offset: $offset");
+   $u = $x + $offset;
+   $v = $this->calculated['inner_border']['bottom'] - $y + $offset;
+@@ -1551,9 +1556,9 @@ function plot($x, $y, $type, $size, $colour, $offset) {
+       ImageSetPixel($this->image, $u, $v, $this->colour[$colour]);
+       break;
+   }
+-}
++    }
+ 
+-function bar($x, $y, $type, $size, $colour, $offset, $index, $yoffset) {
++    function bar($x, $y, $type, $size, $colour, $offset, $index, $yoffset) {
+   $index_offset = $this->calculated['bar_offset_index'][$index];
+   if ( $yoffset ) {
+     $bar_offsetx = 0;
+@@ -1621,9 +1626,9 @@ function bar($x, $y, $type, $size, $colour, $offset, $index, $yoffset) {
+         break;
+     }
+   }
+-}
++    }
+ 
+-function area($x_start, $y_start, $x_end, $y_end, $type, $colour, $offset) {
++    function area($x_start, $y_start, $x_end, $y_end, $type, $colour, $offset) {
+   //dbug("drawing area type: $type, at offset: $offset");
+   if ($this->parameter['zero_axis'] != 'none') {
+     $bottom = $this->calculated['boundary_box']['bottom'];
+@@ -1664,9 +1669,9 @@ function area($x_start, $y_start, $x_end, $y_end, $type, $colour, $offset) {
+        break;
+     }
+   }
+-}
++    }
+ 
+-function line($x_start, $y_start, $x_end, $y_end, $type, $brush_type, $brush_size, $colour, $offset) {
++    function line($x_start, $y_start, $x_end, $y_end, $type, $brush_type, $brush_size, $colour, $offset) {
+   //dbug("drawing line of type: $type, at offset: $offset");
+   $u_start = $x_start + $offset;
+   $v_start = $this->calculated['boundary_box']['bottom'] - $y_start + $offset;
+@@ -1684,10 +1689,10 @@ function line($x_start, $y_start, $x_end, $y_end, $type, $brush_type, $brush_siz
+       ImageDashedLine($this->image, $u_start, $v_start, $u_end, $v_end, $this->colour[$colour]);
+       break;
+   }
+-}
++    }
+ 
+-// function to draw line. would prefer to use gdBrush but this is not supported yet.
+-function draw_brush_line($x0, $y0, $x1, $y1, $size, $type, $colour) {
++    // function to draw line. would prefer to use gdBrush but this is not supported yet.
++    function draw_brush_line($x0, $y0, $x1, $y1, $size, $type, $colour) {
+   //$this->dbug("line: $x0, $y0, $x1, $y1");
+   $dy = $y1 - $y0;
+   $dx = $x1 - $x0;
+@@ -1726,9 +1731,9 @@ function draw_brush_line($x0, $y0, $x1, $y1, $size, $type, $colour) {
+ 
+     }
+   }
+-}
++    }
+ 
+-function draw_brush($x, $y, $size, $type, $colour) {
++    function draw_brush($x, $y, $size, $type, $colour) {
+   $x = round($x);
+   $y = round($y);
+   $half = round($size / 2);
+@@ -1763,9 +1768,6 @@ function draw_brush($x, $y, $size, $type, $colour) {
+     default:
+       @eval($type); // user can create own brush script.
+   }
+-}
++    }
+ 
+ } // class graph
+-
+-
+-?>

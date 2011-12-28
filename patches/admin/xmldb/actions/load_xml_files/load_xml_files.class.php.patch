@@ -1,0 +1,25 @@
+diff --git a/admin/xmldb/actions/load_xml_files/load_xml_files.class.php b/admin/xmldb/actions/load_xml_files/load_xml_files.class.php
+index ba105f6..8514950 100644
+--- a/admin/xmldb/actions/load_xml_files/load_xml_files.class.php
++++ b/admin/xmldb/actions/load_xml_files/load_xml_files.class.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+ ///////////////////////////////////////////////////////////////////////////
+ //                                                                       //
+@@ -76,7 +76,7 @@ class load_xml_files extends XMLDBAction {
+                 if (!$dbdir->path_exists) {
+                     continue;
+                 }
+-                $xmldb_file = new XMLDBFile($dbdir->path . '/install.xml');
++                $xmldb_file = new xmldb_file($dbdir->path . '/install.xml');
+             /// Set dbdir as necessary
+                 if ($xmldb_file->fileExists()) {
+                     $dbdir->xml_exists = true;
+@@ -95,4 +95,4 @@ class load_xml_files extends XMLDBAction {
+         return $result;
+     }
+ }
+-?>
++

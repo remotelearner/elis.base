@@ -1,0 +1,20 @@
+diff --git a/lib/simpletest/testcode.php b/lib/simpletest/testcode.php
+index a39147c..492ec4b 100644
+--- a/lib/simpletest/testcode.php
++++ b/lib/simpletest/testcode.php
+@@ -16,7 +16,7 @@ class code_test extends UnitTestCase {
+     var $allok = array();
+     
+     var $badstrings;
+-    var $extensions_to_ignore = array('exe', 'gif', 'ico', 'jpg', 'png', 'ttf');
++    var $extensions_to_ignore = array('exe', 'gif', 'ico', 'jpg', 'png', 'ttf', 'log');
+     var $ignore_folders = array();
+     
+     function test_dnc() {
+@@ -47,4 +47,4 @@ class code_test extends UnitTestCase {
+         }
+     }
+ }
+-?>
+\ No newline at end of file
++

@@ -1,0 +1,264 @@
+diff --git a/search/documents/resource_document.php b/search/documents/resource_document.php
+index 4a52d53..529d762 100644
+--- a/search/documents/resource_document.php
++++ b/search/documents/resource_document.php
+@@ -9,6 +9,7 @@
+ * @contributor Tatsuva Shirai 20090530
+ * @date 2008/03/31
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
++* @version Moodle 2.0
+ *
+ * document handling for all resources
+ * This file contains the mapping between a resource and it's indexable counterpart,
+@@ -46,8 +47,8 @@ class ResourceSearchDocument extends SearchDocument {
+         
+         // construct the parent class
+         parent::__construct($doc, $data, $resource['course'], 0, 0, 'mod/'.SEARCH_TYPE_RESOURCE);
+-    } //constructor
+-} //ResourceSearchDocument
++    } 
++} 
+ 
+ /**
+ * constructs valid access links to information
+@@ -58,7 +59,7 @@ function resource_make_link($resource_id) {
+     global $CFG;
+     
+     return $CFG->wwwroot.'/mod/resource/view.php?id='.$resource_id;
+-} //resource_make_link
++} 
+ 
+ /**
+ * part of standard API
+@@ -69,44 +70,52 @@ function resource_iterator() {
+     //this document to only use the below function to return info
+     //to be searched
+     return array(true);
+-  } //resource_iterator
++  } 
+ 
+ /**
+ * part of standard API
+ * this function does not need a content iterator, returns all the info
+ * itself;
+-* @param notneeded to comply API, remember to fake the iterator array though
+-* @uses CFG
++* @param void $notneeded to comply API, remember to fake the iterator array though
++* @uses $CFG, $DB
+ * @return an array of searchable documents
+ */
+ function resource_get_content_for_index(&$notneeded) {
+-    global $CFG;
++    global $CFG, $DB;
++
+ 
+     // starting with Moodle native resources
+     $documents = array();
++
++    $dbman = $DB->get_manager();
++    if (!$dbman->table_exists('resource_old')) {
++        return $documents;
++    }
++
++    // the resources have been moved into modules of their own. indexing need to be created for these.
++    // for a temporary fix (until MDL-24856 is fixed) pointing this query to a table that is copy of the old resource table schema.
+     $query = "
+         SELECT 
+             id as trueid,
+             r.*
+         FROM 
+-            {$CFG->prefix}resource r
++            {resource_old} as r
+         WHERE 
+             alltext != '' AND 
+             alltext != ' ' AND 
+             alltext != '&nbsp;' AND 
+             type != 'file' 
+     ";
+-    if ($resources = get_records_sql($query)){ 
++    if ($resources = $DB->get_records_sql($query)){ 
+         foreach($resources as $aResource){
+-            $coursemodule = get_field('modules', 'id', 'name', 'resource');
+-            if($cm = get_record('course_modules', 'course', $aResource->course, 'module', $coursemodule, 'instance', $aResource->id)){
++            $coursemodule = $DB->get_field('modules', 'id', array('name' => 'resource'));
++            $cm = $DB->get_record('course_modules', array('course' => $aResource->course, 'module' => $coursemodule, 'instance' => $aResource->id));
+                 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+                 $aResource->id = $cm->id;
+                 $documents[] = new ResourceSearchDocument(get_object_vars($aResource), $context->id);
+                 mtrace("finished $aResource->name");
+             }
+         }
+-    }
+ 
+     // special physical files handling
+     /**
+@@ -127,9 +136,9 @@ function resource_get_content_for_index(&$notneeded) {
+                r.type as type,
+                r.timemodified as timemodified
+             FROM 
+-                {$CFG->prefix}resource r,
+-                {$CFG->prefix}course_modules cm,
+-                {$CFG->prefix}modules m
++                {resource_old} as r,
++                {course_modules} as cm,
++                {modules} as m
+             WHERE 
+                r.type = 'file' AND
+                cm.instance = r.id AND
+@@ -137,26 +146,28 @@ function resource_get_content_for_index(&$notneeded) {
+                cm.module = m.id AND
+                m.name = 'resource'
+         ";
+-        if ($resources = get_records_sql($query)){        
++        if ($resources = $DB->get_records_sql($query)){        
+         // invokes external content extractor if exists.
+             foreach($resources as $aResource){
+                 // fetches a physical indexable document and adds it to documents passed by ref
+-                $coursemodule = get_field('modules', 'id', 'name', 'resource');
+-                $cm = get_record('course_modules', 'id', $aResource->id);
++                $coursemodule = $DB->get_field('modules', 'id', array('name' => 'resource'));
++                $cm = $DB->get_record('course_modules', array('id' => $aResource->id));
+                 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+                 resource_get_physical_file($aResource, $context->id, false, $documents);
+             }
+         }
+     }
+     return $documents;
+-} //resource_get_content_for_index
++}
+ 
+ /**
+ * get text from a physical file 
+-* @param resource a resource for which to fetch some representative text
+-* @param getsingle if true, returns a single search document, elsewhere return the array
++* @uses $CFG
++* @param reference $resource a resource for which to fetch some representative text
++* @param int $context_id the context associated with the resource
++* @param bool $getsingle if true, returns a single search document, elsewhere return the array
+ * given as documents increased by one
+-* @param documents the array of documents, by ref, where to add the new document.
++* @param array $documents the array of documents, by ref, where to add the new document.
+ * @return a search document when unique or false.
+ */
+ function resource_get_physical_file(&$resource, $context_id, $getsingle, &$documents = null){
+@@ -218,11 +229,12 @@ function resource_get_physical_file(&$resource, $context_id, $getsingle, &$docum
+ /**
+ * part of standard API.
+ * returns a single resource search document based on a resource_entry id
++* @uses $CFG, $DB
+ * @param id the id of the accessible document
+ * @return a searchable object or null if failure
+ */
+ function resource_single_document($id, $itemtype) {
+-    global $CFG;
++    global $CFG, $DB;
+     
+     // rewriting with legacy moodle databse API
+     $query = "
+@@ -237,9 +249,9 @@ function resource_single_document($id, $itemtype) {
+            r.type as type,
+            r.timemodified as timemodified
+         FROM 
+-            {$CFG->prefix}resource r,
+-            {$CFG->prefix}course_modules cm,
+-            {$CFG->prefix}modules m
++            {resource} as r,
++            {course_modules} as cm,
++            {modules} as m
+         WHERE 
+             cm.instance = r.id AND
+             cm.course = r.course AND
+@@ -250,13 +262,13 @@ function resource_single_document($id, $itemtype) {
+             r.alltext != ' ' AND 
+             r.alltext != '&nbsp;') OR 
+             r.type = 'file') AND 
+-            r.id = '{$id}'
++            r.id = '?'
+     ";
+-    $resource = get_record_sql($query);
++    $resource = $DB->get_record_sql($query, array($id));
+ 
+     if ($resource){
+-        $coursemodule = get_field('modules', 'id', 'name', 'resource');
+-        $cm = get_record('course_modules', 'id', $resource->id);
++        $coursemodule = $DB->get_field('modules', 'id', array('name' => 'resource'));
++        $cm = $DB->get_record('course_modules', array('id' => $resource->id));
+         $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+         if ($resource->type == 'file' && @$CFG->block_search_enable_file_indexing){
+             $document = resource_get_physical_file($resource, true, $context->id);
+@@ -266,9 +278,9 @@ function resource_single_document($id, $itemtype) {
+             return new ResourceSearchDocument(get_object_vars($resource), $context->id);
+         }
+     }
+-    mtrace("null resource");
++    mtrace('null resource');
+     return null;
+-} //resource_single_document
++}
+ 
+ /**
+ * dummy delete function that aggregates id with itemtype.
+@@ -279,7 +291,7 @@ function resource_delete($info, $itemtype) {
+     $object->id = $info;
+     $object->itemtype = $itemtype;
+     return $object;
+-} //resource_delete
++}
+ 
+ /**
+ * returns the var names needed to build a sql query for addition/deletions
+@@ -287,12 +299,13 @@ function resource_delete($info, $itemtype) {
+ */
+ function resource_db_names() {
+     //[primary id], [table name], [time created field name], [time modified field name], [additional where conditions for sql]
+-    return array(array('id', 'resource', 'timemodified', 'timemodified', 'any', " (alltext != '' AND alltext != ' ' AND alltext != '&nbsp;' AND TYPE != 'file') OR TYPE = 'file' "));
+-} //resource_db_names
++    return array(array('id', 'resource_old', 'timemodified', 'timemodified', 'any', " (alltext != '' AND alltext != ' ' AND alltext != '&nbsp;' AND TYPE != 'file') OR TYPE = 'file' "));
++}
+ 
+ /**
+ * this function handles the access policy to contents indexed as searchable documents. If this 
+ * function does not exist, the search engine assumes access is allowed.
++* @uses $CFG, $DB
+ * @param path the access path to the module script code
+ * @param itemtype the information subclassing (usefull for complex modules, defaults to 'standard')
+ * @param this_id the item id within the information class denoted by itemtype. In resources, this id 
+@@ -302,16 +315,19 @@ function resource_db_names() {
+ * @return true if access is allowed, false elsewhere
+ */
+ function resource_check_text_access($path, $itemtype, $this_id, $user, $group_id, $context_id){
+-    global $CFG;
++    global $CFG, $DB;
++    
++    // include_once("{$CFG->dirroot}/{$path}/lib.php");
+     
+-    include_once("{$CFG->dirroot}/{$path}/lib.php");
++    $r = $DB->get_record('resource', array('id' => $this_id));
++    $module_context = $DB->get_record('context', array('id' => $context_id));
++    $cm = $DB->get_record('course_modules', array('id' => $module_context->instanceid));
+     
+-    $r = get_record('resource', 'id', $this_id);
+-    $module_context = get_record('context', 'id', $context_id);
+-    $cm = get_record('course_modules', 'id', $module_context->instanceid);
+     if (empty($cm)) return false; // Shirai 20090530 - MDL19342 - course module might have been delete
++
++    $course = $DB->get_record('course', array('id' => $r->course));
+     $course_context = get_context_instance(CONTEXT_COURSE, $r->course);
+-    $course = get_record('course', 'id', $r->course);
++    $course = $DB->get_record('course', array('id' => $r->course));
+ 
+     //check if course is visible
+     if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', $course_context)) {
+@@ -319,10 +335,11 @@ function resource_check_text_access($path, $itemtype, $this_id, $user, $group_id
+     }
+ 
+     //check if user is registered in course or course is open to guests
+-    if (!$course->guest && !has_capability('moodle/course:view', $course_context)) {
++    if (!is_enrolled($course_context) and !is_viewing($course_context)) { //TODO: guest course access is gone, this needs a different solution
+         return false;
+     }
+ 
++
+     //check if found course module is visible
+     if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $module_context)){
+         return false;

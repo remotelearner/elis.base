@@ -1,0 +1,99 @@
+diff --git a/login/index_form.html b/login/index_form.html
+index 620fe81..137ab12 100644
+--- a/login/index_form.html
++++ b/login/index_form.html
+@@ -7,6 +7,11 @@ if ($show_instructions) {
+ ?>
+ <div class="loginbox clearfix <?php echo $columns ?>">
+   <div class="loginpanel">
++<?php
++  if (($CFG->registerauth == 'email') || !empty($CFG->registerauth)) { ?>
++      <div class="skiplinks"><a class="skip" href="signup.php"><?php print_string("tocreatenewaccount"); ?></a></div>
++<?php
++  } ?>
+     <h2><?php print_string("returningtosite") ?></h2>
+       <div class="subcontent loginsub">
+         <div class="desc">
+@@ -15,14 +20,14 @@ if ($show_instructions) {
+             if (empty($CFG->usesid)) {
+                 echo '<br/>';
+                 echo '('.get_string("cookiesenabled").')';
+-                helpbutton("cookies", get_string("cookiesenabled"));
++                echo $OUTPUT->help_icon('cookiesenabled');
+             }
+            ?>
+         </div>
+         <?php
+           if (!empty($errormsg)) {
+               echo '<div class="loginerrors">';
+-              formerr($errormsg);
++              echo $OUTPUT->error_text($errormsg);
+               echo '</div>';
+           }
+         ?>
+@@ -30,21 +35,21 @@ if ($show_instructions) {
+           <div class="loginform">
+             <div class="form-label"><label for="username"><?php print_string("username") ?></label></div>
+             <div class="form-input">
+-              <input type="text" name="username" id="username" size="15" value="<?php p($frm->username, true) ?>" />
++              <input type="text" name="username" id="username" size="15" value="<?php p($frm->username) ?>" />
+             </div>
+             <div class="clearer"><!-- --></div>
+             <div class="form-label"><label for="password"><?php print_string("password") ?></label></div>
+             <div class="form-input">
+               <input type="password" name="password" id="password" size="15" value="" <?php if (!empty($CFG->loginpasswordautocomplete)) {echo 'autocomplete="off"';} ?> />
+-              <input type="submit" value="<?php print_string("login") ?>" />
+-              <input type="hidden" name="testcookies" value="1" />
++              <input type="submit" id="loginbtn" value="<?php print_string("login") ?>" />
++              <div class="forgetpass"><a href="forgot_password.php"><?php print_string("forgotten") ?></a></div>
+             </div>
+             <div class="clearer"><!-- --></div>
+           </div>
+         </form>
+       </div>
+ 
+-<?php if ($CFG->guestloginbutton) {  ?>
++<?php if ($CFG->guestloginbutton and !isguestuser()) {  ?>
+       <div class="subcontent guestsub">
+         <div class="desc">
+           <?php print_string("someallowguest") ?>
+@@ -53,24 +58,11 @@ if ($show_instructions) {
+           <div class="guestform">
+             <input type="hidden" name="username" value="guest" />
+             <input type="hidden" name="password" value="guest" />
+-            <input type="hidden" name="testcookies" value="1" />
+             <input type="submit" value="<?php print_string("loginguest") ?>" />
+           </div>
+         </form>
+       </div>
+ <?php } ?>
+-
+-      <div class="subcontent forgotsub">
+-        <div class="desc">
+-          <?php print_string("forgotten") ?>
+-        </div>
+-        <form action="forgot_password.php" method="post" id="changepassword">
+-          <div class="forgotform">
+-            <input type="hidden" name="sesskey" value="<?php echo sesskey() ?>" />
+-            <input type="submit" value="<?php print_string("passwordrecovery") ?>" />
+-          </div>
+-        </form>
+-      </div>
+      </div>
+ <?php if ($show_instructions) { ?>
+     <div class="signuppanel">
+@@ -102,4 +94,14 @@ if ($show_instructions) {
+       </div>
+     </div>
+ <?php } ?>
++<?php if (!empty($potentialidps)) { ?>
++    <div class="subcontent potentialidps">
++        <h6><?php print_string('potentialidps', 'auth'); ?></h6>
++        <div class="potentialidplist">
++<?php foreach ($potentialidps as $idp) {
++    echo  '<div class="potentialidp"><a href="' . $idp['url']->out() . '" title="' . $idp['name'] . '">' . $OUTPUT->render($idp['icon'], $idp['name']) . '&nbsp;' . $idp['name'] . '</a></div>';
++} ?>
++        </div>
++    </div>
++<?php } ?>
+ </div>

@@ -1,0 +1,10 @@
+diff --git a/lib/form/hidden.php b/lib/form/hidden.php
+index ab677d9..70014cb 100644
+--- a/lib/form/hidden.php
++++ b/lib/form/hidden.php
+@@ -39,4 +39,3 @@ class MoodleQuickForm_hidden extends HTML_QuickForm_hidden{
+         return '';
+     }
+ }
+-?>
+\ No newline at end of file

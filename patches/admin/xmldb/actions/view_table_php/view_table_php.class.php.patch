@@ -1,0 +1,623 @@
+diff --git a/admin/xmldb/actions/view_table_php/view_table_php.class.php b/admin/xmldb/actions/view_table_php/view_table_php.class.php
+index 98224c3..0e1c839 100644
+--- a/admin/xmldb/actions/view_table_php/view_table_php.class.php
++++ b/admin/xmldb/actions/view_table_php/view_table_php.class.php
+@@ -1,32 +1,34 @@
+-<?php // $Id$
+-
+-///////////////////////////////////////////////////////////////////////////
+-//                                                                       //
+-// NOTICE OF COPYRIGHT                                                   //
+-//                                                                       //
+-// Moodle - Modular Object-Oriented Dynamic Learning Environment         //
+-//          http://moodle.com                                            //
+-//                                                                       //
+-// Copyright (C) 1999 onwards Martin Dougiamas     http://dougiamas.com  //
+-//           (C) 2001-3001 Eloy Lafuente (stronk7) http://contiento.com  //
+-//                                                                       //
+-// This program is free software; you can redistribute it and/or modify  //
+-// it under the terms of the GNU General Public License as published by  //
+-// the Free Software Foundation; either version 2 of the License, or     //
+-// (at your option) any later version.                                   //
+-//                                                                       //
+-// This program is distributed in the hope that it will be useful,       //
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+-// GNU General Public License for more details:                          //
+-//                                                                       //
+-//          http://www.gnu.org/copyleft/gpl.html                         //
+-//                                                                       //
+-///////////////////////////////////////////////////////////////////////////
+-
+-/// This class will show the PHP needed to perform the desired action
+-/// with the specified fields/keys/indexes.
++<?php
++
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * @package   xmldb-editor
++ * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
+ 
++/**
++ * This class will show the PHP needed (upgrade block) to perform
++ * the desired DDL action with the specified field/key/index
++ *
++ * @package   xmldb-editor
++ * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
+ class view_table_php extends XMLDBAction {
+ 
+     /**
+@@ -67,12 +69,12 @@ class view_table_php extends XMLDBAction {
+         $this->does_generate = ACTION_GENERATE_HTML;
+ 
+     /// These are always here
+-        global $CFG, $XMLDB;
++        global $CFG, $XMLDB, $OUTPUT;
+ 
+     /// Do the job, setting result as needed
+     /// Get the dir containing the file
+         $dirpath = required_param('dir', PARAM_PATH);
+-        $dirpath = $CFG->dirroot . stripslashes_safe($dirpath);
++        $dirpath = $CFG->dirroot . $dirpath;
+ 
+     /// Get the correct dirs
+         if (!empty($XMLDB->dbdirs)) {
+@@ -125,8 +127,8 @@ class view_table_php extends XMLDBAction {
+                          $optionspacer . 'change_field_precision',
+                          $optionspacer . 'change_field_unsigned',
+                          $optionspacer . 'change_field_notnull',
+-                         $optionspacer . 'change_field_enum',
+                          $optionspacer . 'change_field_default',
++                         $optionspacer . 'drop_enum_from_field', /// TODO: Moodle 2.1 - Drop drop_enum_from_field
+                          'Keys',
+                          $optionspacer . 'add_key',
+                          $optionspacer . 'drop_key',
+@@ -165,7 +167,7 @@ class view_table_php extends XMLDBAction {
+         $o.= '    <input type="hidden" name ="table" value="' . s($tableparam) . '" />';
+         $o.= '    <input type="hidden" name ="action" value="view_table_php" />';
+         $o.= '    <table id="formelements" class="boxaligncenter" cellpadding="5">';
+-        $o.= '      <tr><td><label for="action" accesskey="c">' . $this->str['selectaction'] .' </label>' . choose_from_menu($popcommands, 'command', $commandparam, '', '', 0, true) . '&nbsp;<label for="fieldkeyindex" accesskey="f">' . $this->str['selectfieldkeyindex'] . ' </label>' .choose_from_menu($popfields, 'fieldkeyindex', $origfieldkeyindexparam, '', '', 0, true) . '</td></tr>';
++        $o.= '      <tr><td><label for="action" accesskey="c">' . $this->str['selectaction'] .' </label>' . html_writer::select($popcommands, 'command', $commandparam, false) . '&nbsp;<label for="fieldkeyindex" accesskey="f">' . $this->str['selectfieldkeyindex'] . ' </label>' .html_writer::select($popfields, 'fieldkeyindex', $origfieldkeyindexparam, false) . '</td></tr>';
+         $o.= '      <tr><td colspan="2" align="center"><input type="submit" value="' .$this->str['view'] . '" /></td></tr>';
+         $o.= '    </table>';
+         $o.= '</div></form>';
+@@ -230,9 +232,9 @@ class view_table_php extends XMLDBAction {
+                         $o.= $this->str['mustselectonefield'];
+                     }
+                     break;
+-                case 'change_field_enum':
++                case 'drop_enum_from_field': /// TODO: Moodle 2.1 - Drop drop_enum_from_field
+                     if ($fieldkeyindexinitial == 'f') { //Only if we have got one field
+-                        $o.= s($this->change_field_enum_php($structure, $tableparam, $fieldkeyindexparam));
++                        $o.= s($this->drop_enum_from_field_php($structure, $tableparam, $fieldkeyindexparam));
+                     } else {
+                         $o.= $this->str['mustselectonefield'];
+                     }
+@@ -306,7 +308,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * create one field using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to be created
+      * @return string PHP code to be used to create the field
+@@ -330,15 +332,16 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Define field ' . $field->getName() . ' to be added to ' . $table->getName() . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field->setAttributes(' . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Define field ' . $field->getName() . ' to be added to ' . $table->getName() . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "', " . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch add field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && add_field($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        // Conditionally launch add field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        if (!$dbman->field_exists($table, $field)) {'. XMLDB_LINEFEED;
++        $result .= '            $dbman->add_field($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        }'. XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -353,7 +356,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * drop one field using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to be dropped
+      * @return string PHP code to be used to drop the field
+@@ -377,14 +380,16 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Define field ' . $field->getName() . ' to be dropped from ' . $table->getName() . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        // Define field ' . $field->getName() . ' to be dropped from ' . $table->getName() . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch drop field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && drop_field($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        // Conditionally launch drop field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        if ($dbman->field_exists($table, $field)) {' . XMLDB_LINEFEED;
++        $result .= '            $dbman->drop_field($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        }' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -399,7 +404,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * rename one field using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to be renamed
+      * @return string PHP code to be used to rename the field
+@@ -423,15 +428,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Rename field ' . $field->getName() . ' on table ' . $table->getName() . ' to NEWNAMEGOESHERE'. XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field->setAttributes(' . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Rename field ' . $field->getName() . ' on table ' . $table->getName() . ' to NEWNAMEGOESHERE'. XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "', " . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch rename field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && rename_field($table, $field, ' . "'" . 'NEWNAMEGOESHERE' . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        // Launch rename field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->rename_field($table, $field, ' . "'" . 'NEWNAMEGOESHERE' . "'" . ');' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -453,7 +457,7 @@ class view_table_php extends XMLDBAction {
+      *     float to char
+      *     char to float
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to change precision
+      */
+@@ -479,15 +483,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Changing type of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $type . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field->setAttributes(' . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Changing type of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $type . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "', " . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch change of type for field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && change_field_type($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        // Launch change of type for field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->change_field_type($table, $field);' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -502,7 +505,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * change the precision of one field using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to change precision
+      */
+@@ -532,15 +535,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Changing precision of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $precision . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field->setAttributes(' . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Changing precision of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $precision . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "', " .$field->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch change of precision for field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && change_field_precision($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        // Launch change of precision for field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->change_field_precision($table, $field);' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -555,7 +557,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * change the unsigned/signed of one field using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to change unsigned/signed
+      */
+@@ -581,15 +583,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Changing sign of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $unsigned . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field->setAttributes(' . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Changing sign of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $unsigned . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "', " . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch change of sign for field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && change_field_unsigned($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        // Launch change of sign for field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->change_field_unsigned($table, $field);' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -604,7 +605,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * change the nullability of one field using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to change null/not null
+      */
+@@ -630,15 +631,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Changing nullability of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $notnull . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field->setAttributes(' . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Changing nullability of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $notnull . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "', " . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch change of nullability for field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && change_field_notnull($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        // Launch change of nullability for field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->change_field_notnull($table, $field);' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -651,14 +651,19 @@ class view_table_php extends XMLDBAction {
+ 
+     /**
+      * This function will generate all the PHP code needed to
+-     * change the enum values (check constraint) of one field 
++     * drop the enum values (check constraint) of one field
+      * using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * Note this function is here as part of the process of
++     * dropping enums completely from Moodle 2.0: MDL-18577
++     * and will be out in Moodle 2.1
++     * TODO: Moodle 2.1 - Drop drop_enum_from_field_php
++     *
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to change its enum
+      */
+-    function change_field_enum_php($structure, $table, $field) {
++    function drop_enum_from_field_php($structure, $table, $field) {
+ 
+         $result = '';
+     /// Validate if we can do it
+@@ -672,23 +677,19 @@ class view_table_php extends XMLDBAction {
+             return false;
+         }
+ 
+-    /// Calculate the enum tip text
+-        $enum = $field->getEnum() ? implode(', ', $field->getEnumValues()) : 'none';
+-
+     /// Add the standard PHP header
+         $result .= XMLDB_PHP_HEADER;
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Changing list of values (enum) of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $enum . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field->setAttributes(' . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Drop list of values (enum) from field ' . $field->getName() . ' on table ' . $table->getName() . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "', " . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch change of list of values for field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && change_field_enum($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        // Launch drop of list of values from field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->drop_enum_from_field($table, $field);' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -703,7 +704,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * change the default of one field using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string field field name to change null/not null
+      */
+@@ -729,15 +730,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Changing the default of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $default . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field = new XMLDBField(' . "'" . $field->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $field->setAttributes(' . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Changing the default of field ' . $field->getName() . ' on table ' . $table->getName() . ' to ' . $default . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $field = new xmldb_field(' . "'" . $field->getName() . "', " . $field->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch change of default for field ' . $field->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && change_field_default($table, $field);' . XMLDB_LINEFEED;
++        $result .= '        // Launch change of default for field ' . $field->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->change_field_default($table, $field);' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -752,7 +752,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * create one key using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string key key name to be created
+      * @return string PHP code to be used to create the key
+@@ -776,15 +776,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Define key ' . $key->getName() . ' ('. $key->getXMLDBKeyName($key->getType()) . ') to be added to ' . $table->getName() . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $key = new XMLDBKey(' . "'" . $key->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $key->setAttributes(' . $key->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Define key ' . $key->getName() . ' ('. $key->getXMLDBKeyName($key->getType()) . ') to be added to ' . $table->getName() . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $key = new xmldb_key(' . "'" . $key->getName() . "', " . $key->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch add key ' . $key->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && add_key($table, $key);' . XMLDB_LINEFEED;
++        $result .= '        // Launch add key ' . $key->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->add_key($table, $key);' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -799,7 +798,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * drop one key using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string key key name to be dropped
+      * @return string PHP code to be used to drop the key
+@@ -823,15 +822,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Define key ' . $key->getName() . ' ('. $key->getXMLDBKeyName($key->getType()) . ') to be dropped form ' . $table->getName() . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $key = new XMLDBKey(' . "'" . $key->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $key->setAttributes(' . $key->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Define key ' . $key->getName() . ' ('. $key->getXMLDBKeyName($key->getType()) . ') to be dropped form ' . $table->getName() . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $key = new xmldb_key(' . "'" . $key->getName() . "', " . $key->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch drop key ' . $key->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && drop_key($table, $key);' . XMLDB_LINEFEED;
++        $result .= '        // Launch drop key ' . $key->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->drop_key($table, $key);' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -846,7 +844,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * rename one key using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string key key name to be renamed
+      * @return string PHP code to be used to rename the key
+@@ -873,15 +871,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Define key ' . $key->getName() . ' ('. $key->getXMLDBKeyName($key->getType()) . ') to be renamed to NEWNAMEGOESHERE' . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $key = new XMLDBKey(' . "'" . $key->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $key->setAttributes(' . $key->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Define key ' . $key->getName() . ' ('. $key->getXMLDBKeyName($key->getType()) . ') to be renamed to NEWNAMEGOESHERE' . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $key = new xmldb_key(' . "'" . $key->getName() . "', " . $key->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch rename key ' . $key->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && rename_key($table, $key, ' . "'" . 'NEWNAMEGOESHERE' . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        // Launch rename key ' . $key->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->rename_key($table, $key, ' . "'" . 'NEWNAMEGOESHERE' . "'" . ');' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -896,7 +893,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * create one index using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string index index name to be created
+      * @return string PHP code to be used to create the index
+@@ -920,15 +917,16 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Define index ' . $index->getName() . ' ('. ($index->getUnique() ? 'unique' : 'not unique') . ') to be added to ' . $table->getName() . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $index = new XMLDBIndex(' . "'" . $index->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $index->setAttributes(' . $index->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Define index ' . $index->getName() . ' ('. ($index->getUnique() ? 'unique' : 'not unique') . ') to be added to ' . $table->getName() . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $index = new xmldb_index(' . "'" . $index->getName() . "', " . $index->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch add index ' . $index->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && add_index($table, $index);' . XMLDB_LINEFEED;
++        $result .= '        // Conditionally launch add index ' . $index->getName() . XMLDB_LINEFEED;
++        $result .= '        if (!$dbman->index_exists($table, $index)) {' . XMLDB_LINEFEED;
++        $result .= '            $dbman->add_index($table, $index);' . XMLDB_LINEFEED;
++        $result .= '        }' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -943,7 +941,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * drop one index using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string index index name to be dropped
+      * @return string PHP code to be used to drop the index
+@@ -967,15 +965,16 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Define index ' . $index->getName() . ' ('. ($index->getUnique() ? 'unique' : 'not unique') . ') to be dropped form ' . $table->getName() . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $index = new XMLDBIndex(' . "'" . $index->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $index->setAttributes(' . $index->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Define index ' . $index->getName() . ' ('. ($index->getUnique() ? 'unique' : 'not unique') . ') to be dropped form ' . $table->getName() . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $index = new xmldb_index(' . "'" . $index->getName() . "', " . $index->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch drop index ' . $index->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && drop_index($table, $index);' . XMLDB_LINEFEED;
++        $result .= '        // Conditionally launch drop index ' . $index->getName() . XMLDB_LINEFEED;
++        $result .= '        if ($dbman->index_exists($table, $index)) {' . XMLDB_LINEFEED;
++        $result .= '            $dbman->drop_index($table, $index);' . XMLDB_LINEFEED;
++        $result .= '        }' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -990,7 +989,7 @@ class view_table_php extends XMLDBAction {
+      * This function will generate all the PHP code needed to
+      * rename one index using XMLDB objects and functions
+      *
+-     * @param XMLDBStructure structure object containing all the info
++     * @param xmldb_structure structure object containing all the info
+      * @param string table table name
+      * @param string index index name to be renamed
+      * @return string PHP code to be used to rename the index
+@@ -1017,15 +1016,14 @@ class view_table_php extends XMLDBAction {
+ 
+     /// Add contents
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Define index ' . $index->getName() . ' ('. ($index->getUnique() ? 'unique' : 'not unique') . ') to be renamed to NEWNAMEGOESHERE' . XMLDB_LINEFEED;
+-        $result .= '        $table = new XMLDBTable(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $index = new XMLDBIndex(' . "'" . $index->getName() . "'" . ');' . XMLDB_LINEFEED;
+-        $result .= '        $index->setAttributes(' . $index->getPHP(true) . ');' . XMLDB_LINEFEED;
++        $result .= '        // Define index ' . $index->getName() . ' ('. ($index->getUnique() ? 'unique' : 'not unique') . ') to be renamed to NEWNAMEGOESHERE' . XMLDB_LINEFEED;
++        $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        $index = new xmldb_index(' . "'" . $index->getName() . "', " . $index->getPHP(true) . ');' . XMLDB_LINEFEED;
+ 
+     /// Launch the proper DDL
+         $result .= XMLDB_LINEFEED;
+-        $result .= '    /// Launch rename index ' . $index->getName() . XMLDB_LINEFEED;
+-        $result .= '        $result = $result && rename_index($table, $index, ' . "'" . 'NEWNAMEGOESHERE' . "'" . ');' . XMLDB_LINEFEED;
++        $result .= '        // Launch rename index ' . $index->getName() . XMLDB_LINEFEED;
++        $result .= '        $dbman->rename_index($table, $index, ' . "'" . 'NEWNAMEGOESHERE' . "'" . ');' . XMLDB_LINEFEED;
+ 
+     /// Add the proper upgrade_xxxx_savepoint call
+         $result .= $this->upgrade_savepoint_php ($structure);
+@@ -1036,29 +1034,5 @@ class view_table_php extends XMLDBAction {
+         return $result;
+     }
+ 
+-    /**
+-     * This function will generate the PHP code needed to
+-     * implement the upgrade_xxxx_savepoint() php calls in
+-     * upgrade code generated from the editor
+-     *
+-     * @param XMLDBStructure structure object containing all the info
+-     * @return string PHP code to be used to stabilish a savepoint
+-     */
+-    function upgrade_savepoint_php ($structure) {
+-
+-        $path = $structure->getPath();
+-
+-        $result = '';
+-
+-        switch ($path) {
+-            case 'lib/db':
+-                $result = XMLDB_LINEFEED .
+-                          '    /// Main savepoint reached' . XMLDB_LINEFEED .
+-                          '        upgrade_main_savepoint($result, XXXXXXXXXX);' . XMLDB_LINEFEED;
+-                break;
+-        }
+-        return $result;
+-    }
+-
+ }
+-?>
++

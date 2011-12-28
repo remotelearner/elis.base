@@ -1,0 +1,25 @@
+diff --git a/grade/import/csv/db/access.php b/grade/import/csv/db/access.php
+index 9e8f339..da144c5 100644
+--- a/grade/import/csv/db/access.php
++++ b/grade/import/csv/db/access.php
+@@ -15,16 +15,16 @@
+ // You should have received a copy of the GNU General Public License
+ // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ 
+-$gradeimport_csv_capabilities = array(
++$capabilities = array(
+ 
+     'gradeimport/csv:view' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     )
+ );
+ 
+-?>
++

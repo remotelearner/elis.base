@@ -1,0 +1,375 @@
+diff --git a/course/search.php b/course/search.php
+index 2f3d3c3..faf3258 100644
+--- a/course/search.php
++++ b/course/search.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+ /// Displays external information about a course
+ 
+@@ -15,6 +15,8 @@
+     $blocklist = optional_param('blocklist', 0, PARAM_INT);
+     $modulelist= optional_param('modulelist', '', PARAM_ALPHAEXT);
+ 
++    $PAGE->set_url('/course/search.php', compact('search', 'page', 'perpage', 'blocklist', 'modulelist', 'edit'));
++    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+     $search = trim(strip_tags($search)); // trim & clean raw searched string
+ 
+     if ($search) {
+@@ -29,15 +31,27 @@
+ 
+     $site = get_site();
+ 
++    $urlparams = array();
++    foreach (array('search', 'page', 'blocklist', 'modulelist') as $param) {
++        if (!empty($$param)) {
++            $urlparams[$param] = $$param;
++        }
++    }
++    if ($perpage != 10) {
++        $urlparams['perpage'] = $perpage;
++    }
++    $PAGE->set_url('/course/search.php', $urlparams);
++    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
++
+     if ($CFG->forcelogin) {
+         require_login();
+     }
+ 
+-    if (update_category_button()) {
++    if (can_edit_in_category()) {
+         if ($edit !== -1) {
+-            $USER->categoryediting = $edit;
++            $USER->editing = $edit;
+         }
+-        $adminediting = !empty($USER->categoryediting);
++        $adminediting = $PAGE->user_is_editing();
+     } else {
+         $adminediting = false;
+     }
+@@ -47,16 +61,14 @@
+     /// Hide or show a course
+         if ($hide or $show and confirm_sesskey()) {
+             if ($hide) {
+-                $course = get_record("course", "id", $hide);
++                $course = $DB->get_record("course", array("id"=>$hide));
+                 $visible = 0;
+             } else {
+-                $course = get_record("course", "id", $show);
++                $course = $DB->get_record("course", array("id"=>$show));
+                 $visible = 1;
+             }
+             if ($course) {
+-                if (! set_field("course", "visible", $visible, "id", $course->id)) {
+-                    notify("Could not update that course!");
+-                }
++                $DB->set_field("course", "visible", $visible, array("id"=>$course->id));
+             }
+         }
+     }
+@@ -81,13 +93,13 @@
+     $strnovalidcourses = get_string('novalidcourses');
+ 
+     if (empty($search) and empty($blocklist) and empty($modulelist)) {
+-        $navlinks = array();
+-        $navlinks[] = array('name' => $strcourses, 'link' => "index.php", 'type' => 'misc');
+-        $navlinks[] = array('name' => $strsearch, 'link' => null, 'type' => 'misc');
+-        $navigation = build_navigation($navlinks);
++        $PAGE->navbar->add($strcourses, new moodle_url('/course/index.php'));
++        $PAGE->navbar->add($strsearch);
++        $PAGE->set_title("$site->fullname : $strsearch");
++        $PAGE->set_heading($site->fullname);
+ 
+-        print_header("$site->fullname : $strsearch", $site->fullname, $navigation, "", "");
+-        print_simple_box_start("center");
++        echo $OUTPUT->header();
++        echo $OUTPUT->box_start();
+         echo "<center>";
+         echo "<br />";
+         print_course_search("", false, "plain");
+@@ -95,14 +107,14 @@
+         print_string("searchhelp");
+         echo "</p>";
+         echo "</center>";
+-        print_simple_box_end();
+-        print_footer();
++        echo $OUTPUT->box_end();
++        echo $OUTPUT->footer();
+         exit;
+     }
+ 
+     if (!empty($moveto) and $data = data_submitted() and confirm_sesskey()) {   // Some courses are being moved
+-        if (! $destcategory = get_record("course_categories", "id", $data->moveto)) {
+-            error("Error finding the category");
++        if (! $destcategory = $DB->get_record("course_categories", array("id"=>$data->moveto))) {
++            print_error('cannotfindcategory', '', '', $data->moveto);
+         }
+ 
+         $courses = array();
+@@ -116,36 +128,27 @@
+ 
+     // get list of courses containing blocks if required
+     if (!empty($blocklist) and confirm_sesskey()) {
+-        $blockid = $blocklist;
+-        if (!$blocks = get_records('block_instance', 'blockid', $blockid)) {
+-            error( "Could not read data for blockid=$blockid" );
+-        }
+-
+-        // run through blocks and get (unique) courses
++        $blockname = $DB->get_field('block', 'name', array('id' => $blocklist));
+         $courses = array();
+-        foreach ($blocks as $block) {
+-            $courseid = $block->pageid;
+-            // MDL-11167, blocks can be placed on mymoodle, or the blogs page
+-            // and it should not show up on course search page
+-            if ($courseid==0 || $block->pagetype != 'course-view') {
+-                continue;
+-            }
+-            if (!$course = get_record('course', 'id', $courseid)) {
+-                error( "Could not read data for courseid=$courseid" );
+-            }
+-            $courses[$courseid] = $course;
++        $courses = $DB->get_records_sql("
++                SELECT * FROM {course} WHERE id IN (
++                    SELECT DISTINCT ctx.instanceid
++                    FROM {context} ctx
++                    JOIN {block_instances} bi ON bi.parentcontextid = ctx.id
++                    WHERE ctx.contextlevel = " . CONTEXT_COURSE . " AND bi.blockname = ?)",
++                array($blockname));
++        foreach ($courses as $course) {
++            $courses[$course->id] = $course;
+         }
+-        $totalcount = count( $courses );
++        $totalcount = count($courses);
+     }
+     // get list of courses containing modules if required
+     elseif (!empty($modulelist) and confirm_sesskey()) {
+         $modulename = $modulelist;
+-
+-        $sql =  "SELECT DISTINCT c.id FROM {$CFG->prefix}".$modulelist." module, {$CFG->prefix}course c"
++        $sql =  "SELECT DISTINCT c.id FROM {".$modulelist."} module, {course} c"
+             ." WHERE module.course=c.id";
+ 
+-        $courseids = get_records_sql($sql);
+-
++        $courseids = $DB->get_records_sql($sql);
+         $courses = array();
+         if (!empty($courseids)) {
+             $firstcourse = $page*$perpage;
+@@ -153,7 +156,7 @@
+             $i = 0;
+             foreach ($courseids as $courseid) {
+                 if ($i>= $firstcourse && $i<=$lastcourse) {
+-                    $courses[$courseid->id] = get_record('course', 'id', $courseid->id);
++                    $courses[$courseid->id] = $DB->get_record('course', array('id'=> $courseid->id));
+                 }
+                 $i++;
+             }
+@@ -171,45 +174,69 @@
+     $searchform = print_course_search($search, true, "navbar");
+ 
+     if (!empty($courses) && has_capability('moodle/course:create', get_context_instance(CONTEXT_SYSTEM))) {
+-        $searchform .= update_categories_search_button($search,$page,$perpage);
++        $searchform = '';
++        // not sure if this capability is the best  here
++        if (has_capability('moodle/category:manage', get_context_instance(CONTEXT_SYSTEM))) {
++            if ($PAGE->user_is_editing()) {
++                $string = get_string("turneditingoff");
++                $edit = "off";
++                $perpage = 30;
++            } else {
++                $string = get_string("turneditingon");
++                $edit = "on";
+     }
+ 
+-    $navlinks = array();
+-    $navlinks[] = array('name' => $strcourses, 'link' => 'index.php', 'type' => 'misc');
+-    $navlinks[] = array('name' => $strsearch, 'link' => 'search.php', 'type' => 'misc');
+-    $navlinks[] = array('name' => "'".s($search, true)."'", 'link' => null, 'type' => 'misc');
+-    $navigation = build_navigation($navlinks);
++            $aurl = new moodle_url("$CFG->wwwroot/course/search.php", array(
++                    'edit' => $edit,
++                    'sesskey' => sesskey(),
++                    'search' => $search,
++                    'page' => $page,
++                    'perpage' => $perpage));
++            $searchform = $OUTPUT->single_button($aurl, $string, 'get');
++        }
++    }
++
++    $PAGE->navbar->add($strcourses, new moodle_url('/course/index.php'));
++    $PAGE->navbar->add($strsearch, new moodle_url('/course/search.php'));
++    if (!empty($search)) {
++        $PAGE->navbar->add(s($search));
++    }
++    $PAGE->set_title("$site->fullname : $strsearchresults");
++    $PAGE->set_heading($site->fullname);
++    $PAGE->set_button($searchform);
+ 
+-    print_header("$site->fullname : $strsearchresults", $site->fullname, $navigation, "", "", "", $searchform);
++    echo $OUTPUT->header();
+ 
+     $lastcategory = -1;
+     if ($courses) {
+-        print_heading("$strsearchresults: $totalcount");
+-        $encodedsearch = urlencode(stripslashes($search));
++        echo $OUTPUT->heading("$strsearchresults: $totalcount");
++        $encodedsearch = urlencode($search);
+ 
+     ///add the module parameter to the paging bar if they exists
+         $modulelink = "";
+         if (!empty($modulelist) and confirm_sesskey()) {
+-            $modulelink = "&amp;modulelist=".$modulelist."&amp;sesskey=".$USER->sesskey;
++            $modulelink = "&amp;modulelist=".$modulelist."&amp;sesskey=".sesskey();
+         }
+ 
+         print_navigation_bar($totalcount, $page, $perpage, $encodedsearch, $modulelink);
+ 
+         if (!$adminediting) {
+-        /// Show browse view.
+             foreach ($courses as $course) {
++
++                $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
++
+                 $course->summary .= "<br /><p class=\"category\">";
+                 $course->summary .= "$strcategory: <a href=\"category.php?id=$course->category\">";
+                 $course->summary .= $displaylist[$course->category];
+                 $course->summary .= "</a></p>";
+                 print_course($course, $search);
+-                print_spacer(5,5);
++                echo $OUTPUT->spacer(array('height'=>5, 'width'=>5, 'br'=>true)); // should be done with CSS instead
+             }
+         } else {
+         /// Show editing UI.
+             echo "<form id=\"movecourses\" action=\"search.php\" method=\"post\">\n";
+-            echo "<div><input type=\"hidden\" name=\"sesskey\" value=\"$USER->sesskey\" />\n";
+-            echo "<input type=\"hidden\" name=\"search\" value=\"".s($search, true)."\" />\n";
++            echo "<div><input type=\"hidden\" name=\"sesskey\" value=\"".sesskey()."\" />\n";
++            echo "<input type=\"hidden\" name=\"search\" value=\"".s($search)."\" />\n";
+             echo "<input type=\"hidden\" name=\"page\" value=\"$page\" />\n";
+             echo "<input type=\"hidden\" name=\"perpage\" value=\"$perpage\" /></div>\n";
+             echo "<table border=\"0\" cellspacing=\"2\" cellpadding=\"4\" class=\"generalbox boxaligncenter\">\n<tr>\n";
+@@ -220,11 +247,7 @@
+ 
+             foreach ($courses as $course) {
+ 
+-                if (isset($course->context)) {
+-                    $coursecontext = $course->context;
+-                } else {
+                     $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
+-                }
+ 
+                 $linkcss = $course->visible ? "" : " class=\"dimmed\" ";
+ 
+@@ -257,47 +280,46 @@
+ 
+                 echo "</td>\n";
+                 echo "<td>\n";
+-                $pixpath = $CFG->pixpath;
+ 
+                 // checks whether user can update course settings
+                 if (has_capability('moodle/course:update', $coursecontext)) {
+                     echo "<a title=\"".get_string("settings")."\" href=\"$CFG->wwwroot/course/edit.php?id=$course->id\">\n<img".
+-                        " src=\"$pixpath/t/edit.gif\" class=\"iconsmall\" alt=\"".get_string("settings")."\" /></a>\n ";
++                        " src=\"" . $OUTPUT->pix_url('t/edit') . "\" class=\"iconsmall\" alt=\"".get_string("settings")."\" /></a>\n ";
+                 }
+ 
+                 // checks whether user can do role assignment
+-                if (has_capability('moodle/role:assign', $coursecontext)) {
+-                    echo'<a title="'.get_string('assignroles', 'role').'" href="'.$CFG->wwwroot.'/'.$CFG->admin.'/roles/assign.php?contextid='.$coursecontext->id.'">';
+-                    echo '<img src="'.$CFG->pixpath.'/i/roles.gif" class="iconsmall" alt="'.get_string('assignroles', 'role').'" /></a> ' . "\n";
++                if (has_capability('moodle/course:enrolreview', $coursecontext)) {
++                    echo'<a title="'.get_string('enrolledusers', 'enrol').'" href="'.$CFG->wwwroot.'/enrol/users.php?id='.$course->id.'">';
++                    echo '<img src="'.$OUTPUT->pix_url('i/users') . '" class="iconsmall" alt="'.get_string('enrolledusers', 'enrol').'" /></a> ' . "\n";
+                 }
+ 
+                 // checks whether user can delete course
+                 if (has_capability('moodle/course:delete', $coursecontext)) {
+                     echo "<a title=\"".get_string("delete")."\" href=\"delete.php?id=$course->id\">\n<img".
+-                        " src=\"$pixpath/t/delete.gif\" class=\"iconsmall\" alt=\"".get_string("delete")."\" /></a>\n ";
++                        " src=\"" . $OUTPUT->pix_url('t/delete') . "\" class=\"iconsmall\" alt=\"".get_string("delete")."\" /></a>\n ";
+                 }
+ 
+                 // checks whether user can change visibility
+                 if (has_capability('moodle/course:visibility', $coursecontext)) {
+                     if (!empty($course->visible)) {
+-                        echo "<a title=\"".get_string("hide")."\" href=\"search.php?search=$encodedsearch&amp;perpage=$perpage&amp;page=$page&amp;hide=$course->id&amp;sesskey=$USER->sesskey\">\n<img".
+-                            " src=\"$pixpath/t/hide.gif\" class=\"iconsmall\" alt=\"".get_string("hide")."\" /></a>\n ";
++                        echo "<a title=\"".get_string("hide")."\" href=\"search.php?search=$encodedsearch&amp;perpage=$perpage&amp;page=$page&amp;hide=$course->id&amp;sesskey=".sesskey()."\">\n<img".
++                            " src=\"" . $OUTPUT->pix_url('t/hide') . "\" class=\"iconsmall\" alt=\"".get_string("hide")."\" /></a>\n ";
+                     } else {
+-                        echo "<a title=\"".get_string("show")."\" href=\"search.php?search=$encodedsearch&amp;perpage=$perpage&amp;page=$page&amp;show=$course->id&amp;sesskey=$USER->sesskey\">\n<img".
+-                            " src=\"$pixpath/t/show.gif\" class=\"iconsmall\" alt=\"".get_string("show")."\" /></a>\n ";
++                        echo "<a title=\"".get_string("show")."\" href=\"search.php?search=$encodedsearch&amp;perpage=$perpage&amp;page=$page&amp;show=$course->id&amp;sesskey=".sesskey()."\">\n<img".
++                            " src=\"" . $OUTPUT->pix_url('t/show') . "\" class=\"iconsmall\" alt=\"".get_string("show")."\" /></a>\n ";
+                     }
+                 }
+ 
+                 // checks whether user can do site backup
+-                if (has_capability('moodle/site:backup', $coursecontext)) {
++                if (has_capability('moodle/backup:backupcourse', $coursecontext)) {
+                     echo "<a title=\"".get_string("backup")."\" href=\"../backup/backup.php?id=$course->id\">\n<img".
+-                        " src=\"$pixpath/t/backup.gif\" class=\"iconsmall\" alt=\"".get_string("backup")."\" /></a>\n ";
++                        " src=\"" . $OUTPUT->pix_url('t/backup') . "\" class=\"iconsmall\" alt=\"".get_string("backup")."\" /></a>\n ";
+                 }
+ 
+                 // checks whether user can do restore
+-                if (has_capability('moodle/site:restore', $coursecontext)) {
++                if (has_capability('moodle/restore:restorecourse', $coursecontext)) {
+                     echo "<a title=\"".get_string("restore")."\" href=\"../files/index.php?id=$course->id&amp;wdir=/backupdata\">\n<img".
+-                        " src=\"$pixpath/t/restore.gif\" class=\"iconsmall\" alt=\"".get_string("restore")."\" /></a>\n ";
++                        " src=\"" . $OUTPUT->pix_url('t/restore') . "\" class=\"iconsmall\" alt=\"".get_string("restore")."\" /></a>\n ";
+                 }
+ 
+                 echo "</td>\n</tr>\n";
+@@ -305,8 +327,9 @@
+             echo "<tr>\n<td colspan=\"4\" style=\"text-align:center\">\n";
+             echo "<br />";
+             echo "<input type=\"button\" onclick=\"checkall()\" value=\"$strselectall\" />\n";
+-            echo "<input type=\"button\" onclick=\"uncheckall()\" value=\"$strdeselectall\" />\n";
+-            choose_from_menu ($displaylist, "moveto", "", get_string("moveselectedcoursesto"), "javascript: getElementById('movecourses').submit()");
++            echo "<input type=\"button\" onclick=\"checknone()\" value=\"$strdeselectall\" />\n";
++            echo html_writer::select($displaylist, 'moveto', '', array(''=>get_string('moveselectedcoursesto')), array('id'=>'movetoid'));
++            $PAGE->requires->js_init_call('M.util.init_select_autosubmit', array('movecourses', 'movetoid', false));
+             echo "</td>\n</tr>\n";
+             echo "</table>\n</form>";
+ 
+@@ -316,10 +339,10 @@
+ 
+     } else {
+         if (!empty($search)) {
+-            print_heading(get_string("nocoursesfound", "", s($search, true)));
++            echo $OUTPUT->heading(get_string("nocoursesfound",'', s($search)));
+         }
+         else {
+-            print_heading( $strnovalidcourses );
++            echo $OUTPUT->heading( $strnovalidcourses );
+         }
+     }
+ 
+@@ -327,7 +350,7 @@
+ 
+     print_course_search($search);
+ 
+-    print_footer();
++    echo $OUTPUT->footer();
+ 
+     /**
+      * Print a list navigation bar
+@@ -339,7 +362,8 @@
+      * @param string $modulelink - module name
+      */
+     function print_navigation_bar($totalcount,$page,$perpage,$encodedsearch,$modulelink) {
+-        print_paging_bar($totalcount, $page, $perpage, "search.php?search=$encodedsearch".$modulelink."&amp;perpage=$perpage&amp;",'page',($perpage == 99999));
++        global $OUTPUT;
++        echo $OUTPUT->paging_bar($totalcount, $page, $perpage, "search.php?search=$encodedsearch".$modulelink."&perpage=$perpage");
+ 
+         //display
+         if ($perpage != 99999 && $totalcount > $perpage) {
+@@ -349,4 +373,4 @@
+         }
+     }
+ 
+-?>
++

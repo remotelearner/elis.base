@@ -1,0 +1,106 @@
+diff --git a/lib/simpletestlib/user_agent.php b/lib/simpletestlib/user_agent.php
+index a5a6fd2..e8cb32c 100644
+--- a/lib/simpletestlib/user_agent.php
++++ b/lib/simpletestlib/user_agent.php
+@@ -1,35 +1,34 @@
+ <?php
+-    /**
++/**
+      *	Base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	WebTester
+      *	@version	$Id$
+      */
+ 
+-    /**#@+
++/**#@+
+      *	include other SimpleTest class files
+      */
+-    require_once(dirname(__FILE__) . '/cookies.php');
+-    require_once(dirname(__FILE__) . '/http.php');
+-    require_once(dirname(__FILE__) . '/encoding.php');
+-    require_once(dirname(__FILE__) . '/authentication.php');
+-    /**#@-*/
++require_once(dirname(__FILE__) . '/cookies.php');
++require_once(dirname(__FILE__) . '/http.php');
++require_once(dirname(__FILE__) . '/encoding.php');
++require_once(dirname(__FILE__) . '/authentication.php');
++/**#@-*/
+    
+-    if (! defined('DEFAULT_MAX_REDIRECTS')) {
++if (! defined('DEFAULT_MAX_REDIRECTS')) {
+         define('DEFAULT_MAX_REDIRECTS', 3);
+-    }
+-    
+-    if (! defined('DEFAULT_CONNECTION_TIMEOUT')) {
++}
++if (! defined('DEFAULT_CONNECTION_TIMEOUT')) {
+         define('DEFAULT_CONNECTION_TIMEOUT', 15);
+-    }
++}
+ 
+-    /**
++/**
+      *    Fetches web pages whilst keeping track of
+      *    cookies and authentication.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleUserAgent {
++class SimpleUserAgent {
+         var $_cookie_jar;
+         var $_cookies_enabled = true;
+         var $_authenticator;
+@@ -45,8 +44,8 @@
+          *    @access public
+          */
+         function SimpleUserAgent() {
+-            $this->_cookie_jar = &new SimpleCookieJar();
+-            $this->_authenticator = &new SimpleAuthenticator();
++        $this->_cookie_jar = new SimpleCookieJar();
++        $this->_authenticator = new SimpleAuthenticator();
+         }
+         
+         /**
+@@ -177,7 +176,7 @@
+             if ((strncmp($proxy, 'http://', 7) != 0) && (strncmp($proxy, 'https://', 8) != 0)) {
+                 $proxy = 'http://'. $proxy;
+             }
+-            $this->_proxy = &new SimpleUrl($proxy);
++        $this->_proxy = new SimpleUrl($proxy);
+             $this->_proxy_username = $username;
+             $this->_proxy_password = $password;
+         }
+@@ -296,7 +295,7 @@
+          *    @access protected
+          */
+         function &_createHttpRequest($url, $encoding) {
+-            $request = &new SimpleHttpRequest($this->_createRoute($url), $encoding);
++        $request = new SimpleHttpRequest($this->_createRoute($url), $encoding);
+             return $request;
+         }
+         
+@@ -308,13 +307,13 @@
+          */
+         function &_createRoute($url) {
+             if ($this->_proxy) {
+-                $route = &new SimpleProxyRoute(
++            $route = new SimpleProxyRoute(
+                         $url,
+                         $this->_proxy,
+                         $this->_proxy_username,
+                         $this->_proxy_password);
+             } else {
+-                $route = &new SimpleRoute($url);
++            $route = new SimpleRoute($url);
+             }
+             return $route;
+         }
+@@ -329,5 +328,5 @@
+                 $request->addHeaderLine($header);
+             }
+         }
+-    }
++}
+ ?>
+\ No newline at end of file

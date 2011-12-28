@@ -1,0 +1,575 @@
+diff --git a/lib/simpletestlib/test_case.php b/lib/simpletestlib/test_case.php
+index 91835a3..bc59e65 100644
+--- a/lib/simpletestlib/test_case.php
++++ b/lib/simpletestlib/test_case.php
+@@ -1,35 +1,37 @@
+ <?php
+-    /**
++/**
+      *	Base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	UnitTester
+      *	@version	$Id$
+      */
+ 
+-    /**#@+
++/**#@+
+      * Includes SimpleTest files and defined the root constant
+      * for dependent libraries.
+      */
+-    require_once(dirname(__FILE__) . '/invoker.php');
+-    require_once(dirname(__FILE__) . '/errors.php');
+-    require_once(dirname(__FILE__) . '/compatibility.php');
+-    require_once(dirname(__FILE__) . '/scorer.php');
+-    require_once(dirname(__FILE__) . '/expectation.php');
+-    require_once(dirname(__FILE__) . '/dumper.php');
+-    require_once(dirname(__FILE__) . '/simpletest.php');
+-    if (version_compare(phpversion(), '5') >= 0) {
++require_once(dirname(__FILE__) . '/invoker.php');
++require_once(dirname(__FILE__) . '/errors.php');
++require_once(dirname(__FILE__) . '/compatibility.php');
++require_once(dirname(__FILE__) . '/scorer.php');
++require_once(dirname(__FILE__) . '/expectation.php');
++require_once(dirname(__FILE__) . '/dumper.php');
++require_once(dirname(__FILE__) . '/simpletest.php');
++if (version_compare(phpversion(), '5') >= 0) {
+         require_once(dirname(__FILE__) . '/exceptions.php');
+         require_once(dirname(__FILE__) . '/reflection_php5.php');
+-    } else {
++} else {
+         require_once(dirname(__FILE__) . '/reflection_php4.php');
+-    }
+-    if (! defined('SIMPLE_TEST')) {
+-        /** @ignore */
++}
++if (! defined('SIMPLE_TEST')) {
++    /**
++     * @ignore
++     */
+         define('SIMPLE_TEST', dirname(__FILE__) . DIRECTORY_SEPARATOR);
+-    }
+-    /**#@-*/
++}
++/**#@-*/
+ 
+-    /**
++/**
+      *    Basic test case. This is the smallest unit of a test
+      *    suite. It searches for
+      *    all methods that start with the the string "test" and
+@@ -37,7 +39,7 @@
+ 	 *    @package		SimpleTest
+ 	 *    @subpackage	UnitTester
+      */
+-    class SimpleTestCase {
++class SimpleTestCase {
+         var $_label = false;
+         var $_reporter;
+         var $_observers;
+@@ -105,9 +107,9 @@
+          *    @access public
+          */
+         function &createInvoker() {
+-            $invoker = &new SimpleErrorTrappingInvoker(new SimpleInvoker($this));
++        $invoker = new SimpleErrorTrappingInvoker(new SimpleInvoker($this));
+             if (version_compare(phpversion(), '5') >= 0) {
+-                $invoker = &new SimpleExceptionTrappingInvoker($invoker);
++            $invoker = new SimpleExceptionTrappingInvoker($invoker);
+             }
+             return $invoker;
+         }
+@@ -125,20 +127,35 @@
+ 			$context->setTest($this);
+ 			$context->setReporter($reporter);
+             $this->_reporter = &$reporter;
+-            $reporter->paintCaseStart($this->getLabel());
+-			$this->skip();
+-            if (! $this->_should_skip) {
++        $started = false;
+                 foreach ($this->getTests() as $method) {
+                     if ($reporter->shouldInvoke($this->getLabel(), $method)) {
++                $this->skip();
++                if ($this->_should_skip) {
++                    break;
++                }
++                if (! $started) {
++                    $reporter->paintCaseStart($this->getLabel());
++                    $started = true;
++                }
++//moodlefix begins
++                if (defined('TIME_ALLOWED_PER_UNIT_TEST')) {
++                    set_time_limit(TIME_ALLOWED_PER_UNIT_TEST);
++                }
++//moodlefix ends
+                         $invoker = &$this->_reporter->createInvoker($this->createInvoker());
+                         $invoker->before($method);
+                         $invoker->invoke($method);
+                         $invoker->after($method);
+                     }
+                 }
+-            }
++        if ($started) {
+             $reporter->paintCaseEnd($this->getLabel());
++        }
+             unset($this->_reporter);
++//moodlefix begins
++        $context->unsetTest();
++//moodlefix ends
+             return $reporter->getStatus();
+         }
+ 
+@@ -353,7 +370,7 @@
+         }
+ 
+         /**
+-         *    Accessor for the number of subtests.
++     *    Accessor for the number of subtests including myelf.
+          *    @return integer           Number of test cases.
+          *    @access public
+          *    @static
+@@ -361,206 +378,204 @@
+         function getSize() {
+             return 1;
+         }
+-    }
++}
+ 
+-    /**
+-     *    This is a composite test class for combining
+-     *    test cases and other RunnableTest classes into
+-     *    a group test.
+-	 *    @package		SimpleTest
+-	 *    @subpackage	UnitTester
++/**
++ *  Helps to extract test cases automatically from a file.
+      */
+-    class TestSuite {
+-        var $_label;
+-        var $_test_cases;
+-        var $_old_track_errors;
+-        var $_xdebug_is_enabled;
++class SimpleFileLoader {
+ 
+         /**
+-         *    Sets the name of the test suite.
+-         *    @param string $label    Name sent at the start and end
+-         *                            of the test.
++     *    Builds a test suite from a library of test cases.
++     *    The new suite is composed into this one.
++     *    @param string $test_file        File name of library with
++     *                                    test case classes.
++     *    @return TestSuite               The new test suite.
+          *    @access public
+          */
+-        function TestSuite($label = false) {
+-            $this->_label = $label ? $label : get_class($this);
+-            $this->_test_cases = array();
+-            $this->_old_track_errors = ini_get('track_errors');
+-            $this->_xdebug_is_enabled = function_exists('xdebug_is_enabled') ?
+-                    xdebug_is_enabled() : false;
++    function &load($test_file) {
++        $existing_classes = get_declared_classes();
++        $existing_globals = get_defined_vars();
++        global $CFG;
++        include_once($test_file);
++        $new_globals = get_defined_vars();
++        $this->_makeFileVariablesGlobal($existing_globals, $new_globals);
++        $new_classes = array_diff(get_declared_classes(), $existing_classes);
++        if (empty($new_classes)) {
++            $new_classes = $this->_scrapeClassesFromFile($test_file);
++        }
++        $classes = $this->selectRunnableTests($new_classes);
++        $suite = &$this->createSuiteFromClasses($test_file, $classes);
++        return $suite;
+         }
+ 
+         /**
+-         *    Accessor for the test name for subclasses.
+-         *    @return string           Name of the test.
+-         *    @access public
++     *    Imports new variables into the global namespace.
++     *    @param hash $existing   Variables before the file was loaded.
++     *    @param hash $new        Variables after the file was loaded.
++     *    @access private
+          */
+-        function getLabel() {
+-            return $this->_label;
++    function _makeFileVariablesGlobal($existing, $new) {
++        $globals = array_diff(array_keys($new), array_keys($existing));
++        foreach ($globals as $global) {
++            $_GLOBALS[$global] = $new[$global];
++        }
+         }
+ 
+         /**
+-         *    Adds a test into the suite. Can be either a group
+-         *    test or some other unit test.
+-         *    @param SimpleTestCase $test_case  Suite or individual test
+-         *                                      case implementing the
+-         *                                      runnable test interface.
+-         *    @access public
++     *    Lookup classnames from file contents, in case the
++     *    file may have been included before.
++     *    Note: This is probably too clever by half. Figuring this
++     *    out after a failed test case is going to be tricky for us,
++     *    never mind the user. A test case should not be included
++     *    twice anyway.
++     *    @param string $test_file        File name with classes.
++     *    @access private
+          */
+-        function addTestCase(&$test_case) {
+-            $this->_test_cases[] = &$test_case;
++    function _scrapeClassesFromFile($test_file) {
++        preg_match_all('~^\s*class\s+(\w+)(\s+(extends|implements)\s+\w+)*\s*\{~mi',
++                        file_get_contents($test_file),
++                        $matches );
++        return $matches[1];
+         }
+ 
+         /**
+-         *    Adds a test into the suite by class name. The class will
+-         *    be instantiated as needed.
+-         *    @param SimpleTestCase $test_case  Suite or individual test
+-         *                                      case implementing the
+-         *                                      runnable test interface.
++     *    Calculates the incoming test cases. Skips abstract
++     *    and ignored classes.
++     *    @param array $candidates   Candidate classes.
++     *    @return array              New classes which are test
++     *                               cases that shouldn't be ignored.
+          *    @access public
+          */
+-        function addTestClass($class) {
+-            if ($this->_getBaseTestCase($class) == 'testsuite' || $this->_getBaseTestCase($class) == 'grouptest') {
+-                $this->_test_cases[] = &new $class();
++    function selectRunnableTests($candidates) {
++        $classes = array();
++        foreach ($candidates as $class) {
++            if (TestSuite::getBaseTestCase($class)) {
++                $reflection = new SimpleReflection($class);
++                if ($reflection->isAbstract()) {
++                    SimpleTest::ignore($class);
+             } else {
+-                $this->_test_cases[] = $class;
++                    $classes[] = $class;
++                }
+             }
+         }
++        return $classes;
++    }
+ 
+         /**
+-         *    Builds a group test from a library of test cases.
+-         *    The new group is composed into this one.
+-         *    @param string $test_file        File name of library with
+-         *                                    test case classes.
++     *    Builds a test suite from a class list.
++     *    @param string $title       Title of new group.
++     *    @param array $classes      Test classes.
++     *    @return TestSuite          Group loaded with the new
++     *                               test cases.
+          *    @access public
+          */
+-        function addTestFile($test_file) {
+-            $existing_classes = get_declared_classes();
+-            if ($error = $this->_requireWithError($test_file)) {
+-                $this->addTestCase(new BadTestSuite($test_file, $error));
+-                return;
+-            }
+-            $classes = $this->_selectRunnableTests($existing_classes, get_declared_classes());
++    function &createSuiteFromClasses($title, $classes) {
+             if (count($classes) == 0) {
+-                $this->addTestCase(new BadTestSuite($test_file, "No runnable test cases in [$test_file]"));
+-                return;
++            $suite = new BadTestSuite($title, "No runnable test cases in [$title]");
++            return $suite;
++        }
++        SimpleTest::ignoreParentsIfIgnored($classes);
++        $suite = new TestSuite($title);
++        foreach ($classes as $class) {
++            if (! SimpleTest::isIgnored($class)) {
++                $suite->addTestClass($class);
+             }
+-            $group = &$this->_createGroupFromClasses($test_file, $classes);
+-            $this->addTestCase($group);
+         }
++        return $suite;
++    }
++}
++
++/**
++ *    This is a composite test class for combining
++ *    test cases and other RunnableTest classes into
++ *    a group test.
++ *    @package      SimpleTest
++ *    @subpackage   UnitTester
++ */
++class TestSuite {
++    var $_label;
++    var $_test_cases;
+ 
+         /**
+-         *    Requires a source file recording any syntax errors.
+-         *    @param string $file        File name to require in.
+-         *    @return string/boolean     An error message on failure or false
+-         *                               if no errors.
+-         *    @access private
++     *    Sets the name of the test suite.
++     *    @param string $label    Name sent at the start and end
++     *                            of the test.
++     *    @access public
+          */
+-        function _requireWithError($file) {
+-            $this->_enableErrorReporting();
+-            global $CFG; // Moodle patch for $CFG global in unit test files
+-            include($file);
+-            $error = isset($php_errormsg) ? $php_errormsg : false;
+-            $this->_disableErrorReporting();
+-            $self_inflicted_errors = array(
+-                    '/Assigning the return value of new by reference/i',
+-                    '/var: Deprecated/i',
+-					'/Non-static method/i');
+-            foreach ($self_inflicted_errors as $pattern) {
+-				if (preg_match($pattern, $error)) {
+-					return false;
+-				}
+-			}
+-            return $error;
++    function TestSuite($label = false) {
++        $this->_label = $label;
++        $this->_test_cases = array();
+         }
+ 
+         /**
+-         *    Sets up detection of parse errors. Note that XDebug
+-         *    interferes with this and has to be disabled. This is
+-         *    to make sure the correct error code is returned
+-         *    from unattended scripts.
+-         *    @access private
++     *    Accessor for the test name for subclasses. If the suite
++     *    wraps a single test case the label defaults to the name of that test.
++     *    @return string           Name of the test.
++     *    @access public
+          */
+-        function _enableErrorReporting() {
+-            if ($this->_xdebug_is_enabled) {
+-                xdebug_disable();
++    function getLabel() {
++        if (! $this->_label) {
++            return ($this->getSize() == 1) ?
++                    get_class($this->_test_cases[0]) : get_class($this);
++        } else {
++            return $this->_label;
+             }
+-            ini_set('track_errors', true);
+         }
+ 
+         /**
+-         *    Resets detection of parse errors to their old values.
+-         *    This is to make sure the correct error code is returned
+-         *    from unattended scripts.
+-         *    @access private
++     *    @deprecated
+          */
+-        function _disableErrorReporting() {
+-            ini_set('track_errors', $this->_old_track_errors);
+-            if ($this->_xdebug_is_enabled) {
+-                xdebug_enable();
+-            }
++    function addTestCase(&$test_case) {
++        $this->_test_cases[] = &$test_case;
+         }
+ 
+         /**
+-         *    Calculates the incoming test cases from a before
+-         *    and after list of loaded classes. Skips abstract
+-         *    classes.
+-         *    @param array $existing_classes   Classes before require().
+-         *    @param array $new_classes        Classes after require().
+-         *    @return array                    New classes which are test
+-         *                                     cases that shouldn't be ignored.
+-         *    @access private
++     *    @deprecated
+          */
+-        function _selectRunnableTests($existing_classes, $new_classes) {
+-            $classes = array();
+-            foreach ($new_classes as $class) {
+-                if (in_array($class, $existing_classes)) {
+-                    continue;
+-                }
+-                if ($this->_getBaseTestCase($class)) {
+-                    $reflection = new SimpleReflection($class);
+-                    if ($reflection->isAbstract()) {
+-                        SimpleTest::ignore($class);
+-                    }
+-                    $classes[] = $class;
+-                }
++    function addTestClass($class) {
++        if (TestSuite::getBaseTestCase($class) == 'testsuite') {
++            $this->_test_cases[] = new $class();
++        } else {
++            $this->_test_cases[] = $class;
+             }
+-            return $classes;
+         }
+ 
+         /**
+-         *    Builds a group test from a class list.
+-         *    @param string $title       Title of new group.
+-         *    @param array $classes      Test classes.
+-         *    @return TestSuite          Group loaded with the new
+-         *                               test cases.
+-         *    @access private
++     *    Adds a test into the suite by instance or class. The class will
++     *    be instantiated if it's a test suite.
++     *    @param SimpleTestCase $test_case  Suite or individual test
++     *                                      case implementing the
++     *                                      runnable test interface.
++     *    @access public
+          */
+-        function &_createGroupFromClasses($title, $classes) {
+-            SimpleTest::ignoreParentsIfIgnored($classes);
+-            $group = &new TestSuite($title);
+-            foreach ($classes as $class) {
+-                if (! SimpleTest::isIgnored($class)) {
+-                    $group->addTestClass($class);
+-                }
++    function add(&$test_case) {
++        if (! is_string($test_case)) {
++            $this->_test_cases[] = &$test_case;
++        } elseif (TestSuite::getBaseTestCase($class) == 'testsuite') {
++            $this->_test_cases[] = new $class();
++        } else {
++            $this->_test_cases[] = $class;
+             }
+-            return $group;
+         }
+ 
+         /**
+-         *    Test to see if a class is derived from the
+-         *    SimpleTestCase class.
+-         *    @param string $class     Class name.
+-         *    @access private
++     *    @deprecated
+          */
+-        function _getBaseTestCase($class) {
+-            while ($class = get_parent_class($class)) {
+-                $class = strtolower($class);
+-                if ($class == 'simpletestcase' || $class == 'testsuite' || $class == 'grouptest') {
+-                    return $class;
+-                }
++    function addTestFile($test_file) {
++        $this->addFile($test_file);
+             }
+-            return false;
++
++    /**
++     *    Builds a test suite from a library of test cases.
++     *    The new suite is composed into this one.
++     *    @param string $test_file        File name of library with
++     *                                    test case classes.
++     *    @access public
++     */
++    function addFile($test_file) {
++        $extractor = new SimpleFileLoader();
++        $this->add($extractor->load($test_file));
+         }
+ 
+         /**
+@@ -585,7 +600,20 @@
+             for ($i = 0, $count = count($this->_test_cases); $i < $count; $i++) {
+                 if (is_string($this->_test_cases[$i])) {
+                     $class = $this->_test_cases[$i];
+-                    $test = &new $class();
++                // moodle hack start - need to do this before the constructor call, because of FakeDBUnitTestCase.
++                global $CFG;
++                if (is_subclass_of($class, 'FakeDBUnitTestCase')) {
++                    // Do not execute this test because the test tables system no longer works, reporting it as exception
++                    $reporter->paintError("Unit test \"{$class}\" of type FakeDBUnitTestCase no longer supported. Must be migrated to UnitTestCaseUsingDatabase.");
++                    continue;
++                }
++                if (is_subclass_of($class, 'UnitTestCaseUsingDatabase') && empty($CFG->unittestprefix)) {
++                    // Do not execute this test because $CFG->unittestprefix is not set, but it will be required.
++                    $reporter->paintSkip("Unit test \"{$class}\" of type UnitTestCaseUsingDatabase skipped. Must define different, non-conflicting \$CFG->unittestprefix to be runnable.");
++                    continue;
++                }
++                // moodle hack end
++                $test = new $class();
+                     $test->run($reporter);
+                     unset($test);
+                 } else {
+@@ -605,27 +633,53 @@
+             $count = 0;
+             foreach ($this->_test_cases as $case) {
+                 if (is_string($case)) {
++                if (! SimpleTest::isIgnored($case)) {
+                     $count++;
++                }
+                 } else {
+                     $count += $case->getSize();
+                 }
+             }
+             return $count;
+         }
+-    }
+     
+     /**
++     *    Test to see if a class is derived from the
++     *    SimpleTestCase class.
++     *    @param string $class     Class name.
++     *    @access public
++     *    @static
++     */
++    function getBaseTestCase($class) {
++        while ($class = get_parent_class($class)) {
++            $class = strtolower($class);
++            if ($class == 'simpletestcase' || $class == 'testsuite') {
++                return $class;
++            }
++        }
++        return false;
++    }
++}
++
++/**
++ *    @package      SimpleTest
++ *    @subpackage   UnitTester
+      *    @deprecated
+      */
+-    class GroupTest extends TestSuite { }
++class GroupTest extends TestSuite {
++    // moodle fix: adding old style constructor to make it compatible with PHP 5.3
++    function GroupTest($label = false) {
++        parent::TestSuite($label);
++    }
++}
+ 
+-    /**
++/**
+      *    This is a failing group test for when a test suite hasn't
+      *    loaded properly.
+ 	 *    @package		SimpleTest
+ 	 *    @subpackage	UnitTester
+      */
+-    class BadTestSuite {
++class BadTestSuite {
+         var $_label;
+         var $_error;
+ 
+@@ -670,10 +724,12 @@
+         function getSize() {
+             return 0;
+         }
+-    }
++}
+     
+-    /**
++/**
++ *    @package      SimpleTest
++ *    @subpackage   UnitTester
+      *    @deprecated
+      */
+-    class BadGroupTest extends BadTestSuite { }
++class BadGroupTest extends BadTestSuite { }
+ ?>
+\ No newline at end of file

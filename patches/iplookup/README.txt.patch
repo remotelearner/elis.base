@@ -1,0 +1,11 @@
+diff --git a/iplookup/README.txt b/iplookup/README.txt
+index eb92351..f68a610 100644
+--- a/iplookup/README.txt
++++ b/iplookup/README.txt
+@@ -21,5 +21,3 @@ marker.gif
+   custom made in Inkscape
+ 
+ Petr Skoda (skodak), January 2008  
+-
+-$Id$
+\ No newline at end of file

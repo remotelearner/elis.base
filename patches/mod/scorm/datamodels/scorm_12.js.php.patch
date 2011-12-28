@@ -1,0 +1,234 @@
+diff --git a/mod/scorm/datamodels/scorm_12.js.php b/mod/scorm/datamodels/scorm_12.js.php
+index f076682..3dd53b9 100644
+--- a/mod/scorm/datamodels/scorm_12.js.php
++++ b/mod/scorm/datamodels/scorm_12.js.php
+@@ -12,6 +12,9 @@
+             }
+         }
+     }
++    if (!isset($currentorg)) {
++        $currentorg = '';
++    }
+ ?>
+ //
+ // SCORM 1.2 API Implementation
+@@ -112,7 +115,6 @@ function SCORMapi1_2() {
+         'cmi.interactions.n.latency':{'pattern':CMIIndex, 'format':CMITimespan, 'mod':'w', 'readerror':'404', 'writeerror':'405'},
+         'nav.event':{'defaultvalue':'', 'format':NAVEvent, 'mod':'w', 'readerror':'404', 'writeerror':'405'}
+     };
+-    
+     //
+     // Datamodel inizialization
+     //
+@@ -162,7 +164,7 @@ function SCORMapi1_2() {
+                 Initialized = true;
+                 errorCode = "0";
+                 <?php 
+-                    if (debugging('',DEBUG_DEVELOPER)) {
++                    if (scorm_debugging($scorm)) {
+                         //echo 'alert("Initialized SCORM 1.2");';
+                         echo 'LogAPICall("LMSInitialize", param, "", errorCode);';
+                     }
+@@ -175,13 +177,18 @@ function SCORMapi1_2() {
+             errorCode = "201";
+         }
+         <?php 
+-            if (debugging('',DEBUG_DEVELOPER)) {
++            if (scorm_debugging($scorm)) {
+                 echo 'LogAPICall("LMSInitialize", param, "", errorCode);';
+             }
+         ?>
+         return "false";
+     }
+     
++<?php
++    // pull in the TOC callback
++    include_once($CFG->dirroot.'/mod/scorm/datamodels/callback.js.php');
++ ?>
++
+     function LMSFinish (param) {
+         errorCode = "0";
+         if (param == "") {
+@@ -190,29 +197,32 @@ function SCORMapi1_2() {
+                 result = StoreData(cmi,true);
+                 if (nav.event != '') {
+                     if (nav.event == 'continue') {
+-                        setTimeout('top.document.location=top.next;',500);
++                        setTimeout('scorm_get_next();',500);
+                     } else {
+-                        setTimeout('top.document.location=top.prev;',500);
++                        setTimeout('scorm_get_prev();',500);
+                     }
+                 } else {
+                     if (<?php echo $scorm->auto ?> == 1) {
+-                        setTimeout('top.document.location=top.next;',500);
++                        setTimeout('scorm_get_next();',500);
+                     }
+                 }
+                <?php
+-                    if (debugging('',DEBUG_DEVELOPER)) {
++                    if (scorm_debugging($scorm)) {
+                         echo 'LogAPICall("LMSFinish", "AJAXResult", result, 0);';
+                     }
+                 ?>
+                 result = ('true' == result) ? 'true' : 'false';
+                 errorCode = (result == 'true')? '0' : '101';
+                 <?php 
+-                    if (debugging('',DEBUG_DEVELOPER)) {
++                    if (scorm_debugging($scorm)) {
+                         //echo 'alert("Finished SCORM 1.2");';
+                         echo 'LogAPICall("LMSFinish", "result", result, 0);';
+                         echo 'LogAPICall("LMSFinish", param, "", 0);';
+                     }
+                 ?>
++                // trigger TOC update
++                var sURL = "<?php echo $CFG->wwwroot; ?>" + "/mod/scorm/prereqs.php?a=<?php echo $scorm->id ?>&scoid=<?php echo $scoid ?>&attempt=<?php echo $attempt ?>&mode=<?php echo $mode ?>&currentorg=<?php echo $currentorg ?>&sesskey=<?php echo sesskey(); ?>";
++                YAHOO.util.Connect.asyncRequest('GET', sURL, this.connectPrereqCallback, null);
+                 return result;
+             } else {
+                 errorCode = "301";
+@@ -221,7 +231,7 @@ function SCORMapi1_2() {
+             errorCode = "201";
+         }
+         <?php 
+-            if (debugging('',DEBUG_DEVELOPER)) {
++            if (scorm_debugging($scorm)) {
+                 echo 'LogAPICall("LMSFinish", param, "", errorCode);';
+             }
+         ?>
+@@ -246,7 +256,7 @@ function SCORMapi1_2() {
+                             if (subelement == element) {
+                             errorCode = "0";
+                             <?php 
+-                                if (debugging('',DEBUG_DEVELOPER)) {
++                                if (scorm_debugging($scorm)) {
+                                    //echo 'alert(element+": "+eval(element));';
+                                     echo 'LogAPICall("LMSGetValue", element, eval(element), 0);';
+                                 }
+@@ -286,7 +296,7 @@ function SCORMapi1_2() {
+             errorCode = "301";
+         }
+         <?php 
+-            if (debugging('',DEBUG_DEVELOPER)) {
++            if (scorm_debugging($scorm)) {
+                 echo 'LogAPICall("LMSGetValue", element, "", errorCode);';
+             }
+         ?>
+@@ -356,7 +366,7 @@ function SCORMapi1_2() {
+                                         eval(element+'=value;');
+                                         errorCode = "0";
+                                         <?php 
+-                                            if (debugging('',DEBUG_DEVELOPER)) {
++                                            if (scorm_debugging($scorm)) {
+                                                 echo 'LogAPICall("LMSSetValue", element, value, errorCode);';
+                                                 //echo 'alert(element+":= "+value);';
+                                             }
+@@ -373,7 +383,7 @@ function SCORMapi1_2() {
+                                     }
+                                     errorCode = "0";
+                                     <?php 
+-                                        if (debugging('',DEBUG_DEVELOPER)) {
++                                        if (scorm_debugging($scorm)) {
+                                             echo 'LogAPICall("LMSSetValue", element, value, errorCode);';
+                                             //echo 'alert(element+":= "+value);';
+                                         }
+@@ -397,7 +407,7 @@ function SCORMapi1_2() {
+             errorCode = "301";
+         }
+        <?php 
+-        if (debugging('',DEBUG_DEVELOPER)) {
++        if (scorm_debugging($scorm)) {
+             echo 'LogAPICall("LMSSetValue", element, value, errorCode);';
+         }
+         ?>
+@@ -410,23 +420,23 @@ function SCORMapi1_2() {
+             if (Initialized) {
+                 result = StoreData(cmi,false);
+                 <?php 
+-                    if (debugging('',DEBUG_DEVELOPER)) {
++                    if (scorm_debugging($scorm)) {
+                         echo 'LogAPICall("Commit", param, "", 0);';
+                         //echo 'alert("Data Commited");';
+                     }
+                 ?>
+                 <?php
+-                    if (debugging('',DEBUG_DEVELOPER)) {
++                    if (scorm_debugging($scorm)) {
+                         echo 'LogAPICall("LMSCommit", "AJAXResult", result, 0);';
+                     }
+                 ?>
+                 result = ('true' == result) ? 'true' : 'false';
+                 errorCode = (result =='true')? '0' : '101';
+                 <?php 
+-                    if (debugging('',DEBUG_DEVELOPER)) {
++                    if (scorm_debugging($scorm)) {
+                         //echo 'alert("Finished SCORM 1.2");';
+                         echo 'LogAPICall("LMSCommit", "result", result, 0);';
+-                        echo 'LogAPICall("LMSCommit", param, "", 0);';
++                        echo 'LogAPICall("LMSCommit", "errorCode", errorCode, 0);';
+                     }
+                 ?>
+                 return result;
+@@ -437,7 +447,7 @@ function SCORMapi1_2() {
+             errorCode = "201";
+         }
+         <?php 
+-            if (debugging('',DEBUG_DEVELOPER)) {
++            if (scorm_debugging($scorm)) {
+                 echo 'LogAPICall("LMSCommit", param, "", 0);';
+             }
+         ?>
+@@ -446,7 +456,7 @@ function SCORMapi1_2() {
+     
+     function LMSGetLastError () {
+      <?php 
+-        if (debugging('',DEBUG_DEVELOPER)) {
++        if (scorm_debugging($scorm)) {
+             echo 'LogAPICall("LMSGetLastError", "", "", errorCode);';
+         }
+     ?>
+@@ -468,14 +478,14 @@ function SCORMapi1_2() {
+             errorString["404"] = "Element is write only";
+             errorString["405"] = "Incorrect data type";
+             <?php 
+-            if (debugging('',DEBUG_DEVELOPER)) {
++            if (scorm_debugging($scorm)) {
+                 echo 'LogAPICall("LMSGetErrorString", param,  errorString[param], 0);';
+             }
+              ?>
+             return errorString[param];
+         } else {
+            <?php 
+-            if (debugging('',DEBUG_DEVELOPER)) {
++            if (scorm_debugging($scorm)) {
+                 echo 'LogAPICall("LMSGetErrorString", param,  "No error string found!", 0);';
+             }
+              ?>
+@@ -488,7 +498,7 @@ function SCORMapi1_2() {
+             param = errorCode;
+         }
+         <?php 
+-            if (debugging('',DEBUG_DEVELOPER)) {
++            if (scorm_debugging($scorm)) {
+                 echo 'LogAPICall("LMSGetDiagnostic", param, param, 0);';
+             }
+         ?>
+@@ -651,7 +661,8 @@ function SCORMapi1_2() {
+         datastring += '&scoid=<?php echo $scoid ?>';
+         
+         var myRequest = NewHttpReq();
+-        result = DoRequest(myRequest,"<?php p($CFG->wwwroot) ?>/mod/scorm/datamodel.php","id=<?php p($id) ?>&sesskey=<?php p($USER->sesskey) ?>"+datastring);
++        //alert('going to:' + "<?php p($CFG->wwwroot) ?>/mod/scorm/datamodel.php" + "id=<?php p($id) ?>&a=<?php p($a) ?>&sesskey=<?php echo sesskey() ?>"+datastring);
++        result = DoRequest(myRequest,"<?php p($CFG->wwwroot) ?>/mod/scorm/datamodel.php","id=<?php p($id) ?>&a=<?php p($a) ?>&sesskey=<?php echo sesskey() ?>"+datastring);
+         results = String(result).split('\n');
+         errorCode = results[1];
+         return results[0];
+@@ -671,7 +682,7 @@ var API = new SCORMapi1_2();
+ 
+ <?php
+ // pull in the debugging utilities
+-if (debugging('',DEBUG_DEVELOPER)) {
++if (scorm_debugging($scorm)) {
+     include_once($CFG->dirroot.'/mod/scorm/datamodels/debug.js.php');
+     echo 'AppendToLog("Moodle SCORM 1.2 API Loaded, Activity: '.$scorm->name.', SCO: '.$sco->identifier.'", 0);';
+ }

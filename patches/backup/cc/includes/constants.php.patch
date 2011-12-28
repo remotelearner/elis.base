@@ -1,0 +1,12 @@
+diff --git a/backup/cc/includes/constants.php b/backup/cc/includes/constants.php
+old mode 100755
+new mode 100644
+index 84d08c0..58925d1
+--- a/backup/cc/includes/constants.php
++++ b/backup/cc/includes/constants.php
+@@ -92,5 +92,3 @@ define('MOODLE_QUIZ_MULTIPLE_RESPONSE', 'multichoice');
+ define('MOODLE_QUIZ_MACHT', 'match');
+ define('MOODLE_QUIZ_ESSAY', 'essay');
+ define('MOODLE_QUIZ_SHORTANSWER', 'shortanswer');
+-
+-?>

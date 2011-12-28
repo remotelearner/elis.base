@@ -1,0 +1,14 @@
+diff --git a/mod/data/preset/imagegallery/csstemplate.css b/mod/data/preset/imagegallery/csstemplate.css
+index ad34826..7c755221 100644
+--- a/mod/data/preset/imagegallery/csstemplate.css
++++ b/mod/data/preset/imagegallery/csstemplate.css
+@@ -36,6 +36,7 @@
+   font-style: italic;
+ }
+ 
+-#singleimage {
++#singleimage img {
+   width: 700px;
++  height: auto;
+ }
+\ No newline at end of file

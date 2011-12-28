@@ -1,0 +1,86 @@
+diff --git a/auth/shibboleth/auth.php b/auth/shibboleth/auth.php
+index e68c74f..842b735 100644
+--- a/auth/shibboleth/auth.php
++++ b/auth/shibboleth/auth.php
+@@ -63,7 +63,7 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+             } else {
+                 // Try to find out using the user's cookie
+                 foreach ($_COOKIE as $name => $value){
+-                    if (eregi('_shibsession_', $name)){
++                    if (preg_match('/_shibsession_/i', $name)){
+                         $sessionkey = $value;
+                     }
+                 }
+@@ -94,7 +94,7 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+ 
+         // Check whether we have got all the essential attributes
+         if ( empty($_SERVER[$this->config->user_attribute]) ) {
+-            print_error( 'shib_not_all_attributes_error', 'auth' , '', "'".$this->config->user_attribute."' ('".$_SERVER[$this->config->user_attribute]."'), '".$this->config->field_map_firstname."' ('".$_SERVER[$this->config->field_map_firstname]."'), '".$this->config->field_map_lastname."' ('".$_SERVER[$this->config->field_map_lastname]."') and '".$this->config->field_map_email."' ('".$_SERVER[$this->config->field_map_email]."')");
++            print_error( 'shib_not_all_attributes_error', 'auth_shibboleth' , '', "'".$this->config->user_attribute."' ('".$_SERVER[$this->config->user_attribute]."'), '".$this->config->field_map_firstname."' ('".$_SERVER[$this->config->field_map_firstname]."'), '".$this->config->field_map_lastname."' ('".$_SERVER[$this->config->field_map_lastname]."') and '".$this->config->field_map_email."' ('".$_SERVER[$this->config->field_map_email]."')");
+         }
+ 
+         $attrmap = $this->get_attributes();
+@@ -197,7 +197,7 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+         
+         // Only do this if logout handler is defined, and if the user is actually logged in via Shibboleth
+         $logouthandlervalid = isset($this->config->logout_handler) && !empty($this->config->logout_handler);
+-        if (  isset($SESSION->shibboleth_session_id) && $logouthandlervalid ) {
++        if (isset($SESSION->shibboleth_session_id) && $logouthandlervalid ) {
+             // Check if there is an alternative logout return url defined
+             if (isset($this->config->logout_return_url) && !empty($this->config->logout_return_url)) {
+                 // Set temp_redirect to alternative return url
+@@ -237,7 +237,7 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+ 
+         // set to defaults if undefined
+         if (!isset($config->auth_instructions) or empty($config->user_attribute)) {
+-            $config->auth_instructions = get_string('shibboleth_instructions', 'auth', $CFG->wwwroot.'/auth/shibboleth/index.php');
++            $config->auth_instructions = get_string('auth_shib_instructions', 'auth_shibboleth', $CFG->wwwroot.'/auth/shibboleth/index.php');
+         }
+         if (!isset ($config->user_attribute)) {
+             $config->user_attribute = '';
+@@ -287,7 +287,7 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+         } else {
+             // Check if integrated WAYF was enabled and is now turned off
+             // If it was and only then, reset the Moodle alternate URL 
+-            if ($this->config->alt_login == 'on'){
++            if (isset($this->config->alt_login) and $this->config->alt_login == 'on'){
+                 set_config('alt_login',    'off',    'auth/shibboleth');
+                 set_config('alternateloginurl', '');
+             }
+@@ -314,7 +314,7 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+      * @param string $string Possibly multi-valued attribute from Shibboleth
+      */
+     function get_first_string($string) {
+-        $list = split( ';', $string);
++        $list = explode( ';', $string);
+         $clean_string = rtrim($list[0]);
+ 
+         return $clean_string;
+@@ -379,10 +379,10 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+     function get_idp_list($organization_selection) {
+         $idp_list = array();
+         
+-        $idp_raw_list = split("\n",  $organization_selection);
++        $idp_raw_list = explode("\n",  $organization_selection);
+         
+         foreach ($idp_raw_list as $idp_line){
+-            $idp_data = split(',', $idp_line);
++            $idp_data = explode(',', $idp_line);
+             if (isset($idp_data[2]))
+             {
+                 $idp_list[trim($idp_data[0])] = array(trim($idp_data[1]),trim($idp_data[2])); 
+@@ -405,7 +405,7 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+     function generate_cookie_array($value) {
+         
+         // Decodes and splits cookie value
+-        $CookieArray = split(' ', $value);
++        $CookieArray = explode(' ', $value);
+         $CookieArray = array_map('base64_decode', $CookieArray);
+         
+         return $CookieArray;
+@@ -443,4 +443,4 @@ class auth_plugin_shibboleth extends auth_plugin_base {
+     }
+ 
+ 
+-?>
++

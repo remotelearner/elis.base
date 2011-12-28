@@ -1,0 +1,10 @@
+diff --git a/grade/edit/letter/tabs.php b/grade/edit/letter/tabs.php
+index 226e579..e87dbb3 100644
+--- a/grade/edit/letter/tabs.php
++++ b/grade/edit/letter/tabs.php
+@@ -33,4 +33,4 @@
+     print_tabs($tabs, $currenttab);
+     echo '</div>';
+ 
+-?>
++

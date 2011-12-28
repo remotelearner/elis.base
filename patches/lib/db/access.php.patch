@@ -1,0 +1,2057 @@
+diff --git a/lib/db/access.php b/lib/db/access.php
+index 43285e3..667e4b2 100644
+--- a/lib/db/access.php
++++ b/lib/db/access.php
+@@ -1,215 +1,321 @@
+-<?php  // $Id$
+-//
+-// Capability definitions for Moodle core.
+-//
+-// The capabilities are loaded into the database table when the module is
+-// installed or updated. Whenever the capability definitions are updated,
+-// the module version number should be bumped up.
+-//
+-// The system has four possible values for a capability:
+-// CAP_ALLOW, CAP_PREVENT, CAP_PROHIBIT, and inherit (not set).
+-//
+-//
+-// CAPABILITY NAMING CONVENTION
+-//
+-// It is important that capability names are unique. The naming convention
+-// for capabilities that are specific to modules and blocks is as follows:
+-//   [mod/block]/<component_name>:<capabilityname>
+-//
+-// component_name should be the same as the directory name of the mod or block.
+-//
+-// Core moodle capabilities are defined thus:
+-//    moodle/<capabilityclass>:<capabilityname>
++<?php
++
++// This file is part of Moodle - http://moodle.org/
+ //
+-// Examples: mod/forum:viewpost
+-//           block/recent_activity:view
+-//           moodle/site:deleteuser
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
+ //
+-// The variable name for the capability definitions array follows the format
+-//   $<componenttype>_<component_name>_capabilities
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
+ //
+-// For the core capabilities, the variable is $moodle_capabilities.
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Capability definitions for Moodle core.
++ *
++ * The capabilities are loaded into the database table when the module is
++ * installed or updated. Whenever the capability definitions are updated,
++ * the module version number should be bumped up.
++ *
++ * The system has four possible values for a capability:
++ * CAP_ALLOW, CAP_PREVENT, CAP_PROHIBIT, and inherit (not set).
++ *
++ *
++ * CAPABILITY NAMING CONVENTION
++ *
++ * It is important that capability names are unique. The naming convention
++ * for capabilities that are specific to modules and blocks is as follows:
++ *   [mod/block]/<plugin_name>:<capabilityname>
++ *
++ * component_name should be the same as the directory name of the mod or block.
++ *
++ * Core moodle capabilities are defined thus:
++ *    moodle/<capabilityclass>:<capabilityname>
++ *
++ * Examples: mod/forum:viewpost
++ *           block/recent_activity:view
++ *           moodle/site:deleteuser
++ *
++ * The variable name for the capability definitions array is $capabilities
++ *
++ * @package    core
++ * @subpackage role
++ * @copyright  2006 onwards Martin Dougiamas  http://dougiamas.com
++ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++defined('MOODLE_INTERNAL') || die();
++
++$capabilities = array(
++    'moodle/site:config' => array(
+ 
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_CONFIG | RISK_DATALOSS,
+ 
+-$moodle_capabilities = array(
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++        )
++    ),
+ 
+-    'moodle/site:doanything' => array(
++    'moodle/site:readallmessages' => array(
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_CONFIG | RISK_DATALOSS,
++        'riskbitmask' => RISK_PERSONAL,
+ 
+-        'captype' => 'admin',
+-        'contextlevel' => CONTEXT_SYSTEM
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW
++        )
+     ),
+ 
+-    'moodle/legacy:guest' => array(
++    'moodle/site:sendmessage' => array(
+ 
+-        'captype' => 'legacy',
+-        'contextlevel' => CONTEXT_SYSTEM
++        'riskbitmask' => RISK_SPAM,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW,
++            'user' => CAP_ALLOW
++        )
+     ),
+ 
+-    'moodle/legacy:user' => array(
++    'moodle/site:approvecourse' => array(
++
++        'riskbitmask' => RISK_XSS,
+ 
+-        'captype' => 'legacy',
+-        'contextlevel' => CONTEXT_SYSTEM
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
++        )
+     ),
+ 
+-    'moodle/legacy:student' => array(
++    'moodle/backup:backupcourse' => array(
+ 
+-        'riskbitmask' => RISK_SPAM,
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+-        'captype' => 'legacy',
+-        'contextlevel' => CONTEXT_SYSTEM
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+     ),
+ 
++        'clonepermissionsfrom' =>  'moodle/site:backup'
++    ),
+ 
+-    'moodle/legacy:teacher' => array(
++    'moodle/backup:backupsection' => array(
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+-        'captype' => 'legacy',
+-        'contextlevel' => CONTEXT_SYSTEM
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+     ),
+ 
++        'clonepermissionsfrom' =>  'moodle/backup:backupcourse'
++    ),
+ 
+-    'moodle/legacy:editingteacher' => array(
++    'moodle/backup:backupactivity' => array(
+ 
+         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+-        'captype' => 'legacy',
+-        'contextlevel' => CONTEXT_SYSTEM
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_MODULE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+     ),
+ 
++        'clonepermissionsfrom' =>  'moodle/backup:backupcourse'
++    ),
+ 
+-    'moodle/legacy:coursecreator' => array(
++    'moodle/backup:backuptargethub' => array(
+ 
+         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+-        'captype' => 'legacy',
+-        'contextlevel' => CONTEXT_SYSTEM
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+     ),
+ 
++        'clonepermissionsfrom' =>  'moodle/backup:backupcourse'
++    ),
+ 
+-    'moodle/legacy:admin' => array(
++    'moodle/backup:backuptargetimport' => array(
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_CONFIG | RISK_DATALOSS,
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+-        'captype' => 'legacy',
+-        'contextlevel' => CONTEXT_SYSTEM
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+     ),
+ 
++        'clonepermissionsfrom' =>  'moodle/backup:backupcourse'
++    ),
+ 
+-    'moodle/site:config' => array(
++    'moodle/backup:downloadfile' => array(
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_CONFIG | RISK_DATALOSS,
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+         'captype' => 'write',
+-        'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        ),
++
++        'clonepermissionsfrom' =>  'moodle/site:backupdownload'
++    ),
++
++    'moodle/backup:configure' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/site:readallmessages' => array(
++    'moodle/backup:userinfo' => array(
+ 
+         'riskbitmask' => RISK_PERSONAL,
+ 
+         'captype' => 'read',
+-        'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW,
+-            'editingteacher' => CAP_ALLOW
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/site:sendmessage' => array(
++    'moodle/backup:anonymise' => array(
+ 
+-        'riskbitmask' => RISK_SPAM,
++        'riskbitmask' => RISK_PERSONAL,
+ 
+-        'captype' => 'write',
+-        'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW,
+-            'user' => CAP_ALLOW
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/site:approvecourse' => array(
++    'moodle/restore:restorecourse' => array(
+ 
+-        'riskbitmask' => RISK_XSS,
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+         'captype' => 'write',
+-        'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
+-        )
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        ),
++
++        'clonepermissionsfrom' =>  'moodle/site:restore'
+     ),
+ 
+-    'moodle/site:import' => array(
++    'moodle/restore:restoresection' => array(
+ 
+         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
+-        )
++            'manager' => CAP_ALLOW
++        ),
++
++        'clonepermissionsfrom' =>  'moodle/restore:restorecourse'
+     ),
+ 
+-    'moodle/site:backup' => array(
++    'moodle/restore:restoreactivity' => array(
+ 
+         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
+-        )
++            'manager' => CAP_ALLOW
+     ),
+ 
+-    'moodle/backup:userinfo' => array(
++        'clonepermissionsfrom' =>  'moodle/restore:restorecourse'
++    ),
+ 
+-        'riskbitmask' => RISK_PERSONAL,
++    'moodle/restore:viewautomatedfilearea' => array(
+ 
+-        'captype' => 'read',
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++
++        'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
+-        )
+     ),
+ 
+-    'moodle/site:restore' => array(
++    'moodle/restore:restoretargethub' => array(
+ 
+         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
+-        )
++            'manager' => CAP_ALLOW
+     ),
+ 
+-    'moodle/restore:createuser' => array(
++        'clonepermissionsfrom' =>  'moodle/restore:restorecourse'
++    ),
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
++    'moodle/restore:restoretargetimport' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+         'captype' => 'write',
+-        'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
+-        )
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+     ),
+ 
+-    'moodle/restore:userinfo' => array(
++        'clonepermissionsfrom' =>  'moodle/site:import'
++    ),
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_CONFIG,
++    'moodle/restore:uploadfile' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        ),
++
++        'clonepermissionsfrom' =>  'moodle/site:backupupload'
++    ),
++
++    'moodle/restore:configure' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -217,9 +323,31 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'coursecreator' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/restore:userinfo' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_CONFIG,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/restore:createuser' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -229,9 +357,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_BLOCK,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -239,10 +367,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -250,10 +378,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -263,10 +391,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -276,9 +404,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -288,42 +416,30 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/site:langeditmaster' => array(
+-
+-        'riskbitmask' => RISK_CONFIG | RISK_XSS,
++    // Permission to manage filter setting overrides in subcontexts.
++    'moodle/filter:manage' => array(
+ 
+         'captype' => 'write',
+-        'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_PREVENT
+-        )
+-    ),
+-
+-    'moodle/site:langeditlocal' => array(
+-
+-        'riskbitmask' => RISK_CONFIG | RISK_XSS,
+-
+-        'captype' => 'write',
+-        'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW,
+         )
+     ),
+ 
+-
+     'moodle/user:create' => array(
+ 
+         'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -333,8 +449,8 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -344,8 +460,8 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -353,25 +469,35 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'guest' => CAP_ALLOW,
+             'student' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
++    'moodle/user:viewalldetails' => array(
++        'riskbitmask' => RISK_PERSONAL,
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_USER,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
++        ),
++        'clonepermissionsfrom' => 'moodle/user:update'
++    ),
++
+     'moodle/user:viewhiddendetails' => array(
+ 
+         'riskbitmask' => RISK_PERSONAL,
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -381,77 +507,123 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/role:assign' => array(
++    // can the user manage the system default profile page?
++    'moodle/user:managesyspages' => array(
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++        'riskbitmap' => RISK_SPAM | RISK_PERSONAL | RISK_CONFIG,
+ 
+         'captype' => 'write',
+-        'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/role:override' => array(
++    // can the user manage another user's profile page?
++    'moodle/user:manageblocks' => array(
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++        'riskbitmap' => RISK_SPAM | RISK_PERSONAL,
+ 
+         'captype' => 'write',
+-        'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'contextlevel' => CONTEXT_USER
++    ),
++
++    // can the user manage their own profile page?
++    'moodle/user:manageownblocks' => array(
++
++        'riskbitmap' => RISK_SPAM | RISK_PERSONAL,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'user' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/role:safeoverride' => array(
++    // can the user manage their own files?
++    'moodle/user:manageownfiles' => array(
+ 
+-        'riskbitmask' => RISK_SPAM,
++        'riskbitmap' => RISK_SPAM | RISK_PERSONAL,
+ 
+         'captype' => 'write',
+-        'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'editingteacher' => CAP_ALLOW
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'user' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/role:manage' => array(
++    // can the user manage the system default dashboard page?
++    'moodle/my:configsyspages' => array(
+ 
+-        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++        'riskbitmap' => RISK_SPAM | RISK_PERSONAL | RISK_CONFIG,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/role:unassignself' => array(
++    'moodle/role:assign' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'student' => (empty($CFG->allowunenrol)) ? CAP_INHERIT : CAP_ALLOW,
+-            'teacher' => CAP_ALLOW,
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'coursecreator' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/role:viewhiddenassigns' => array(
++    'moodle/role:review' => array(
++
++        'riskbitmask' => RISK_PERSONAL,
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/role:override' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/role:safeoverride' => array(
++
++        'riskbitmask' => RISK_SPAM,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/role:manage' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -461,9 +633,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -477,8 +649,8 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSECAT,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/category:update'
+     ),
+@@ -487,29 +659,62 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSECAT,
+-        'legacy' => array(
++        'archetypes' => array(
+             'coursecreator' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/category:visibility'
+     ),
+ 
++    // create, delete, move cohorts in system and course categories,
++    // (cohorts with component !== null can be only moved)
++    'moodle/cohort:manage' => array(
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSECAT,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    // add and remove cohort members (only for cohorts where component !== null)
++    'moodle/cohort:assign' => array(
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSECAT,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    // view members of a cohort, this can be used in course context too,
++    // this also controls the ability to actually use cohort
++    'moodle/cohort:view' => array(
++
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++
+     'moodle/course:create' => array(
+ 
+         'riskbitmask' => RISK_XSS,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSECAT,
+-        'legacy' => array(
++        'archetypes' => array(
+             'coursecreator' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+     'moodle/course:request' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'user' => CAP_ALLOW,
+         )
+     ),
+@@ -520,8 +725,8 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -531,9 +736,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -541,11 +746,34 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'guest' => CAP_ALLOW,
+-            'student' => CAP_ALLOW,
+-            'teacher' => CAP_ALLOW,
+-            'editingteacher' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW,
++        )
++    ),
++
++    /* review course enrolments - no group restrictions, it is really full access to all participants info*/
++    'moodle/course:enrolreview' => array(
++
++        'riskbitmask' => RISK_PERSONAL,
++
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW,
++        )
++    ),
++
++    /* add, remove, hide enrol instances in courses */
++    'moodle/course:enrolconfig' => array(
++
++        'riskbitmask' => RISK_PERSONAL,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW,
+         )
+     ),
+ 
+@@ -555,10 +783,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -568,10 +796,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -579,11 +807,11 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'coursecreator' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -591,9 +819,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -603,9 +831,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -615,21 +843,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
+-        )
+-    ),
+-
+-    'moodle/course:managemetacourse' => array(
+-
+-        'riskbitmask' => RISK_XSS | RISK_PERSONAL,
+-
+-        'captype' => 'write',
+-        'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
+-            'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -637,9 +853,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -647,10 +863,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -658,11 +874,11 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'student' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -672,9 +888,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:update'
+     ),
+@@ -685,9 +901,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:update'
+     ),
+@@ -698,21 +914,20 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:update'
+     ),
+-
+     'moodle/course:changecategory' => array(
+         'riskbitmask' => RISK_XSS,
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:update'
+     ),
+@@ -722,19 +937,20 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:update'
+     ),
+ 
++
+     'moodle/site:viewparticipants' => array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -742,11 +958,11 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'student' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -754,9 +970,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -764,9 +980,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -776,23 +992,46 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+     'moodle/blog:view' => array(
+ 
+         'captype' => 'read',
+-        'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'guest' => CAP_ALLOW,
++            'user' => CAP_ALLOW,
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/blog:search' => array(
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
+             'guest' => CAP_ALLOW,
+             'user' => CAP_ALLOW,
+             'student' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/blog:viewdrafts' => array(
++
++        'riskbitmask' => RISK_PERSONAL,
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -802,9 +1041,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'user' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -813,11 +1052,52 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_SPAM,
+ 
+         'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/blog:manageexternal' => array(
++
++        'riskbitmask' => RISK_SPAM,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'student' => CAP_ALLOW,
++            'user' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/blog:associatecourse' => array(
++
++        'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
++            'student' => CAP_ALLOW,
++            'user' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
++        )
++    ),
++
++    'moodle/blog:associatemodule' => array(
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_MODULE,
++        'archetypes' => array(
++            'student' => CAP_ALLOW,
++            'user' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -827,9 +1107,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'user' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -839,10 +1119,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -852,10 +1132,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -865,8 +1145,8 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_USER,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -876,10 +1156,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'guest' => CAP_PROHIBIT,
+             'user' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -887,10 +1167,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'guest' => CAP_PROHIBIT,
+             'user' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -900,11 +1180,11 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_USER,
+-        'legacy' => array(
++        'archetypes' => array(
+             'student' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -912,11 +1192,11 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_USER,
+-        'legacy' => array(
++        'archetypes' => array(
+             'student' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -926,7 +1206,30 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_USER,
+-        'legacy' => array(
++        'archetypes' => array(
++        )
++    ),
++
++    //capabilities designed for the new message system configuration
++    'moodle/user:editmessageprofile' => array(
++
++         'riskbitmask' => RISK_SPAM,
++
++         'captype' => 'write',
++         'contextlevel' => CONTEXT_USER,
++         'archetypes' => array(
++             'manager' => CAP_ALLOW
++         )
++     ),
++
++     'moodle/user:editownmessageprofile' => array(
++
++         'captype' => 'write',
++         'contextlevel' => CONTEXT_SYSTEM,
++         'archetypes' => array(
++             'guest' => CAP_PROHIBIT,
++             'user' => CAP_ALLOW,
++             'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -934,9 +1237,9 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_SPAM | RISK_XSS,
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -945,9 +1248,9 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_SPAM | RISK_XSS,
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+@@ -955,9 +1258,9 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_SPAM | RISK_XSS,
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+@@ -965,63 +1268,63 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_SPAM | RISK_XSS,
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+     'moodle/question:viewmine' => array(
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+     'moodle/question:viewall' => array(
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+     'moodle/question:usemine' => array(
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+     'moodle/question:useall' => array(
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+     'moodle/question:movemine' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+     'moodle/question:moveall' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' =>  'moodle/question:manage'
+     ),
+@@ -1032,19 +1335,30 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_CONFIG,
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+-    'moodle/site:doclinks' => array(
++    // While attempting questions, the ability to flag particular questions for later reference.
++    'moodle/question:flag' => array(
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
+ 
++    'moodle/site:doclinks' => array(
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -1052,9 +1366,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -1062,9 +1376,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -1072,9 +1386,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -1082,9 +1396,9 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -1092,8 +1406,7 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
+         )
+     ),
+ 
+@@ -1101,10 +1414,10 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_PERSONAL,
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE, // and CONTEXT_USER
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:viewcoursegrades'
+     ),
+@@ -1112,7 +1425,7 @@ $moodle_capabilities = array(
+     'moodle/grade:view' => array(
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'student' => CAP_ALLOW
+         )
+     ),
+@@ -1121,10 +1434,10 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_PERSONAL,
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:viewcoursegrades'
+     ),
+@@ -1133,9 +1446,9 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_PERSONAL | RISK_XSS,
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:managegrades'
+     ),
+@@ -1144,10 +1457,10 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_PERSONAL,
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:managegrades'
+     ),
+@@ -1156,9 +1469,9 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_PERSONAL | RISK_XSS,
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:managegrades'
+     ),
+@@ -1167,9 +1480,9 @@ $moodle_capabilities = array(
+         'riskbitmask' => RISK_PERSONAL | RISK_XSS,
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:managegrades'
+     ),
+@@ -1177,9 +1490,9 @@ $moodle_capabilities = array(
+     'moodle/grade:manageoutcomes' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:managegrades'
+     ),
+@@ -1187,9 +1500,9 @@ $moodle_capabilities = array(
+     'moodle/grade:manageletters' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+         'clonepermissionsfrom' => 'moodle/course:managegrades'
+     ),
+@@ -1197,34 +1510,34 @@ $moodle_capabilities = array(
+     'moodle/grade:hide' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+     'moodle/grade:lock' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+     'moodle/grade:unlock' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+     'moodle/my:manageblocks' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'user' => CAP_ALLOW
+         )
+     ),
+@@ -1232,10 +1545,10 @@ $moodle_capabilities = array(
+     'moodle/notes:view' => array(
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -1244,10 +1557,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_COURSE,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -1256,10 +1569,10 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+@@ -1268,8 +1581,8 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW,
+             'user' => CAP_ALLOW
+         )
+     ),
+@@ -1279,8 +1592,8 @@ $moodle_capabilities = array(
+ 
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW,
+             'user' => CAP_ALLOW
+         )
+     ),
+@@ -1288,26 +1601,182 @@ $moodle_capabilities = array(
+     'moodle/tag:editblocks' => array(
+         'captype' => 'write',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         )
+     ),
+ 
+     'moodle/block:view' => array(
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_BLOCK,
+-        'legacy' => array(
++        'archetypes' => array(
+             'guest' => CAP_ALLOW,
+             'user' => CAP_ALLOW,
+             'student' => CAP_ALLOW,
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'coursecreator' => CAP_ALLOW
+         )
++    ),
++
++    'moodle/block:edit' => array(
++        'riskbitmask' => RISK_SPAM | RISK_XSS,
++
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_BLOCK,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
+     )
+-);
++    ),
++
++    'moodle/portfolio:export' => array(
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'user' => CAP_ALLOW,
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++        )
++    ),
++    'moodle/comment:view' => array(
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'frontpage' => CAP_ALLOW,
++            'guest' => CAP_ALLOW,
++            'user' => CAP_ALLOW,
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/comment:post' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'user' => CAP_ALLOW,
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/comment:delete' => array(
++
++        'riskbitmask' => RISK_DATALOSS,
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/webservice:createtoken' => array(
++
++        'riskbitmask' => RISK_CONFIG | RISK_DATALOSS | RISK_SPAM | RISK_PERSONAL | RISK_XSS,
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/webservice:createmobiletoken' => array(
++
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'user' => CAP_ALLOW
++        )
++    ),
++    'moodle/rating:view' => array(
++
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'user' => CAP_ALLOW,
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/rating:viewany' => array(
++
++        'riskbitmask' => RISK_PERSONAL,
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'user' => CAP_ALLOW,
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/rating:viewall' => array(
+ 
++        'riskbitmask' => RISK_PERSONAL,
++        'captype' => 'read',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'user' => CAP_ALLOW,
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/rating:rate' => array(
+ 
+-?>
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'user' => CAP_ALLOW,
++            'student' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++     'moodle/course:publish' => array(
++
++        'captype' => 'write',
++        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/course:markcomplete' => array(
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_COURSE,
++        'archetypes' => array(
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++            'manager' => CAP_ALLOW
++        )
++    ),
++    'moodle/community:add' => array(
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW,
++            'teacher' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++        )
++    ),
++    'moodle/community:download' => array(
++        'captype' => 'write',
++        'contextlevel' => CONTEXT_SYSTEM,
++        'archetypes' => array(
++            'manager' => CAP_ALLOW,
++            'editingteacher' => CAP_ALLOW,
++        )
++    )
++);

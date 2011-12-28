@@ -1,0 +1,99 @@
+diff --git a/blocks/tag_flickr/block_tag_flickr.php b/blocks/tag_flickr/block_tag_flickr.php
+index 43271d4..93ca546 100644
+--- a/blocks/tag_flickr/block_tag_flickr.php
++++ b/blocks/tag_flickr/block_tag_flickr.php
+@@ -1,18 +1,12 @@
+-<?php // $id$
+-
+-require_once($CFG->dirroot.'/tag/lib.php');
+-require_once($CFG->libdir . '/filelib.php');
+-require_once($CFG->libdir . '/magpie/rss_cache.inc');
++<?php
+ 
+ define('FLICKR_DEV_KEY', '4fddbdd7ff2376beec54d7f6afad425e');
+ define('DEFAULT_NUMBER_OF_PHOTOS', 6);
+-define('FLICKR_CACHE_EXPIRATION', 1800);
+ 
+ class block_tag_flickr extends block_base {
+ 
+     function init() {
+-        $this->title = get_string('defaulttile','block_tag_flickr');
+-        $this->version = 2007101509;
++        $this->title = get_string('pluginname','block_tag_flickr');
+     }
+ 
+     function applicable_formats() {
+@@ -20,7 +14,7 @@ class block_tag_flickr extends block_base {
+     }
+ 
+     function specialization() {
+-        $this->title = !empty($this->config->title) ? $this->config->title : get_string('blockname', 'block_tag_flickr');
++        $this->title = !empty($this->config->title) ? $this->config->title : get_string('pluginname', 'block_tag_flickr');
+     }
+ 
+     function instance_allow_multiple() {
+@@ -32,8 +26,11 @@ class block_tag_flickr extends block_base {
+     } 
+ 
+     function get_content() {
++        global $CFG, $USER;
+ 
+-        global $CFG, $USER, $PAGE;
++        //note: do NOT include files at the top of this file
++        require_once($CFG->dirroot.'/tag/lib.php');
++        require_once($CFG->libdir . '/filelib.php');
+ 
+         if ($this->content !== NULL) {
+             return $this->content;
+@@ -49,7 +46,10 @@ class block_tag_flickr extends block_base {
+         }
+ 
+         if (empty($tagobject)) {
+-            print_error('tagnotfound');
++            $this->content = new stdClass;
++            $this->content->text = '';
++            $this->content->footer = '';
++            return $this->content;
+         }
+ 
+         //include related tags in the photo query ?
+@@ -126,31 +126,9 @@ class block_tag_flickr extends block_base {
+     }
+ 
+     function fetch_request($request){
+-        global $CFG;
+-
+-        make_upload_directory('/cache/flickr');
+-
+-        $cache = new RSSCache($CFG->dataroot . '/cache/flickr', FLICKR_CACHE_EXPIRATION);
+-        $cache_status = $cache->check_cache( $request);
+-
+-        if ( $cache_status == 'HIT' ) {
+-            $cached_response = $cache->get( $request );
+-
+-            return $cached_response;
+-        }
+-
+-        if ( $cache_status == 'STALE' ) {
+-            $cached_response = $cache->get( $request );
+-        }
+-
+-        $response = download_file_content($request);
++        $c =  new curl(array('cache' => true, 'module_cache'=> 'tag_flickr'));
+ 
+-        if(empty($response)){
+-            $response = $cached_response;
+-        }
+-        else{
+-            $cache->set($request, $response);    
+-        }
++        $response = $c->get($request);
+ 
+         return $response;        
+     }
+@@ -182,4 +160,4 @@ class block_tag_flickr extends block_base {
+     }    
+ }
+ 
+-?>
++

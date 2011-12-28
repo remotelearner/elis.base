@@ -1,0 +1,183 @@
+diff --git a/lib/textlib.class.php b/lib/textlib.class.php
+index 31eb8e1..1adceea 100644
+--- a/lib/textlib.class.php
++++ b/lib/textlib.class.php
+@@ -1,34 +1,52 @@
+-<?php  // $Id$
+-
+-///////////////////////////////////////////////////////////////////////////
+-//                                                                       //
+-// NOTICE OF COPYRIGHT                                                   //
+-//                                                                       //
+-// Moodle - Modular Object-Oriented Dynamic Learning Environment         //
+-//          http://moodle.com                                            //
+-//                                                                       //
+-// Copyright (C) 1999 onwards Martin Dougiamas        http://dougiamas.com  //
+-//           (C) 2001-3001 Eloy Lafuente (stronk7) http://contiento.com  //
+-//                                                                       //
+-// This program is free software; you can redistribute it and/or modify  //
+-// it under the terms of the GNU General Public License as published by  //
+-// the Free Software Foundation; either version 2 of the License, or     //
+-// (at your option) any later version.                                   //
+-//                                                                       //
+-// This program is distributed in the hope that it will be useful,       //
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+-// GNU General Public License for more details:                          //
+-//                                                                       //
+-//          http://www.gnu.org/copyleft/gpl.html                         //
+-//                                                                       //
+-///////////////////////////////////////////////////////////////////////////
+-
+-/// Required files
++<?php
++
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * @package    core
++ * @subpackage lib
++ * @copyright  (C) 2001-3001 Eloy Lafuente (stronk7) {@link http://contiento.com}
++ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++defined('MOODLE_INTERNAL') || die();
++
++/**
++ * As we implement the singleton pattern to use this class (only one instance
++ * is shared globally), we need this helper function
++ *
++ * IMPORTANT Note: Typo3 libraries always expect lowercase charsets to use 100%
++ * its capabilities so, don't forget to make the conversion
++ * from every wrapper function!
++ *
++ * @return textlib singleton instance of textlib
++ */
++function textlib_get_instance() {
++    global $CFG;
++
++    static $instance = null;
++
++    if (!$instance) {
++        /// initialisation is delayed because we do not want this on each page ;-)
++
++    /// Required files
+     require_once($CFG->libdir.'/typo3/class.t3lib_cs.php');
+     require_once($CFG->libdir.'/typo3/class.t3lib_div.php');
+ 
+-/// If ICONV is available, lets Typo3 library use it for convert
++    /// If ICONV is available, lets Typo3 library use it for convert
+     if (extension_loaded('iconv')) {
+         $GLOBALS['TYPO3_CONF_VARS']['SYS']['t3lib_cs_convMethod'] = 'iconv';
+     /// Else if mbstring is available, lets Typo3 library use it
+@@ -41,38 +59,33 @@
+         $GLOBALS['TYPO3_CONF_VARS']['SYS']['t3lib_cs_convMethod'] = '';
+     }
+ 
+-/// If mbstring is available, lets Typo3 library use it for functions
++    /// If mbstring is available, lets Typo3 library use it for functions
+     if (extension_loaded('mbstring')) {
+         $GLOBALS['TYPO3_CONF_VARS']['SYS']['t3lib_cs_utils'] = 'mbstring';
+     } else {
+         $GLOBALS['TYPO3_CONF_VARS']['SYS']['t3lib_cs_utils'] = '';
+     }
+ 
+-/// And this directory must exist to allow Typo to cache conversion
+-/// tables when using internal functions
++    /// Tell Typo3 we are curl enabled always (mandatory since 2.0)
++        $GLOBALS['TYPO3_CONF_VARS']['SYS']['curlUse'] = '1';
++
++    /// And this directory must exist to allow Typo to cache conversion
++    /// tables when using internal functions
+     make_upload_directory('temp/typo3temp/cs');
+ 
+-/// Default mask for Typo
++    /// Make sure typo is using our dir permissions
++        $GLOBALS['TYPO3_CONF_VARS']['BE']['folderCreateMask'] = decoct($CFG->directorypermissions);
++
++    /// Default mask for Typo
+     $GLOBALS['TYPO3_CONF_VARS']['BE']['fileCreateMask'] = $CFG->directorypermissions;
+ 
+-/// This full path constants must be defined too, transforming backslashes
+-/// to forward slashed beacuse Typo3 requires it.
++    /// This full path constants must be defined too, transforming backslashes
++    /// to forward slashed beacuse Typo3 requires it.
+     define ('PATH_t3lib', str_replace('\\','/',$CFG->libdir.'/typo3/'));
+     define ('PATH_typo3', str_replace('\\','/',$CFG->libdir.'/typo3/'));
+     define ('PATH_site', str_replace('\\','/',$CFG->dataroot.'/temp/'));
+     define ('TYPO3_OS', stristr(PHP_OS,'win')&&!stristr(PHP_OS,'darwin')?'WIN':'');
+ 
+-
+-/// As we implement the singleton pattern to use this class (only one instance
+-/// is shared globally), we need this helper function
+-
+-/// IMPORTANT Note: Typo3 libraries always expect lowercase charsets to use 100%
+-///                 its capabilities so, don't forget to make the conversion
+-///                 from every wrapper function!
+-
+-function textlib_get_instance() {
+-    static $instance;
+-    if (!is_object($instance)) {
+         $instance = new textlib();
+     }
+     return $instance;
+@@ -88,6 +101,10 @@ function textlib_get_instance() {
+  * really a cool group of utilities to handle texts and encoding conversion.
+  *
+  * Take a look to its own copyright and license details.
++ *
++ * @package   moodlecore
++ * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class textlib {
+ 
+@@ -377,11 +394,11 @@ class textlib {
+     function get_encodings() {
+         $encodings = array();
+         $encodings['UTF-8'] = 'UTF-8';
+-        $winenc = strtoupper(get_string('localewincharset'));
++        $winenc = strtoupper(get_string('localewincharset', 'langconfig'));
+         if ($winenc != '') {
+             $encodings[$winenc] = $winenc;
+         }
+-        $nixenc = strtoupper(get_string('oldcharset'));
++        $nixenc = strtoupper(get_string('oldcharset', 'langconfig'));
+         $encodings[$nixenc] = $nixenc;
+ 
+         foreach ($this->typo3cs->synonyms as $enc) {
+@@ -448,5 +465,20 @@ class textlib {
+         }
+         return implode(' ', $words);
+     }
++
++    /**
++     * Locale aware sorting, the key associations are kept, values are sorted alphabetically.
++     * @param array $arr array to be sorted
++     * @param string $lang moodle language
++     * @return void, modifies parameter
++     */
++    function asort(array &$arr) {
++        if (function_exists('collator_asort')) {
++            if ($coll = collator_create(get_string('locale', 'langconfig'))) {
++                collator_asort($coll, $arr);
++                return;
++            }
++        }
++        asort($arr, SORT_LOCALE_STRING);
++    }
+ }
+-?>

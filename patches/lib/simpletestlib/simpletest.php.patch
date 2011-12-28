@@ -1,0 +1,197 @@
+diff --git a/lib/simpletestlib/simpletest.php b/lib/simpletestlib/simpletest.php
+index 6464bdc..0079a1f 100644
+--- a/lib/simpletestlib/simpletest.php
++++ b/lib/simpletestlib/simpletest.php
+@@ -1,27 +1,30 @@
+ <?php
+-    /**
++/**
+      *	Global state for SimpleTest and kicker script in future versions.
+      *	@package	SimpleTest
+      *	@subpackage	UnitTester
+      *	@version	$Id$
+      */
+ 
+-    /**#@+
++/**#@+
+      * include SimpleTest files
+      */
+-    if (version_compare(phpversion(), '5') >= 0) {
++if (version_compare(phpversion(), '5') >= 0) {
+         require_once(dirname(__FILE__) . '/reflection_php5.php');
+-    } else {
++} else {
+         require_once(dirname(__FILE__) . '/reflection_php4.php');
+-    }
+-    /**#@-*/
++}
++require_once(dirname(__FILE__) . '/default_reporter.php');
++require_once(dirname(__FILE__) . '/compatibility.php');
++/**#@-*/
+ 
+-    /**
++/**
+      *    Registry and test context. Includes a few
+      *    global options that I'm slowly getting rid of.
+      *	  @package	SimpleTest
++ *    @subpackage   UnitTester
+      */
+-    class SimpleTest {
++class SimpleTest {
+ 
+         /**
+          *    Reads the SimpleTest version from the release file.
+@@ -76,6 +79,45 @@
+         }
+ 
+         /**
++     *   Puts the object to the global pool of 'preferred' objects
++     *   which can be retrieved with SimpleTest :: preferred() method.
++     *   Instances of the same class are overwritten.
++     *   @param object $object      Preferred object
++     *   @static
++     *   @access public
++     *   @see preferred()
++     */
++    function prefer(&$object) {
++        $registry = &SimpleTest::_getRegistry();
++        $registry['Preferred'][] = &$object;
++    }
++
++    /**
++     *   Retrieves 'preferred' objects from global pool. Class filter
++     *   can be applied in order to retrieve the object of the specific
++     *   class
++     *   @param array|string $classes       Allowed classes or interfaces.
++     *   @static
++     *   @access public
++     *   @return array|object|null
++     *   @see prefer()
++     */
++    function &preferred($classes) {
++        if (! is_array($classes)) {
++            $classes = array($classes);
++        }
++        $registry = &SimpleTest::_getRegistry();
++        for ($i = count($registry['Preferred']) - 1; $i >= 0; $i--) {
++            foreach ($classes as $class) {
++                if (SimpleTestCompatibility::isA($registry['Preferred'][$i], $class)) {
++                    return $registry['Preferred'][$i];
++                }
++            }
++        }
++        return null;
++    }
++
++    /**
+          *    Test to see if a test case is in the ignore
+          *    list. Quite obviously the ignore list should
+          *    be a separate object and will be one day.
+@@ -196,11 +238,12 @@
+                     'IgnoreList' => array(),
+                     'DefaultProxy' => false,
+                     'DefaultProxyUsername' => false,
+-                    'DefaultProxyPassword' => false);
+-        }
++                'DefaultProxyPassword' => false,
++                'Preferred' => array(new HtmlReporter(), new TextReporter(), new XmlReporter()));
+     }
++}
+ 
+-    /**
++/**
+      *    Container for all components for a specific
+      *    test run. Makes things like error queues
+      *    available to PHP event handlers, and also
+@@ -208,7 +251,7 @@
+      *    the mocks.
+      *	  @package	SimpleTest
+      */
+-    class SimpleTestContext {
++class SimpleTestContext {
+         var $_test;
+         var $_reporter;
+         var $_resources;
+@@ -233,10 +276,23 @@
+             $this->_test = &$test;
+         }
+ 
++//moodlefix begins
++    /**
++     *    Unsets the current test case instance. Avoids
++     *    problems when test classes rely on their destructors
++     *    being called at a predictable time.
++     *    @access public
++     */
++    function unsetTest() {
++        $this->clear();
++        $this->_test = NULL;
++    }
++
++//moodlefix ends
+         /**
+          *    Accessor for currently running test case.
+          *    @return SimpleTestCase    Current test.
+-         *    @acess pubic
++     *    @access public
+          */
+         function &getTest() {
+             return $this->_test;
+@@ -257,7 +313,7 @@
+         /**
+          *    Accessor for current reporter.
+          *    @return SimpleReporter    Current reporter.
+-         *    @acess pubic
++     *    @access public
+          */
+         function &getReporter() {
+             return $this->_reporter;
+@@ -271,19 +327,19 @@
+          */
+         function &get($resource) {
+             if (! isset($this->_resources[$resource])) {
+-                $this->_resources[$resource] = &new $resource();
++            $this->_resources[$resource] = new $resource();
+             }
+             return $this->_resources[$resource];
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Interrogates the stack trace to recover the
+      *    failure point.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class SimpleStackTrace {
++class SimpleStackTrace {
+         var $_prefixes;
+ 
+         /**
+@@ -360,12 +416,14 @@
+             }
+             return array();
+         }
+-    }
++}
+ 
+-    /**
++/**
++ *    @package SimpleTest
++ *    @subpackage UnitTester
+      *    @deprecated
+      */
+-    class SimpleTestOptions extends SimpleTest {
++class SimpleTestOptions extends SimpleTest {
+ 
+         /**
+          *    @deprecated
+@@ -429,5 +487,5 @@
+         function getDefaultProxyPassword() {
+             return Simpletest::getDefaultProxyPassword();
+         }
+-    }
++}
+ ?>

@@ -1,0 +1,150 @@
+diff --git a/question/format/xhtml/format.php b/question/format/xhtml/format.php
+old mode 100755
+new mode 100644
+index 62e924c..0b70c45
+--- a/question/format/xhtml/format.php
++++ b/question/format/xhtml/format.php
+@@ -1,24 +1,52 @@
+ <?php 
+-// Based on default.php, included by ../import.php
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * XHTML question exporter.
++ *
++ * @package    qformat
++ * @subpackage xhtml
++ * @copyright  2005 Howard Miller
++ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++
++defined('MOODLE_INTERNAL') || die();
++
++
+ /**
+- * @package questionbank
+- * @subpackage importexport
++ * XHTML question exporter.
++ *
++ * Exports questions as static HTML.
++ *
++ * @copyright  2005 Howard Miller
++ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class qformat_xhtml extends qformat_default {
+ 
+-    function provide_export() {
++    public function provide_export() {
+       return true;
+     }
+ 
+-function repchar( $text ) {
+-    // escapes 'reserved' characters # = ~ { ) and removes new lines
+-    $reserved = array( '#','=','~','{','}',"\n","\r" );
+-    $escaped = array( '\#','\=','\~','\{','\}',' ','' );
+-
+-    return str_replace( $reserved, $escaped, $text ); 
++    protected function repchar($text) {
++        return $text;
+     }
+ 
+-function writequestion( $question ) {
++    protected function writequestion($question) {
++        global $OUTPUT;
+     // turns question into string
+     // question reflects database fields for general question and specific to type
+ 
+@@ -38,17 +66,15 @@ function writequestion( $question ) {
+     // add header
+     $expout .= "<h3>$question->name</h3>\n";
+  
+-    // format and add question text
+-    $questiontext = $question->questiontext;
+-    $format = $question->questiontextformat;
+-    $formatted_text = format_text( $questiontext, $format );
+-    $expout .= "<p class=\"questiontext\">$formatted_text</p>\n"; 
++        // Format and add the question text
++        $expout .= '<p class="questiontext">' . format_text($question->questiontext,
++                $question->questiontextformat) . "</p>\n";
+ 
+     // selection depends on question type
+     switch($question->qtype) {
+     case TRUEFALSE:
+-        $st_true = get_string( 'true','quiz' );
+-        $st_false = get_string( 'false','quiz' );
++            $st_true = get_string('true', 'qtype_truefalse');
++            $st_false = get_string('false', 'qtype_truefalse');
+         $expout .= "<ul class=\"truefalse\">\n";
+         $expout .= "  <li><input name=\"quest_$id\" type=\"radio\" value=\"$st_true\" />$st_true</li>\n";
+         $expout .= "  <li><input name=\"quest_$id\" type=\"radio\" value=\"$st_false\" />$st_false</li>\n";
+@@ -59,10 +85,10 @@ function writequestion( $question ) {
+         foreach($question->options->answers as $answer) {
+             $ans_text = $this->repchar( $answer->answer );
+             if ($question->options->single) {
+-                $expout .= "  <li><input name=\"quest_$id\" type=\"radio\" value=\"$ans_text\" />$ans_text</li>\n";
++                    $expout .= "  <li><input name=\"quest_$id\" type=\"radio\" value=\"" . s($ans_text) . "\" />$ans_text</li>\n";
+             }
+             else {
+-                $expout .= "  <li><input name=\"quest_$id\" type=\"checkbox\" value=\"$ans_text\" />$ans_text</li>\n";
++                    $expout .= "  <li><input name=\"quest_$id\" type=\"checkbox\" value=\"" . s($ans_text) . "\" />$ans_text</li>\n";
+             }
+         }
+         $expout .= "</ul>\n";
+@@ -90,7 +116,7 @@ function writequestion( $question ) {
+         // build drop down for answers
+         $dropdown = "<select name=\"quest_$id\">\n";
+         foreach($ans_list as $ans) {
+-          $dropdown .= "<option value=\"$ans\">$ans</option>\n";
++                $dropdown .= "<option value=\"" . s($ans) . "\">" . s($ans) . "</option>\n";
+         }
+         $dropdown .= "</select>\n";
+ 
+@@ -108,15 +134,15 @@ function writequestion( $question ) {
+         $expout .= "<!-- CLOZE type is not supported  -->\n";
+         break;
+     default:
+-        notify("No handler for qtype $question->qtype for GIFT export" );
++            echo $OUTPUT->notification("No handler for qtype $question->qtype for GIFT export" );
+     }
+     // close off div 
+     $expout .= "</div>\n\n\n";
+     return $expout;
+-}
++    }
+ 
+ 
+-function presave_process( $content ) {
++    protected function presave_process($content) {
+   // override method to allow us to add xhtml headers and footers
+ 
+   global $CFG;
+@@ -144,11 +170,9 @@ function presave_process( $content ) {
+   $xp .= "</html>\n";
+ 
+   return $xp;
+-}
+-
+-function export_file_extension() {
+-  return ".html";
+-}
++    }
+ 
++    public function export_file_extension() {
++        return '.html';
++    }
+ }
+-?>

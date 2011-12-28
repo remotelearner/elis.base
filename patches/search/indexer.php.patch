@@ -1,0 +1,129 @@
+diff --git a/search/indexer.php b/search/indexer.php
+index b63496a..8f2b9e3 100644
+--- a/search/indexer.php
++++ b/search/indexer.php
+@@ -7,6 +7,7 @@
+ * @subpackage search_engine
+ * @author Michael Champanis (mchampan) [cynnical@gmail.com], Valery Fremaux [valery.fremaux@club-internet.fr] > 1.8
+ * @date 2008/03/31
++* @version prepared for Moodle 2.0
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ *
+ * The indexer logic -
+@@ -25,18 +26,18 @@
+ * to the 'dbid' field in the index
+ * */
+ 
+-//this'll take some time, set up the environment
+-@set_time_limit(0);
+-@ob_implicit_flush(true);
+-@ob_end_flush();
+ 
+-    /**
+-    * includes and requires
+-    */
+-    require_once('../config.php');
+-    require_once($CFG->dirroot.'/search/lib.php');
++/**
++* includes and requires
++*/
+ 
+-//require_once("debugging.php");
++define('NO_OUTPUT_BUFFERING', true);
++
++require_once('../config.php');
++require_once($CFG->dirroot.'/search/lib.php');
++
++//this'll take some time, set up the environment
++@set_time_limit(0);
+ 
+     ini_set('include_path', $CFG->dirroot.DIRECTORY_SEPARATOR.'search'.PATH_SEPARATOR.ini_get('include_path'));
+ 
+@@ -45,11 +46,11 @@
+     require_login();
+     
+     if (empty($CFG->enableglobalsearch)) {
+-        error(get_string('globalsearchdisabled', 'search'));
++        print_error('globalsearchdisabled', 'search');
+     }
+     
+-    if (!has_capability('moodle/site:doanything', get_context_instance(CONTEXT_SYSTEM))) {
+-        error(get_string('beadmin', 'search'), "$CFG->wwwroot/login/index.php");
++    if (!has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
++        print_error('beadmin', 'search', get_login_url());
+     } 
+     
+ /// confirmation flag to prevent accidental reindexing (indexersplash.php is the correct entry point)
+@@ -67,7 +68,7 @@
+ 
+     //php5 found, continue including php5-only files
+     //require_once("$CFG->dirroot/search/Zend/Search/Lucene.php");
+-    require_once("$CFG->dirroot/search/indexlib.php");
++    require_once($CFG->dirroot.'/search/indexlib.php');
+     
+     mtrace('<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8" /></head><body>');
+     mtrace('<pre>Server Time: '.date('r',time())."\n");
+@@ -104,17 +105,10 @@
+     Zend_Search_Lucene_Analysis_Analyzer::setDefault(new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8_CaseInsensitive());
+     $index = new Zend_Search_Lucene($index_path, true);
+     
+-    /*
+-    OBSOLETE REGENERATION - DB installs with search block by now
+-    if (!$dbcontrol->checkDB()) {
+-        search_pexit("Database error. Please check settings/files.");
+-    }
+-    */
+-
+ /// New regeneration
+ 
+     mtrace('Deleting old index entries.');
+-    delete_records(SEARCH_DATABASE_TABLE);
++    $DB->delete_records(SEARCH_DATABASE_TABLE);
+     
+ /// begin timer
+ 
+@@ -133,7 +127,13 @@
+     if ($searchables){
+         foreach ($searchables as $mod) {
+         
+-            echo "start {$mod->name}";
++            //mark last update times for mods to now.
++            $indexdatestring = 'search_indexer_update_date_'.$mod->name;
++            set_config($indexdatestring, time());
++            $indexdatestring = 'search_indexer_run_date_'.$mod->name;
++            set_config($indexdatestring, time());
++
++            mtrace("starting indexing {$mod->name}\n");
+         
+             $key = 'search_in_'.$mod->name;
+             if (isset($CFG->$key) && !$CFG->$key) {
+@@ -147,18 +147,6 @@
+                 $class_file = $CFG->dirroot.'/'.$mod->location.'/'.$mod->name.'/search_document.php';
+             }
+             
+-            /*
+-            if (!file_exists($class_file)){
+-                if (defined("PATH_FOR_SEARCH_TYPE_{$mod->name}")){
+-                    eval("\$pluginpath = PATH_FOR_SEARCH_TYPE_{$mod->name}");
+-                    $class_file = "{$CFG->dirroot}/{$pluginpath}/searchlib.php";
+-                } else {
+-                   mtrace ("No search document found for plugin {$mod->name}. Ignoring.");
+-                   continue;
+-                }
+-            }
+-            */
+-         
+             if (file_exists($class_file)) {
+                 include_once($class_file);
+     
+@@ -178,6 +166,10 @@
+                                 foreach($documents as $document) {
+                                     $counter++;
+                                     
++                                    // temporary fix until MDL-24822 is resolved
++                                    if ($document->group_id == -1 and $mod->name ='forum') {
++                                        $document->group_id = 0;
++                                    }
+                                     //object to insert into db
+                                     $dbid = $dbcontrol->addDocument($document);
+                                     

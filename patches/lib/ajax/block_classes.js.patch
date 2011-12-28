@@ -1,0 +1,267 @@
+diff --git a/lib/ajax/block_classes.js b/lib/ajax/block_classes.js
+index 16ec686..8c70df3 100644
+--- a/lib/ajax/block_classes.js
++++ b/lib/ajax/block_classes.js
+@@ -2,8 +2,6 @@
+  * library for ajaxcourse formats, the classes and related functions for drag and drop blocks
+  * 
+  * this library requires a 'main' object created in calling document
+- *
+- * $Id$ 
+  */
+ 
+ 
+@@ -56,7 +54,7 @@ block_class.prototype.init_block = function(id, sGroup, config) {
+     this.originalClass = this.getEl().className;
+ 
+     this.init_buttons();
+-}
++};
+ 
+ 
+ block_class.prototype.startDrag = function(x, y) {
+@@ -90,7 +88,7 @@ block_class.prototype.startDrag = function(x, y) {
+         targetEl.opacity = .3;
+         targetEl.filter = "alpha(opacity=30)";
+     }
+-}
++};
+ 
+ block_class.prototype.endDrag = function() {
+     // reset the linked element styles
+@@ -98,7 +96,7 @@ block_class.prototype.endDrag = function() {
+     s.opacity = 1;
+     s.filter = "alpha(opacity=100)";
+     this.resetTargets();
+-    }
++};
+ 
+ 
+ block_class.prototype.onDragDrop = function(e, id) {
+@@ -122,7 +120,7 @@ block_class.prototype.onDragDrop = function(e, id) {
+     //YAHOO.util.DDM.moveToEl(el, oDD.getEl());
+   
+     this.resetTargets();
+-}
++};
+ 
+ 
+ block_class.prototype.find_target = function(column){
+@@ -136,7 +134,7 @@ block_class.prototype.find_target = function(column){
+        insertbefore = column.blocks[collisions[0][0]];    
+        
+         return insertbefore;
+-    }
++    };
+ 
+ block_class.prototype.resetTargets = function() {
+         // reset the target styles
+@@ -147,7 +145,7 @@ block_class.prototype.resetTargets = function() {
+             targetEl.opacity = 1;
+             targetEl.filter = "alpha(opacity=100)";            
+         }
+-    }
++    };
+ 
+ block_class.prototype.move_block = function(columnid){
+         if(this.debug)YAHOO.log("Dropped on "+columnid[0]);
+@@ -157,51 +155,40 @@ block_class.prototype.move_block = function(columnid){
+ 
+         if(this.debug && inserttarget != null)YAHOO.log("moving "+this.getEl().id+" before "+inserttarget.getEl().id+" - parentNode="+this.getEl().parentNode.id);
+ 
+-        if (this.getEl() == inserttarget) {
++        if(this == inserttarget){
+             if(this.debug)YAHOO.log("Dropping on self, resetting");
+             this.endDrag();
+             return;
+         }
+ 
+         //remove from document
+-        if (this.getEl().parentNode != null) {
++        if(this.getEl().parentNode != null)
+             this.getEl().parentNode.removeChild(this.getEl());
+-        }
++
+         //insert into correct place
+-        if (inserttarget != null && inserttarget.getEl().parentNode != null) {
++        if(inserttarget != null ){
+             inserttarget.getEl().parentNode.insertBefore(this.getEl(),inserttarget.getEl());           
+-            positiontoinsert = "before";
+-            if (inserttarget.getEl().id != 'rinst0' || inserttarget.getEl().id == 'rinst0'){
+-                positiontoinsertid = inserttarget.getEl().id;
+-            } else if (main.adminBlock.parentNode.nextSibling != null) {
+-                positiontoinsertid = main.adminBlock.parentNode.nextSibling.id;
+-            } else {
+-                positiontoinsertid = inserttarget.getEl().id;
+-            }
+             
+-        } else if (column == main.rightcolumn && column.getEl() != null ) {//if right side insert before admin block
+-            column.getEl().insertBefore(this.getEl(),main.tempBlock.childNode);            
+-            positiontoinsert = "after";
+-            positiontoinsertid = main.tempBlock.parentNode;
+-        } else {
++        }else if(column == main.rightcolumn){//if right side insert before admin block
++            column.getEl().insertBefore(this.getEl(),main.adminBlock);
++
++        }else{
+             column.getEl().appendChild(this.getEl());
+-            positiontoinsert = "after";
+-            positiontoinsertid = column.getEl().id;
+         }
+                
+         this.reset_regions();
+         
+         //remove block from current array
+-        if (main.rightcolumn.has_block(this)) {
++        if(main.rightcolumn.has_block(this))
+               main.rightcolumn.remove_block(this);
+-        } else if (main.leftcolumn.has_block(this)) {
++
++        else if(main.leftcolumn.has_block(this))
+               main.leftcolumn.remove_block(this);
+-        }
+         
+         //insert into new array
+         column.insert_block(this,inserttarget);
+ 
+-}
++    };
+ 
+ 
+ block_class.prototype.reset_regions = function() {
+@@ -209,14 +196,14 @@ block_class.prototype.reset_regions = function() {
+     for (i=0; i<blockcount; i++) {
+         main.blocks[i].region = YAHOO.util.Region.getRegion(main.blocks[i].getEl());        
+     }
+-}
++};
+ 
+ 
+ block_class.prototype.init_buttons = function() {
+-    var viewbutton = main.mk_button('a', '/t/hide.gif', main.portal.strings['hide'], [['class', 'icon hide']]);
++    var viewbutton = main.mk_button('a', main.portal.icons['hide'], main.portal.strings['hide'], [['class', 'icon hide']]);
+     YAHOO.util.Event.addListener(viewbutton, 'click', this.toggle_hide, this, true);
+ 
+-    var deletebutton = main.mk_button('a', '/t/delete.gif', main.portal.strings['delete'], [['class', 'icon delete']]);
++    var deletebutton = main.mk_button('a', main.portal.icons['delete'], main.portal.strings['delete'], [['class', 'icon delete']]);
+     YAHOO.util.Event.addListener(deletebutton, 'click', this.delete_button, this, true);
+ 
+     this.viewbutton = viewbutton;
+@@ -227,7 +214,7 @@ block_class.prototype.init_buttons = function() {
+         buttonCont.appendChild(viewbutton);
+         buttonCont.appendChild(deletebutton);
+     }
+-}
++};
+ 
+ 
+ block_class.prototype.toggle_hide = function(e, target, isCosmetic) {
+@@ -235,7 +222,7 @@ block_class.prototype.toggle_hide = function(e, target, isCosmetic) {
+     var strshow = main.portal.strings['show'];
+     if (YAHOO.util.Dom.hasClass(this.getEl(), 'hidden')) {
+         this.getEl().className = this.originalClass;
+-        this.viewbutton.childNodes[0].src = this.viewbutton.childNodes[0].src.replace(/show.gif/i, 'hide.gif');
++        this.viewbutton.childNodes[0].src = this.viewbutton.childNodes[0].src.replace(/show./i, 'hide.');
+         this.viewbutton.childNodes[0].alt = this.viewbutton.childNodes[0].alt.replace(strshow, strhide);
+         this.viewbutton.title = this.viewbutton.title.replace(strshow, strhide);
+ 
+@@ -245,8 +232,8 @@ block_class.prototype.toggle_hide = function(e, target, isCosmetic) {
+         }
+     } else {
+         this.originalClass = this.getEl().className;
+-        this.getEl().className = "hidden sideblock";
+-        this.viewbutton.childNodes[0].src = this.viewbutton.childNodes[0].src.replace(/hide.gif/i,'show.gif');
++        this.getEl().className = "hidden block";
++        this.viewbutton.childNodes[0].src = this.viewbutton.childNodes[0].src.replace(/hide./i,'show.');
+         this.viewbutton.childNodes[0].alt = this.viewbutton.childNodes[0].alt.replace(strhide, strshow);
+         this.viewbutton.title = this.viewbutton.title.replace(strhide, strshow);
+ 
+@@ -255,7 +242,7 @@ block_class.prototype.toggle_hide = function(e, target, isCosmetic) {
+                     'value=0&instanceId='+this.instanceId);
+         }
+     }
+-}
++};
+ 
+ 
+ block_class.prototype.delete_button = function() { 
+@@ -278,18 +265,18 @@ block_class.prototype.delete_button = function() {
+     if (this.debug) {
+         YAHOO.log("Deleting "+this.getEl().id);
+     }
+-}
++};
+ 
+ 
+ block_class.prototype.updatePosition = function(index, columnId) {
+     //update the db for the position    
+-    main.connectQueue_add('POST', 'class=block&field=position&positiontoinsert='+positiontoinsert +'&positiontoinsertid='+positiontoinsertid, null,
++    main.connectQueue_add('POST', 'class=block&field=position', null,
+             'value='+index+'&column='+columnId+'&instanceId='+this.instanceId);
+ 
+     if (this.debug) {
+         YAHOO.log("Updating position of "+this.getEl().id+" to index "+index+" on column "+columnId);
+     }
+-}
++};
+ 
+ 
+ /*
+@@ -313,7 +300,7 @@ column_class.prototype.init_column = function(id, group,config,ident){
+ //      YAHOO.log("init_column "+id+"-"+el.id);
+         this.region = YAHOO.util.Region.getRegion(id);    
+ 
+-    }
++    };
+ 
+ 
+ column_class.prototype.find_sub_collision = function(dragRegion){ 
+@@ -332,18 +319,18 @@ column_class.prototype.find_sub_collision = function(dragRegion){
+             }
+         }
+       return collisions;  
+-    }
++    };
+ 
+ column_class.prototype.add_block = function(el){
+        this.blocks[this.blocks.length] = el;
+-     }
++     };
+ 
+ column_class.prototype.insert_block = function(el,targetel){
+         var blockcount = this.blocks.length;
+         var found = -1;
+         var tempStore = nextStore = null;
+         for(var i=0;i<blockcount;i++){
+-            if (found >= 0) {
++            if(found > 0){
+                 tempStore = this.blocks[i];
+                 this.blocks[i] = nextStore;
+                 nextStore = tempStore;           
+@@ -363,7 +350,7 @@ column_class.prototype.insert_block = function(el,targetel){
+         }
+         
+         el.updatePosition(found,this.ident);
+-    }
++    };
+ 
+ column_class.prototype.has_block = function(el){
+         var blockcount = this.blocks.length;
+@@ -371,7 +358,7 @@ column_class.prototype.has_block = function(el){
+             if(this.blocks[i]==el)
+                  return true;
+         return false;
+-    }
++    };
+     
+     
+ column_class.prototype.remove_block = function(el){
+@@ -390,7 +377,7 @@ column_class.prototype.remove_block = function(el){
+             }
+         }
+         YAHOO.log("column "+this.indent+" has "+blockcount+"blocks");
+-    }
++    };
+     
+     
+     

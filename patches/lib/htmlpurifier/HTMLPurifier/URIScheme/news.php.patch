@@ -1,0 +1,16 @@
+diff --git a/lib/htmlpurifier/HTMLPurifier/URIScheme/news.php b/lib/htmlpurifier/HTMLPurifier/URIScheme/news.php
+index f5f54f4..84a6748 100644
+--- a/lib/htmlpurifier/HTMLPurifier/URIScheme/news.php
++++ b/lib/htmlpurifier/HTMLPurifier/URIScheme/news.php
+@@ -6,9 +6,9 @@
+ class HTMLPurifier_URIScheme_news extends HTMLPurifier_URIScheme {
+ 
+     public $browsable = false;
++    public $may_omit_host = true;
+ 
+-    public function validate(&$uri, $config, $context) {
+-        parent::validate($uri, $config, $context);
++    public function doValidate(&$uri, $config, $context) {
+         $uri->userinfo = null;
+         $uri->host     = null;
+         $uri->port     = null;

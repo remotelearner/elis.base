@@ -1,0 +1,21 @@
+diff --git a/mod/README.txt b/mod/README.txt
+index 5e54d21..c9c4152 100644
+--- a/mod/README.txt
++++ b/mod/README.txt
+@@ -6,13 +6,13 @@ These are main modules in Moodle, allowing various activities.
+ 
+ Each of these modules contains a number of expected components:
+ 
+-  mod.html: a form to setup/update a module instance
++  mod_form.php: a form to setup/update a module instance
+ 
+   version.php: defines some meta-info and provides upgrading code
+ 
+-  icon.gif: a 16x16 icon for the module
++  pix/icon.gif: a 16x16 icon for the module
+ 
+-  db/mysql.sql: an SQL dump of all the required db tables and data
++  db/install.xml: an SQL dump of all the required db tables and data
+  
+   index.php: a page to list all instances in a course
+ 

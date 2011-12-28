@@ -1,0 +1,92 @@
+diff --git a/mod/glossary/formats/TEMPLATE/TEMPLATE_format.php b/mod/glossary/formats/TEMPLATE/TEMPLATE_format.php
+old mode 100755
+new mode 100644
+index cc54574..45d0899
+--- a/mod/glossary/formats/TEMPLATE/TEMPLATE_format.php
++++ b/mod/glossary/formats/TEMPLATE/TEMPLATE_format.php
+@@ -1,11 +1,10 @@
+-<?php  // $Id$
++<?php
+ 
+-function glossary_show_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='', $hook='', $printicons=1, $ratings=NULL, $aliases=true) {
++function glossary_show_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='', $hook='', $printicons=1, $aliases=true) {
++    global $CFG, $USER, $DB, $OUTPUT;
+ 
+-    global $CFG, $USER;
+     
+-
+-    $user = get_record('user', 'id', $entry->userid);
++    $user = $DB->get_record('user', array('id'=>$entry->userid));
+     $strby = get_string('writtenby', 'glossary');
+ 
+     if ($entry) {
+@@ -16,7 +15,7 @@ function glossary_show_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='',
+ 
+         //Use this function to show author's image
+         //Comments: Configuration not supported
+-        print_user_picture($user, $course->id, $user->picture);
++        echo $OUTPUT->user_picture($user, array('courseid'=>$course->id));
+ 
+         //Line separator to show this template fine. :-)
+         echo '<br />';
+@@ -24,7 +23,7 @@ function glossary_show_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='',
+         //Use this code to show author's name
+         //Comments: Configuration not supported
+         $fullname = fullname($user);
+-        $by = new object();
++        $by = new stdClass();
+         $by->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id.'">'.$fullname.'</a>';
+         $by->date = userdate($entry->timemodified);
+         echo '<span class="author">'.get_string('bynameondate', 'forum', $by).'</span>' . '<br />';
+@@ -58,7 +57,7 @@ function glossary_show_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='',
+         //----Define if the attachment must be showed into a 100% width table
+         $attachmentinsidetable = true; //Values: true, false (default true)
+         //Call the function
+-        glossary_print_entry_attachment($entry,$attachmentformat,$attachmentalign,$attachmentinsidetable);
++        glossary_print_entry_attachment($entry, $cm, $attachmentformat, $attachmentalign, $attachmentinsidetable);
+ 
+         //Line separator to show this template fine. :-)
+         echo "<br />\n";
+@@ -77,7 +76,7 @@ function glossary_show_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='',
+ 
+         //Use this function to show the definition 
+         //Comments: Configuration not supported
+-        glossary_print_entry_definition($entry);
++        glossary_print_entry_definition($entry, $glossary, $cm);
+ 
+         //Line separator to show this template fine. :-)
+         echo "<br />\n";
+@@ -87,13 +86,10 @@ function glossary_show_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='',
+         //----Define when to show the aliases popup
+         //    use it only if you are really sure!
+         //$aliases = true; //Values: true, false (Default: true)
+-        //----Uncoment this line to avoid ratings being showed
+-        //    use it only if you are really sure! You can define this in the glossary conf. page.
+-        //$ratings = NULL;
+         //----Uncoment this line to avoid editing icons being showed
+         //    use it only if you are really sure!
+         //$printicons = false;
+-        $return = glossary_print_entry_lower_section($course, $cm, $glossary, $entry, $mode, $hook, $printicons, $ratings, $aliases);
++        glossary_print_entry_lower_section($course, $cm, $glossary, $entry, $mode, $hook, $printicons, $aliases);
+         
+         echo '</td>';
+         echo '</tr>';
+@@ -103,11 +99,9 @@ function glossary_show_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='',
+         print_string('noentry', 'glossary');
+         echo '</div>';
+     }
+-
+-    return $return;
+ }
+ 
+-function glossary_print_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='', $hook='', $printicons=1, $ratings=NULL) {
++function glossary_print_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode='', $hook='', $printicons=1) {
+ 
+     //The print view for this format is exactly the normal view, so we use it
+     //Anyway, you can modify this to use your own print format!!
+@@ -120,4 +114,4 @@ function glossary_print_entry_TEMPLATE($course, $cm, $glossary, $entry, $mode=''
+ 
+ }
+ 
+-?>
++

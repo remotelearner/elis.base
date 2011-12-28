@@ -1,0 +1,22 @@
+diff --git a/course/format/scorm/config.php b/course/format/scorm/config.php
+old mode 100755
+new mode 100644
+index 289ef67..13bd6d6
+--- a/course/format/scorm/config.php
++++ b/course/format/scorm/config.php
+@@ -1,4 +1,4 @@
+-<?php //$Id$
++<?php
+ //
+ // Optional course format configuration file
+ //
+@@ -6,7 +6,6 @@
+ // social format.
+ //
+ // The default blocks layout for this course format:
+-    $format['defaultblocks'] = 'participants,social_activities,admin,course_list:'.
+-                               'news_items,recent_activity,calendar_upcoming';
++    $format['defaultblocks'] = ':news_items,recent_activity,calendar_upcoming';
++
+ 
+-?>

@@ -1,0 +1,177 @@
+diff --git a/admin/xmldb/actions/edit_table_save/edit_table_save.class.php b/admin/xmldb/actions/edit_table_save/edit_table_save.class.php
+index 19f4c3c..4c273da 100644
+--- a/admin/xmldb/actions/edit_table_save/edit_table_save.class.php
++++ b/admin/xmldb/actions/edit_table_save/edit_table_save.class.php
+@@ -1,32 +1,33 @@
+-<?php // $Id$
+-
+-///////////////////////////////////////////////////////////////////////////
+-//                                                                       //
+-// NOTICE OF COPYRIGHT                                                   //
+-//                                                                       //
+-// Moodle - Modular Object-Oriented Dynamic Learning Environment         //
+-//          http://moodle.com                                            //
+-//                                                                       //
+-// Copyright (C) 1999 onwards Martin Dougiamas        http://dougiamas.com  //
+-//           (C) 2001-3001 Eloy Lafuente (stronk7) http://contiento.com  //
+-//                                                                       //
+-// This program is free software; you can redistribute it and/or modify  //
+-// it under the terms of the GNU General Public License as published by  //
+-// the Free Software Foundation; either version 2 of the License, or     //
+-// (at your option) any later version.                                   //
+-//                                                                       //
+-// This program is distributed in the hope that it will be useful,       //
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+-// GNU General Public License for more details:                          //
+-//                                                                       //
+-//          http://www.gnu.org/copyleft/gpl.html                         //
+-//                                                                       //
+-///////////////////////////////////////////////////////////////////////////
+-
+-/// This class will save the changes performed to the name and comment of
+-/// one table
++<?php
++
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * @package   xmldb-editor
++ * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
+ 
++/**
++ * This class will save changes in table name and/or comments
++ *
++ * @package   xmldb-editor
++ * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
+ class edit_table_save extends XMLDBAction {
+ 
+     /**
+@@ -42,6 +43,7 @@ class edit_table_save extends XMLDBAction {
+             'tablenameempty' => 'xmldb',
+             'incorrecttablename' => 'xmldb',
+             'duplicatetablename' => 'xmldb',
++            'back' => 'xmldb',
+             'administration' => ''
+         ));
+     }
+@@ -57,26 +59,28 @@ class edit_table_save extends XMLDBAction {
+         $result = true;
+ 
+     /// Set own core attributes
+-        $this->does_generate = ACTION_NONE;
+-        //$this->does_generate = ACTION_GENERATE_HTML;
++        //$this->does_generate = ACTION_NONE;
++        $this->does_generate = ACTION_GENERATE_HTML;
+ 
+     /// These are always here
+         global $CFG, $XMLDB;
+ 
+     /// Do the job, setting result as needed
+ 
+-        if (!data_submitted('nomatch')) { ///Basic prevention
+-            error('Wrong action call');
++        if (!data_submitted()) { ///Basic prevention
++            print_error('wrongcall', 'error');
+         }
+ 
+     /// Get parameters
+         $dirpath = required_param('dir', PARAM_PATH);
+-        $dirpath = $CFG->dirroot . stripslashes_safe($dirpath);
++        $dirpath = $CFG->dirroot . $dirpath;
+ 
+         $tableparam = strtolower(required_param('table', PARAM_PATH));
+         $name = substr(trim(strtolower(required_param('name', PARAM_PATH))),0,28);
+         $comment = required_param('comment', PARAM_CLEAN);
+-        $comment = stripslashes_safe($comment);
++        $comment = $comment;
++
++        $dbdir =& $XMLDB->dbdirs[$dirpath];
+ 
+         $editeddir =& $XMLDB->editeddirs[$dirpath];
+         $structure =& $editeddir->xml_file->getStructure();
+@@ -99,20 +103,17 @@ class edit_table_save extends XMLDBAction {
+         }
+ 
+         if (!empty($errors)) {
+-            $temptable = new XMLDBTable($name);
++            $temptable = new xmldb_table($name);
+                                                                                                                                       /// Prepare the output
+-            $site = get_site();
+-            $navlinks = array();
+-            $navlinks[] = array('name' => $this->str['administration'], 'link' => '../index.php', 'type' => 'misc');
+-            $navlinks[] = array('name' => 'XMLDB', 'link' => 'index.php', 'type' => 'misc');
+-            $navigation = build_navigation($navlinks);
+-            print_header("$site->shortname: XMLDB", "$site->fullname", $navigation);
+-            notice ('<p>' .implode(', ', $errors) . '</p>
+-                     <p>' . $temptable->readableInfo(),
+-                     'index.php?action=edit_table&amp;table=' . $tableparam . '&amp;dir=' . urlencode(str_replace($CFG->dirroot, '', $dirpath)));
+-            die; /// re-die :-P
+-        }
++            $o = '<p>' .implode(', ', $errors) . '</p>
++                  <p>' . $temptable->getName() . '</p>';
++            $o.= '<a href="index.php?action=edit_table&amp;table=' . $tableparam .
++                 '&amp;dir=' . urlencode(str_replace($CFG->dirroot, '', $dirpath)) . '">[' . $this->str['back'] . ']</a>';
++            $this->output = $o;
++
+ 
++    /// Continue if we aren't under errors
++        } else if (empty($errors)) {
+     /// If there is one name change, do it, changing the prev and next
+     /// atributes of the adjacent tables
+         if ($tableparam != $name) {
+@@ -127,18 +128,36 @@ class edit_table_save extends XMLDBAction {
+                 $next->setPrevious($name);
+                 $next->setChanged(true);
+             }
++            /// Table has changed
++                $table->setChanged(true);
+         }
+ 
+     /// Set comment
++            if ($table->getComment() != $comment) {
+         $table->setComment($comment);
++            /// Table has changed
++                $table->setChanged(true);
++            }
++
++        /// Recalculate the hash
++            $structure->calculateHash(true);
++
++        /// If the hash has changed from the original one, change the version
++        /// and mark the structure as changed
++            $origstructure =& $dbdir->xml_file->getStructure();
++            if ($structure->getHash() != $origstructure->getHash()) {
++                $structure->setVersion(userdate(time(), '%Y%m%d', 99, false));
++                $structure->setChanged(true);
++            }
+ 
+     /// Launch postaction if exists (leave this here!)
+         if ($this->getPostAction() && $result) {
+             return $this->launch($this->getPostAction());
+         }
++        }
+ 
+     /// Return ok if arrived here
+         return $result;
+     }
+ }
+-?>
++

@@ -1,0 +1,13 @@
+diff --git a/mod/data/preset/imagegallery/listtemplate.html b/mod/data/preset/imagegallery/listtemplate.html
+index 8684de7..2dafacc 100644
+--- a/mod/data/preset/imagegallery/listtemplate.html
++++ b/mod/data/preset/imagegallery/listtemplate.html
+@@ -2,7 +2,7 @@
+ <table class="pictureframe"><tr><td>
+ <table class="picture">
+ <tr><td><div class="listimage">[[image]]</div></td></tr>
+-<tr><td align="right">##more## ##edit## ##delete## ##approve##</td></tr>
++<tr><td align="right">##more## ##edit## ##delete## ##approve## ##export##</td></tr>
+ </table>
+ </td></tr></table>
+ </div>

@@ -1,0 +1,359 @@
+diff --git a/admin/health.php b/admin/health.php
+index ced7225..e18a052 100644
+--- a/admin/health.php
++++ b/admin/health.php
+@@ -1,15 +1,13 @@
+-<?php  // $Id$
++<?php
+ 
+     ob_start(); //for whitespace test
+     require_once('../config.php');
+ 
+     // extra whitespace test - intentionally breaks cookieless mode
+     $extraws = '';
+-    while (true) {
++    while (ob_get_level()) {
+         $extraws .= ob_get_contents();
+-        if (!@ob_end_clean()) {
+-            break;
+-        }
++        ob_end_clean();
+     }
+ 
+     require_once($CFG->libdir.'/adminlib.php');
+@@ -28,7 +26,7 @@
+ 
+     $site = get_site();
+ 
+-    admin_externalpage_print_header();
++    echo $OUTPUT->header();
+ 
+ echo <<<STYLES
+ <style type="text/css">
+@@ -100,12 +98,13 @@ STYLES;
+     }
+ 
+ 
+-    admin_externalpage_print_footer();
++    echo $OUTPUT->footer();
+ 
+ 
+ function health_find_problems() {
++    global $OUTPUT;
+ 
+-    print_heading(get_string('healthcenter'));
++    echo $OUTPUT->heading(get_string('healthcenter'));
+ 
+     $issues   = array(
+         SEVERITY_CRITICAL    => array(),
+@@ -139,7 +138,7 @@ function health_find_problems() {
+         echo '</div>';
+     }
+     else {
+-        print_heading(get_string('healthproblemsdetected'));
++        echo $OUTPUT->heading(get_string('healthproblemsdetected'));
+         $severities = array(SEVERITY_CRITICAL, SEVERITY_SIGNIFICANT, SEVERITY_ANNOYANCE, SEVERITY_NOTICE);
+         foreach($severities as $severity) {
+             if(!empty($issues[$severity])) {
+@@ -158,6 +157,7 @@ function health_find_problems() {
+ }
+ 
+ function health_print_solution($classname) {
++    global $OUTPUT;
+     $problem = new $classname;
+     $data = array(
+         'title'       => $problem->title(),
+@@ -166,8 +166,8 @@ function health_print_solution($classname) {
+         'solution'    => $problem->solution()
+     );
+ 
+-    print_heading(get_string('healthcenter'));
+-    print_heading(get_string('healthproblemsolution'));
++    echo $OUTPUT->heading(get_string('healthcenter'));
++    echo $OUTPUT->heading(get_string('healthproblemsolution'));
+     echo '<dl class="healthissues '.$data['severity'].'">';
+     echo '<dt>'.$data['title'].'</dt>';
+     echo '<dd>'.$data['description'].'</dd>';
+@@ -196,32 +196,6 @@ class problem_base {
+     }
+ }
+ 
+-class problem_000001 extends problem_base {
+-    function title() {
+-        return 'Invalid value for $CFG->dirroot';
+-    }
+-    function exists() {
+-        global $CFG;
+-        $dirroot = dirname(realpath('../index.php'));
+-        if (!empty($dirroot) && $dirroot != $CFG->dirroot) {
+-            return true;
+-        }
+-        return false;
+-    }
+-    function severity() {
+-        return SEVERITY_CRITICAL;
+-    }
+-    function description() {
+-        global $CFG;
+-        return 'Your <strong>config.php</strong> file contains the setting <strong>$CFG-&gt;dirroot = "'.$CFG->dirroot.'"</strong>, which is incorrect. Unless you correct this problem, Moodle will not function correctly, if at all.';
+-    }
+-    function solution() {
+-        global $CFG;
+-        $dirroot = dirname(realpath('../index.php'));
+-        return 'You need to edit your <strong>config.php</strong> file. Find the line which reads <pre>$CFG->dirroot = \''.$CFG->dirroot.'\';</pre> and change it to read <pre>$CFG->dirroot = \''.$dirroot.'\'</pre>';
+-    }
+-}
+-
+ class problem_000002 extends problem_base {
+     function title() {
+         return 'Extra characters at the end of config.php or other library function';
+@@ -275,8 +249,8 @@ class problem_000004 extends problem_base {
+         return 'cron.php is not set up to run automatically';
+     }
+     function exists() {
+-        global $CFG;
+-        $lastcron = get_field_sql('SELECT max(lastcron) FROM '.$CFG->prefix.'modules');
++        global $DB;
++        $lastcron = $DB->get_field_sql('SELECT max(lastcron) FROM {modules}');
+         return (time() - $lastcron > 3600 * 24);
+     }
+     function severity() {
+@@ -353,8 +327,10 @@ class problem_000008 extends problem_base {
+         return 'PHP: memory_limit cannot be controlled by Moodle';
+     }
+     function exists() {
++        global $CFG;
++
+         $oldmemlimit = @ini_get('memory_limit');
+-        if(empty($oldmemlimit)) {
++        if (empty($oldmemlimit)) {
+             // PHP not compiled with memory limits, this means that it's
+             // probably limited to 8M or in case of Windows not at all.
+             // We can ignore it for now - there is not much to test anyway
+@@ -362,12 +338,9 @@ class problem_000008 extends problem_base {
+             return false;
+         }
+         $oldmemlimit = get_real_size($oldmemlimit);
+-        //now lets change the memory limit to something unique below 128M==134217728
+-        if (empty($CFG->extramemorylimit)) {
+-            raise_memory_limit('128M');
+-        } else {
+-            raise_memory_limit($CFG->extramemorylimit);
+-        }
++        //now lets change the memory limit to something higher
++        $newmemlimit = ($oldmemlimit + 1024*1024*5);
++        raise_memory_limit($newmemlimit);
+         $testmemlimit = get_real_size(@ini_get('memory_limit'));
+         //verify the change had any effect at all
+         if ($oldmemlimit == $testmemlimit) {
+@@ -415,7 +388,7 @@ class problem_000009 extends problem_base {
+         return 'You should change the password of the user <strong>'.$CFG->dbuser.'</strong> both in your database and in your Moodle <strong>config.php</strong> immediately!'.($CFG->dbuser != 'root'?'':' It would also be a good idea to change the user account from root to something else, because this would lessen the impact in the event that your database is compromised anyway.');
+     }
+ }
+-
++/* // not implemented in 2.0 yet
+ class problem_000010 extends problem_base {
+     function title() {
+         return 'Uploaded files: slasharguments disabled or not working';
+@@ -500,50 +473,15 @@ class problem_000010 extends problem_base {
+             default:  return 0;
+         }
+     }
+-}
+-
+-class problem_000011 extends problem_base {
+-    function title() {
+-        return 'Session errors detected';
+-    }
+-    function exists() {
+-        global $CFG;
+-        return isset($CFG->session_error_counter);
+-    }
+-    function severity() {
+-        return SEVERITY_ANNOYANCE;
+-    }
+-    function description() {
+-        global $CFG;
+-        if (isset($CFG->session_error_counter)) {
+-            return 'Session problems were detected. Total count: '.$CFG->session_error_counter;
+-        } else {
+-            return 'No session errors detected.';
+-        }
+-    }
+-    function solution() {
+-        global $CFG;
+-        if (optional_param('resetsesserrorcounter', 0, PARAM_BOOL)) {
+-            if (get_field('config', 'name', 'name', 'session_error_counter')) {
+-                delete_records('config', 'name', 'session_error_counter');
+-            }
+-            return 'Error counter was cleared.';
+-        } else {
+-            return '<p>Session errors can be caused by:</p><ul>' .
+-            '<li>unresolved problem in server software (aka random switching of users),</li>' .
+-            '<li>blocked or modified cookies,</li>' .
+-            '<li>deleting of active session files.</li>' .
+-            '</ul><p><a href="'.me().'&amp;resetsesserrorcounter=1">Reset counter</a></p>';
+-        }
+-    }
+-}
++}*/
+ 
+ class problem_000012 extends problem_base {
+     function title() {
+         return 'Random questions data consistency';
+     }
+     function exists() {
+-        return record_exists_select('question', "qtype = 'random' AND parent <> id");
++        global $DB;
++        return $DB->record_exists_select('question', "qtype = 'random' AND parent <> id", array());
+     }
+     function severity() {
+         return SEVERITY_ANNOYANCE;
+@@ -566,16 +504,16 @@ class problem_000013 extends problem_base {
+         return 'Multi-answer questions data consistency';
+     }
+     function exists() {
+-        global $CFG;
+-        $positionexpr = sql_position(sql_concat("','", "q.id", "','"), 
+-                sql_concat("','", "qma.sequence", "','"));
+-        return record_exists_sql("
+-                SELECT * FROM {$CFG->prefix}question q
+-                    JOIN {$CFG->prefix}question_multianswer qma ON $positionexpr > 0
++        global $DB;
++        $positionexpr = $DB->sql_position($DB->sql_concat("','", "q.id", "','"),
++                $DB->sql_concat("','", "qma.sequence", "','"));
++        return $DB->record_exists_sql("
++                SELECT * FROM {question} q
++                    JOIN {question_multianswer} qma ON $positionexpr > 0
+                 WHERE qma.question <> q.parent") ||
+-            record_exists_sql("
+-                SELECT * FROM {$CFG->prefix}question q
+-                    JOIN {$CFG->prefix}question parent_q ON parent_q.id = q.parent
++            $DB->record_exists_sql("
++                SELECT * FROM {question} q
++                    JOIN {question} parent_q ON parent_q.id = q.parent
+                 WHERE q.category <> parent_q.category");
+     }
+     function severity() {
+@@ -603,10 +541,10 @@ class problem_000014 extends problem_base {
+         return 'Only multianswer and random questions should be the parent of another question';
+     }
+     function exists() {
+-        global $CFG;
+-        return record_exists_sql("
+-                SELECT * FROM {$CFG->prefix}question q
+-                    JOIN {$CFG->prefix}question parent_q ON parent_q.id = q.parent
++        global $DB;
++        return $DB->record_exists_sql("
++                SELECT * FROM {question} q
++                    JOIN {question} parent_q ON parent_q.id = q.parent
+                 WHERE parent_q.qtype NOT IN ('random', 'multianswer')");
+     }
+     function severity() {
+@@ -628,32 +566,30 @@ class problem_000015 extends problem_base {
+         return 'Question categories should belong to a valid context';
+     }
+     function exists() {
+-        global $CFG;
+-        return record_exists_sql("
+-            SELECT qc.*, (SELECT COUNT(1) FROM {$CFG->prefix}question q WHERE q.category = qc.id) AS numquestions
+-            FROM {$CFG->prefix}question_categories qc
+-                LEFT JOIN {$CFG->prefix}context con ON qc.contextid = con.id
++        global $DB;
++        return $DB->record_exists_sql("
++            SELECT qc.*, (SELECT COUNT(1) FROM {question} q WHERE q.category = qc.id) AS numquestions
++            FROM {question_categories} qc
++                LEFT JOIN {context} con ON qc.contextid = con.id
+             WHERE con.id IS NULL");
+     }
+     function severity() {
+         return SEVERITY_ANNOYANCE;
+     }
+     function description() {
+-        global $CFG;
+-        $problemcategories = get_records_sql("
+-            SELECT qc.id, qc.name, qc.contextid, (SELECT COUNT(1) FROM {$CFG->prefix}question q WHERE q.category = qc.id) AS numquestions
+-            FROM {$CFG->prefix}question_categories qc
+-                LEFT JOIN {$CFG->prefix}context con ON qc.contextid = con.id
++        global $DB;
++        $problemcategories = $DB->get_records_sql("
++            SELECT qc.id, qc.name, qc.contextid, (SELECT COUNT(1) FROM {question} q WHERE q.category = qc.id) AS numquestions
++            FROM {question_categories} qc
++                LEFT JOIN {context} con ON qc.contextid = con.id
+             WHERE con.id IS NULL
+             ORDER BY numquestions DESC, qc.name");
+         $table = '<table><thead><tr><th>Cat id</th><th>Category name</th>' .
+         "<th>Context id</th><th>Num Questions</th></tr></thead><tbody>\n";
+-        if ($problemcategories) {
+             foreach ($problemcategories as $cat) {
+                 $table .= "<tr><td>$cat->id</td><td>" . s($cat->name) . "</td><td>" .
+                 $cat->contextid ."</td><td>$cat->numquestions</td></tr>\n";
+             }
+-        }
+         $table .= '</tbody></table>';
+         return '<p>All question categories are linked to a context id, and, ' .
+         'the context they are linked to must exist. The following categories ' .
+@@ -678,36 +614,34 @@ class problem_000016 extends problem_base {
+         return 'Question categories should belong to the same context as their parent';
+     }
+     function exists() {
+-        global $CFG;
+-        return record_exists_sql("
++        global $DB;
++        return $DB->record_exists_sql("
+             SELECT parent_qc.id AS parent, child_qc.id AS child, child_qc.contextid
+-            FROM {$CFG->prefix}question_categories child_qc
+-                JOIN {$CFG->prefix}question_categories parent_qc ON child_qc.parent = parent_qc.id
++            FROM {question_categories} child_qc
++                JOIN {question_categories} parent_qc ON child_qc.parent = parent_qc.id
+             WHERE child_qc.contextid <> parent_qc.contextid");
+     }
+     function severity() {
+         return SEVERITY_ANNOYANCE;
+     }
+     function description() {
+-        global $CFG;
+-        $problemcategories = get_records_sql("
++        global $DB;
++        $problemcategories = $DB->get_records_sql("
+             SELECT
+                 parent_qc.id AS parentid, parent_qc.name AS parentname, parent_qc.contextid AS parentcon,
+                 child_qc.id AS childid, child_qc.name AS childname, child_qc.contextid AS childcon
+-            FROM {$CFG->prefix}question_categories child_qc
+-                JOIN {$CFG->prefix}question_categories parent_qc ON child_qc.parent = parent_qc.id
++            FROM {question_categories} child_qc
++                JOIN {question_categories} parent_qc ON child_qc.parent = parent_qc.id
+             WHERE child_qc.contextid <> parent_qc.contextid");
+         $table = '<table><thead><tr><th colspan="3">Child category</th><th colspan="3">Parent category</th></tr><tr>' .
+         '<th>Id</th><th>Name</th><th>Context id</th>' .
+         '<th>Id</th><th>Name</th><th>Context id</th>' .
+         "</tr></thead><tbody>\n";
+-        if ($problemcategories) {
+             foreach ($problemcategories as $cat) {
+                 $table .= "<tr><td>$cat->childid</td><td>" . s($cat->childname) .
+                 "</td><td>$cat->childcon</td><td>$cat->parentid</td><td>" . s($cat->parentname) .
+                 "</td><td>$cat->parentcon</td></tr>\n";
+             }
+-        }
+         $table .= '</tbody></table>';
+         return '<p>When one question category is the parent of another, then they ' .
+         'should both belong to the same context. This is not true for the following categories:</p>' .
+@@ -725,10 +659,11 @@ class problem_000017 extends problem_base {
+         return 'Question categories tree structure';
+     }
+     function find_problems() {
++        global $DB;
+         static $answer = null;
+ 
+         if (is_null($answer)) {
+-            $categories = get_records('question_categories', '', '', 'id');
++            $categories = $DB->get_records('question_categories', array(), 'id');
+ 
+             // Look for missing parents.
+             $missingparent = array();
+@@ -852,4 +787,4 @@ TODO:
+ 
+ */
+ 
+-?>
++

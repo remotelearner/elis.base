@@ -1,0 +1,28 @@
+diff --git a/backup/cc/entities.class.php b/backup/cc/entities.class.php
+old mode 100755
+new mode 100644
+index 6c17609..165fcf5
+--- a/backup/cc/entities.class.php
++++ b/backup/cc/entities.class.php
+@@ -159,6 +159,7 @@ class entities {
+     }
+ 
+     public function move_files ($files, $destination_folder) {
++        global $CFG;
+ 
+         if (!empty($files)) {
+ 
+@@ -174,7 +175,7 @@ class entities {
+                 //echo 'Copy the file: ' . $source . ' to ' . $destination . '<br>';
+ 
+                 if (!file_exists($destination_directory)) {
+-                    mkdir($destination_directory, 0777, true);
++                    mkdir($destination_directory, $CFG->directorypermissions, true);
+                 }
+ 
+                 $copy_success = @copy($source, $destination);
+@@ -267,4 +268,3 @@ class entities {
+         return $text;
+     }
+ }
+-?>

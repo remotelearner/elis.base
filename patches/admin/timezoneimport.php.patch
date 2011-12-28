@@ -1,0 +1,70 @@
+diff --git a/admin/timezoneimport.php b/admin/timezoneimport.php
+index 89a4459..a09f17d 100644
+--- a/admin/timezoneimport.php
++++ b/admin/timezoneimport.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+     // Automatic update of Timezones from a new source
+     
+@@ -16,9 +16,9 @@
+ 
+     $strimporttimezones = get_string('importtimezones', 'admin');
+ 
+-    admin_externalpage_print_header();
++    echo $OUTPUT->header();
+ 
+-    print_heading($strimporttimezones);
++    echo $OUTPUT->heading($strimporttimezones);
+ 
+     if (!$ok or !confirm_sesskey()) {
+         $message = '<br /><br />';
+@@ -30,9 +30,9 @@
+ 
+         $message = get_string("configintrotimezones", 'admin', $message);
+ 
+-        notice_yesno($message, 'timezoneimport.php?ok=1&amp;sesskey='.sesskey(), 'index.php');
++        echo $OUTPUT->confirm($message, 'timezoneimport.php?ok=1', 'index.php');
+ 
+-        admin_externalpage_print_footer();
++        echo $OUTPUT->footer();
+         exit;
+     }
+ 
+@@ -92,9 +92,9 @@
+         $a = null;
+         $a->count = count($timezones);
+         $a->source  = $importdone;
+-        print_heading(get_string('importtimezonescount', 'admin', $a), '', 3);
++        echo $OUTPUT->heading(get_string('importtimezonescount', 'admin', $a), 3);
+ 
+-        print_continue('index.php');
++        echo $OUTPUT->continue_button('index.php');
+ 
+         $timezonelist = array();
+         foreach ($timezones as $timezone) {
+@@ -110,17 +110,17 @@
+         ksort($timezonelist);
+ 
+         echo "<br />";
+-        print_simple_box_start('center');
++        echo $OUTPUT->box_start();
+         foreach ($timezonelist as $name => $count) {
+             echo "$name ($count)<br />";
+         }
+-        print_simple_box_end();
++        echo $OUTPUT->box_end();
+ 
+     } else {
+-        print_heading(get_string('importtimezonesfailed', 'admin'), '', 3);
+-        print_continue('index.php');
++        echo $OUTPUT->heading(get_string('importtimezonesfailed', 'admin'), 3);
++        echo $OUTPUT->continue_button('index.php');
+     }
+ 
+-    admin_externalpage_print_footer();
++    echo $OUTPUT->footer();
++
+ 
+-?>

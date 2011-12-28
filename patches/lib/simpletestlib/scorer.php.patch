@@ -1,0 +1,102 @@
+diff --git a/lib/simpletestlib/scorer.php b/lib/simpletestlib/scorer.php
+index 279d714..b0dc65d 100644
+--- a/lib/simpletestlib/scorer.php
++++ b/lib/simpletestlib/scorer.php
+@@ -1,24 +1,24 @@
+ <?php
+-    /**
++/**
+      *	base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	UnitTester
+      *	@version	$Id$
+      */
+ 
+-    /**#@+*/
+-    require_once(dirname(__FILE__) . '/invoker.php');
+-    /**#@-*/
++/**#@+*/
++require_once(dirname(__FILE__) . '/invoker.php');
++/**#@-*/
+ 
+-    /**
+-     *    Can recieve test events and display them. Display
++/**
++ *    Can receive test events and display them. Display
+      *    is achieved by making display methods available
+      *    and visiting the incoming event.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      *    @abstract
+      */
+-    class SimpleScorer {
++class SimpleScorer {
+         var $_passes;
+         var $_fails;
+         var $_exceptions;
+@@ -228,9 +228,9 @@
+          */
+         function paintSignal($type, $payload) {
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Recipient of generated test messages that can display
+      *    page footers and headers. Also keeps track of the
+      *    test nesting. This is the main base class on which
+@@ -238,7 +238,7 @@
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class SimpleReporter extends SimpleScorer {
++class SimpleReporter extends SimpleScorer {
+         var $_test_stack;
+         var $_size;
+         var $_progress;
+@@ -408,14 +408,14 @@
+         function inCli() {
+             return php_sapi_name() == 'cli';
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    For modifying the behaviour of the visual reporters.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class SimpleReporterDecorator {
++class SimpleReporterDecorator {
+         var $_reporter;
+ 
+         /**
+@@ -611,15 +611,15 @@
+         function paintSignal($type, &$payload) {
+             $this->_reporter->paintSignal($type, $payload);
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    For sending messages to multiple reporters at
+      *    the same time.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class MultipleReporter {
++class MultipleReporter {
+         var $_reporters = array();
+ 
+         /**
+@@ -859,5 +859,5 @@
+                 $this->_reporters[$i]->paintSignal($type, $payload);
+             }
+         }
+-    }
++}
+ ?>
+\ No newline at end of file

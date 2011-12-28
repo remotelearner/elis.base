@@ -1,0 +1,16 @@
+diff --git a/user/profile/field/checkbox/define.class.php b/user/profile/field/checkbox/define.class.php
+index 15e7281..7785c28 100644
+--- a/user/profile/field/checkbox/define.class.php
++++ b/user/profile/field/checkbox/define.class.php
+@@ -1,4 +1,4 @@
+-<?php  // $Id$
++<?php
+ 
+ class profile_define_checkbox extends profile_define_base {
+ 
+@@ -10,4 +10,4 @@ class profile_define_checkbox extends profile_define_base {
+     }
+ }
+ 
+-?>
++

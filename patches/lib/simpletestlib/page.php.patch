@@ -1,0 +1,273 @@
+diff --git a/lib/simpletestlib/page.php b/lib/simpletestlib/page.php
+index ee3cd05..a134ead 100644
+--- a/lib/simpletestlib/page.php
++++ b/lib/simpletestlib/page.php
+@@ -1,28 +1,28 @@
+ <?php
+-    /**
++/**
+      *	Base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	WebTester
+      *	@version	$Id$
+      */
+ 
+-    /**#@+
++/**#@+
+      *	include other SimpleTest class files
+      */
+-    require_once(dirname(__FILE__) . '/http.php');
+-    require_once(dirname(__FILE__) . '/parser.php');
+-    require_once(dirname(__FILE__) . '/tag.php');
+-    require_once(dirname(__FILE__) . '/form.php');
+-    require_once(dirname(__FILE__) . '/selector.php');
+-    /**#@-*/
++require_once(dirname(__FILE__) . '/http.php');
++require_once(dirname(__FILE__) . '/parser.php');
++require_once(dirname(__FILE__) . '/tag.php');
++require_once(dirname(__FILE__) . '/form.php');
++require_once(dirname(__FILE__) . '/selector.php');
++/**#@-*/
+ 
+-    /**
++/**
+      *    Creates tags and widgets given HTML tag
+      *    attributes.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleTagBuilder {
++class SimpleTagBuilder {
+ 
+         /**
+          *    Factory for the tag objects. Creates the
+@@ -37,6 +37,7 @@
+             static $map = array(
+                     'a' => 'SimpleAnchorTag',
+                     'title' => 'SimpleTitleTag',
++                'base' => 'SimpleBaseTag',
+                     'button' => 'SimpleButtonTag',
+                     'textarea' => 'SimpleTextAreaTag',
+                     'option' => 'SimpleOptionTag',
+@@ -108,15 +109,15 @@
+             }
+             return $lower;
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    SAX event handler. Maintains a list of
+      *    open tags and dispatches them as they close.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimplePageBuilder extends SimpleSaxListener {
++class SimplePageBuilder extends SimpleSaxListener {
+         var $_tags;
+         var $_page;
+         var $_private_content_tag;
+@@ -162,7 +163,7 @@
+          *    @access protected
+          */
+         function &_createPage($response) {
+-            $page = &new SimplePage($response);
++        $page = new SimplePage($response);
+             return $page;
+         }
+ 
+@@ -174,7 +175,7 @@
+          *    @access protected
+          */
+         function &_createParser(&$listener) {
+-            $parser = &new SimpleHtmlSaxParser($listener);
++        $parser = new SimpleHtmlSaxParser($listener);
+             return $parser;
+         }
+         
+@@ -187,7 +188,7 @@
+          *    @access public
+          */
+         function startElement($name, $attributes) {
+-            $factory = &new SimpleTagBuilder();
++        $factory = new SimpleTagBuilder();
+             $tag = $factory->createTag($name, $attributes);
+             if (! $tag) {
+                 return true;
+@@ -323,14 +324,14 @@
+             }
+             $this->_tags[$name][] = &$tag;
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    A wrapper for a web page.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimplePage {
++class SimplePage {
+         var $_links;
+         var $_title;
+         var $_last_widget;
+@@ -348,6 +349,7 @@
+         var $_headers;
+         var $_method;
+         var $_url;
++    var $_base = false;
+         var $_request_data;
+ 
+         /**
+@@ -463,6 +465,15 @@
+         }
+ 
+         /**
++     *    Base URL if set via BASE tag page url otherwise
++     *    @return SimpleUrl        Base url.
++     *    @access public
++     */
++    function getBaseUrl() {
++        return $this->_base;
++    }
++
++    /**
+          *    Original request data.
+          *    @return mixed              Sent content.
+          *    @access public
+@@ -575,6 +586,8 @@
+         function acceptTag(&$tag) {
+             if ($tag->getTagName() == "a") {
+                 $this->_addLink($tag);
++        } elseif ($tag->getTagName() == "base") {
++            $this->_setBase($tag);
+             } elseif ($tag->getTagName() == "title") {
+                 $this->_setTitle($tag);
+             } elseif ($this->_isFormElement($tag->getTagName())) {
+@@ -628,7 +641,7 @@
+          *    @access public
+          */
+         function acceptFormStart(&$tag) {
+-            $this->_open_forms[] = &new SimpleForm($tag, $this->getUrl());
++        $this->_open_forms[] = new SimpleForm($tag, $this);
+         }
+ 
+         /**
+@@ -755,7 +768,7 @@
+             for ($i = 0; $i < count($this->_frames); $i++) {
+                 $name = $this->_frames[$i]->getAttribute('name');
+                 $url = new SimpleUrl($this->_frames[$i]->getAttribute('src'));
+-                $urls[$name ? $name : $i + 1] = $url->makeAbsolute($this->getUrl());
++            $urls[$name ? $name : $i + 1] = $this->expandUrl($url);
+             }
+             return $urls;
+         }
+@@ -766,37 +779,21 @@
+          *    @access public
+          */
+         function getFrames() {
+-            $url = $this->getUrl();
++        $url = $this->expandUrl($this->getUrl());
+             return $url->asString();
+         }
+ 
+         /**
+-         *    Accessor for a list of all fixed links.
++     *    Accessor for a list of all links.
+          *    @return array   List of urls with scheme of
+          *                    http or https and hostname.
+          *    @access public
+          */
+-        function getAbsoluteUrls() {
+-            $all = array();
+-            foreach ($this->_links as $link) {
+-                if ($this->_linkIsAbsolute($link->getHref())) {
+-                    $all[] = $link->getHref();
+-                }
+-            }
+-            return $all;
+-        }
+-
+-        /**
+-         *    Accessor for a list of all relative links.
+-         *    @return array      List of urls without hostname.
+-         *    @access public
+-         */
+-        function getRelativeUrls() {
++    function getUrls() {
+             $all = array();
+             foreach ($this->_links as $link) {
+-                if (! $this->_linkIsAbsolute($link->getHref())) {
+-                    $all[] = $link->getHref();
+-                }
++            $url = $this->_getUrlFromLink($link);
++            $all[] = $url->asString();
+             }
+             return $all;
+         }
+@@ -834,13 +831,13 @@
+         }
+ 
+         /**
+-         *    Converts a link into a target URL.
++     *    Converts a link tag into a target URL.
+          *    @param SimpleAnchor $link    Parsed link.
+          *    @return SimpleUrl            URL with frame target if any.
+          *    @access private
+          */
+         function _getUrlFromLink($link) {
+-            $url = $this->_makeAbsolute($link->getHref());
++        $url = $this->expandUrl($link->getHref());
+             if ($link->getAttribute('target')) {
+                 $url->setTarget($link->getAttribute('target'));
+             }
+@@ -852,13 +849,24 @@
+          *    URLs.
+          *    @param SimpleUrl $url        Relative URL.
+          *    @return SimpleUrl            Absolute URL.
+-         *    @access protected
++     *    @access public
+          */
+-        function _makeAbsolute($url) {
++    function expandUrl($url) {
+             if (! is_object($url)) {
+                 $url = new SimpleUrl($url);
+             }
+-            return $url->makeAbsolute($this->getUrl());
++        $location = $this->getBaseUrl() ? $this->getBaseUrl() : new SimpleUrl();
++        return $url->makeAbsolute($location->makeAbsolute($this->getUrl()));
++    }
++
++    /**
++     *    Sets the base url for the page.
++     *    @param SimpleTag $tag    Base URL for page.
++     *    @access protected
++     */
++    function _setBase(&$tag) {
++        $url = $tag->getAttribute('href');
++        $this->_base = new SimpleUrl($url);
+         }
+ 
+         /**
+@@ -944,10 +952,10 @@
+          *    @return boolean                    True if value is valid.
+          *    @access public
+          */
+-        function setField($selector, $value) {
++    function setField($selector, $value, $position=false) {
+             $is_set = false;
+             for ($i = 0; $i < count($this->_complete_forms); $i++) {
+-                if ($this->_complete_forms[$i]->setField($selector, $value)) {
++            if ($this->_complete_forms[$i]->setField($selector, $value, $position)) {
+                     $is_set = true;
+                 }
+             }
+@@ -971,5 +979,5 @@
+             }
+             return null;
+         }
+-    }
++}
+ ?>

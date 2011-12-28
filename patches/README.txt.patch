@@ -1,0 +1,24 @@
+diff --git a/README.txt b/README.txt
+index 5d3b270..245848b 100644
+--- a/README.txt
++++ b/README.txt
+@@ -1,6 +1,3 @@
+-README      $Id$
+-------
+-
+ QUICK INSTALL
+ =============
+ 
+@@ -24,11 +21,7 @@ a few minutes:
+ 
+ For more information, see the INSTALL DOCUMENTATION:
+ 
+-   http://docs.moodle.org/19/en/Installing_Moodle
+-
+-A local copy can also be found in 
+-
+-   lang/en_utf8/help/install.html   (or your language)
++   http://docs.moodle.org/en/Installing_Moodle
+ 
+ 
+ Good luck and have fun!

@@ -1,0 +1,98 @@
+diff --git a/search/delete.php b/search/delete.php
+index 2a1c713..972a961 100644
+--- a/search/delete.php
++++ b/search/delete.php
+@@ -7,6 +7,7 @@
+     * @subpackage search_engine
+     * @author Michael Champanis (mchampan) [cynnical@gmail.com], Valery Fremaux [valery.fremaux@club-internet.fr] > 1.8
+     * @date 2008/03/31
++    * @version prepared for 2.0
+     * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+     *
+     * Asynchronous index cleaner
+@@ -24,6 +25,8 @@
+         die('Direct access to this script is forbidden.');    ///  It must be included from the cron script
+     }
+ 
++    global $DB;
++
+ /// makes inclusions of the Zend Engine more reliable
+     ini_set('include_path', $CFG->dirroot.DIRECTORY_SEPARATOR.'search'.PATH_SEPARATOR.ini_get('include_path'));
+ 
+@@ -35,13 +38,13 @@
+     // require_login();
+ 
+     if (empty($CFG->enableglobalsearch)) {
+-        error(get_string('globalsearchdisabled', 'search'));
++        print_error('globalsearchdisabled', 'search');
+     }
+     
+     /*
+     Obsolete with the MOODLE INTERNAL check
+-    if (!has_capability('moodle/site:doanything', get_context_instance(CONTEXT_SYSTEM))) {
+-        error(get_string('beadmin', 'search'), "$CFG->wwwroot/login/index.php");
++    if (!has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
++        print_error('beadmin', 'search', get_login_url());
+     }
+     */
+     
+@@ -84,36 +87,40 @@
+                                     id,
+                                     {$values[0]}
+                                 FROM 
+-                                    {$CFG->prefix}{$values[1]}
++                                    {{$values[1]}}
+                                     $where
+                             ";
+-                            $docIds = get_records_sql($query);
+-                            $docIdList = ($docIds) ? implode("','", array_keys($docIds)) : '' ;
++                            $docIds = $DB->get_records_sql($query, array());
+                             
++                            if (!empty($docIds)){
+                             $table = SEARCH_DATABASE_TABLE;
++                                list($usql, $params) = $DB->get_in_or_equal(array_keys($docIds), SQL_PARAMS_QM, 'param', false); // negative IN
+                             $query = "
+                                 SELECT 
+                                     id, 
+                                     docid 
+                                 FROM 
+-                                    {$CFG->prefix}{$table}
++                                        {{$table}}
+                                 WHERE 
+                                     doctype = '{$mod->name}' AND 
+                                     $itemtypes
+-                                    docid not in ('{$docIdList}')
++                                        docid $usql
+                             ";
+-                            $records = get_records_sql($query);
++                                $records = $DB->get_records_sql($query, $params);
++                            } else {
++                                $records = array();
++                            }
+                             
+                             // build an array of all the deleted records
+-                            if (is_array($records)) {
+                                 foreach($records as $record) {
+                                     $deletions[] = $delete_function($record->docid, $values[4]);
+                                 }
+                             }
+-                        }
+                         
+                         foreach ($deletions as $delete) {
+                             // find the specific document in the index, using it's docid and doctype as keys
++                            // change from default text only search to include numerals for this search.
++                            Zend_Search_Lucene_Analysis_Analyzer::setDefault(new Zend_Search_Lucene_Analysis_Analyzer_Common_TextNum_CaseInsensitive());
+                             $doc = $index->find("+docid:{$delete->id} +doctype:$mod->name +itemtype:{$delete->itemtype}");
+                             
+                             // get the record, should only be one
+@@ -142,8 +149,8 @@
+     
+ /// update index date and index size
+ 
+-    set_config("search_indexer_cleanup_date", $startcleantime);
+-    set_config("search_index_size", (int)$CFG->search_index_size - (int)$deletion_count);
++    set_config('search_indexer_cleanup_date', $startcleantime);
++    set_config('search_index_size', (int)$CFG->search_index_size - (int)$deletion_count);
+     
+     mtrace("Finished $deletion_count removals.");
+     mtrace('Index size after: '.$index->count());

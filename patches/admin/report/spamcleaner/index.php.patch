@@ -1,0 +1,281 @@
+diff --git a/admin/report/spamcleaner/index.php b/admin/report/spamcleaner/index.php
+old mode 100755
+new mode 100644
+index 7f2acc8..a113789
+--- a/admin/report/spamcleaner/index.php
++++ b/admin/report/spamcleaner/index.php
+@@ -5,15 +5,20 @@
+  *
+  * Helps an admin to clean up spam in Moodle
+  *
+- * @version $Id$
+  * @authors Dongsheng Cai, Martin Dougiamas, Amr Hourani
+  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+  */
+ 
+-// Configuration
+-
+ // List of known spammy keywords, please add more here
+ 
++/////////////////////////////////////////////////////////////////////////////////
++
++require_once('../../../config.php');
++require_once($CFG->libdir.'/adminlib.php');
++
++
++// Configuration
++
+ $autokeywords = array(
+                     "<img",
+                     "fuck",
+@@ -26,14 +31,6 @@ $autokeywords = array(
+                     "warcraft"
+                 );
+ 
+-
+-/////////////////////////////////////////////////////////////////////////////////
+-
+-require_once('../../../config.php');
+-require_once($CFG->libdir.'/adminlib.php');
+-
+-require_js(array('yui_dom-event', 'yui_connection', 'yui_json'));
+-
+ $keyword = optional_param('keyword', '', PARAM_RAW);
+ $autodetect = optional_param('autodetect', '', PARAM_RAW);
+ $del = optional_param('del', '', PARAM_RAW);
+@@ -43,9 +40,7 @@ $reset = optional_param('reset', '', PARAM_RAW);
+ $id = optional_param('id', '', PARAM_INT);
+ 
+ require_login();
+-admin_externalpage_setup('reportspamcleaner');
+-
+-// Implement some AJAX calls 
++admin_externalpage_setup('reportspamcleaner', '', null, '', array('pagelayout'=>'report'));
+ 
+ // Delete one user
+ if (!empty($del) && confirm_sesskey() && ($id != $USER->id)) {
+@@ -84,16 +79,16 @@ if (!empty($ignore)) {
+     exit;
+ }
+ 
++$PAGE->requires->js_init_call('M.report_spamcleaner.init', array(me()), true);
++$strings = Array('spaminvalidresult','spamdeleteallconfirm','spamcannotdelete','spamdeleteconfirm');
++$PAGE->requires->strings_for_js($strings, 'report_spamcleaner');
+ 
+-admin_externalpage_print_header();
++echo $OUTPUT->header();
+ 
+ // Print headers and things
++echo $OUTPUT->box(get_string('spamcleanerintro', 'report_spamcleaner'));
+ 
+-print_spamcleaner_javascript();
+-
+-print_box(get_string('spamcleanerintro', 'report_spamcleaner'));
+-
+-print_box_start();     // The forms section at the top
++echo $OUTPUT->box_start();     // The forms section at the top
+ 
+ ?>
+ 
+@@ -120,7 +115,7 @@ print_box_start();     // The forms section at the top
+ </div>
+ 
+ <?php
+-print_box_end(); 
++echo $OUTPUT->box_end();
+ 
+ echo '<div id="result" class="mdl-align">';
+ 
+@@ -147,30 +142,33 @@ echo '</div>';
+ 
+ function search_spammers($keywords) {
+ 
+-    global $CFG, $USER; 
++    global $CFG, $USER, $DB, $OUTPUT;
+ 
+     if (!is_array($keywords)) {
+         $keywords = array($keywords);    // Make it into an array
+     }
+ 
+-    $like = sql_ilike();
++    $params = array('userid'=>$USER->id);
+ 
+     $keywordfull = array();
++    $i = 0;
+     foreach ($keywords as $keyword) {
+-        $keyword = addslashes($keyword);   // Just to be safe
+-        $keywordfull[] = " description $like '%$keyword%' ";
+-        $keywordfull2[] = " p.summary $like '%$keyword%' ";
++        $keywordfull[] = $DB->sql_like('description', ':descpat'.$i, false);
++        $params['descpat'.$i] = "%$keyword%";
++        $keywordfull2[] = $DB->sql_like('p.summary', ':sumpat'.$i, false);
++        $params['sumpat'.$i] = "%$keyword%";
++        $i++;
+     }
+     $conditions = '( '.implode(' OR ', $keywordfull).' )';
+     $conditions2 = '( '.implode(' OR ', $keywordfull2).' )';
+ 
+-    $sql = "SELECT * FROM {$CFG->prefix}user WHERE deleted = 0 AND id <> {$USER->id} AND $conditions";  // Exclude oneself
+-    $sql2= "SELECT u.*, p.summary FROM {$CFG->prefix}user AS u, {$CFG->prefix}post AS p WHERE $conditions2 AND u.deleted = 0 AND u.id=p.userid AND u.id <> {$USER->id}";
+-    $spamusers_desc = get_recordset_sql($sql);
+-    $spamusers_blog = get_recordset_sql($sql2);
++    $sql  = "SELECT * FROM {user} WHERE deleted = 0 AND id <> :userid AND $conditions";  // Exclude oneself
++    $sql2 = "SELECT u.*, p.summary FROM {user} AS u, {post} AS p WHERE $conditions2 AND u.deleted = 0 AND u.id=p.userid AND u.id <> :userid";
++    $spamusers_desc = $DB->get_recordset_sql($sql, $params);
++    $spamusers_blog = $DB->get_recordset_sql($sql2, $params);
+ 
+     $keywordlist = implode(', ', $keywords);
+-    print_box(get_string('spamresult', 'report_spamcleaner').s($keywordlist)).' ...';
++    echo $OUTPUT->box(get_string('spamresult', 'report_spamcleaner').s($keywordlist)).' ...';
+ 
+     print_user_list(array($spamusers_desc, $spamusers_blog), $keywords);
+ 
+@@ -185,8 +183,8 @@ function print_user_list($users_rs, $keywords) {
+     $SESSION->users_result = array();
+     $count = 0;
+ 
+-    foreach ($users_rs as $rs) {
+-        while ($user = rs_fetch_next_record($rs)) {
++    foreach ($users_rs as $rs){
++        foreach ($rs as $user) {
+             if (!$count) {
+                 echo '<table border="1" width="100%" id="data-grid"><tr><th>&nbsp;</th><th>'.get_string('user','admin').'</th><th>'.get_string('spamdesc', 'report_spamcleaner').'</th><th>'.get_string('spamoperation', 'report_spamcleaner').'</th></tr>';
+             }
+@@ -215,7 +213,7 @@ function filter_user($user, $keywords, $count) {
+         $user->description = '<h3>'.get_string('spamfromblog', 'report_spamcleaner').'</h3>'.$user->summary;
+         unset($user->summary);
+     }
+-    if (preg_match('#<img.*src=[\"\']('.$CFG->pixpath.')#', $user->description, $matches)
++    if (preg_match('#<img.*src=[\"\']('.$CFG->wwwroot.')#', $user->description, $matches)
+         && $image_search) {
+         $result = false;
+         foreach ($keywords as $keyword) {
+@@ -239,12 +237,13 @@ function print_user_entry($user, $keywords, $count) {
+ 
+     global $SESSION, $CFG;
+ 
+-    $smalluserobject = new object;      // All we need to delete them later
++    $smalluserobject = new stdClass();      // All we need to delete them later
+     $smalluserobject->id = $user->id;
+     $smalluserobject->email = $user->email;
+     $smalluserobject->auth = $user->auth;
+     $smalluserobject->firstname = $user->firstname;
+     $smalluserobject->lastname = $user->lastname;
++    $smalluserobject->username = $user->username;
+ 
+     if (empty($SESSION->users_result[$user->id])) {
+         $SESSION->users_result[$user->id] = $smalluserobject;
+@@ -266,10 +265,14 @@ function print_user_entry($user, $keywords, $count) {
+             $user->description = highlight($keyword, $user->description);
+         }
+ 
+-        $html .= '<td align="left">'.format_text($user->description, FORMAT_MOODLE).'</td>';
++        if (!isset($user->descriptionformat)) {
++            $user->descriptionformat = FORMAT_MOODLE;
++        }
++
++        $html .= '<td align="left">'.format_text($user->description, $user->descriptionformat, array('overflowdiv'=>true)).'</td>';
+         $html .= '<td width="100px" align="center">';
+-        $html .= '<button onclick="del_user(this,'.$user->id.')">'.get_string('deleteuser', 'admin').'</button><br />';
+-        $html .= '<button onclick="ignore_user(this,'.$user->id.')">'.get_string('ignore', 'admin').'</button>';
++        $html .= '<button onclick="M.report_spamcleaner.del_user(this,'.$user->id.')">'.get_string('deleteuser', 'admin').'</button><br />';
++        $html .= '<button onclick="M.report_spamcleaner.ignore_user(this,'.$user->id.')">'.get_string('ignore', 'admin').'</button>';
+         $html .= '</td>';
+         $html .= '</tr>';
+         return $html;
+@@ -280,94 +283,4 @@ function print_user_entry($user, $keywords, $count) {
+ 
+ }
+ 
+-function print_spamcleaner_javascript()  {
+-
+-$sesskey = sesskey();
+-
+-?>
+-
+-<script type="text/javascript">
+-//<![CDATA[
+-var row = null;
+-var delall_cb = {
+-    success: function(o){
+-        try {
+-            var resp = YAHOO.lang.JSON.parse(o.responseText);
+-        } catch(e) {
+-            alert('<?php echo get_string('spaminvalidresult', 'report_spamcleaner');?>');
+-            return;
+-        }
+-        if(resp == true){
+-            window.location.href=window.location.href;
+-        }
+-    }
+-}
+-function init() {
+-    YAHOO.util.Event.addListener("removeall_btn", "click", function(){
+-        var yes = confirm('<?php echo get_string('spamdeleteallconfirm', 'report_spamcleaner');?>');
+-        if(yes){
+-            var cObj = YAHOO.util.Connect.asyncRequest('POST', '<?php echo me();?>?delall=yes&sesskey=<?php echo $sesskey;?>', delall_cb); 
+-        }
+-    });
+-}
+-var del_cb = {
+-    success: function(o) {
+-        try {
+-            var resp = YAHOO.lang.JSON.parse(o.responseText);
+-        } catch(e) {
+-            alert('<?php echo get_string('spaminvalidresult', 'report_spamcleaner');?>');
+-            return;
+-        }
+-        if(row) {
+-            if(resp == true){
+-                while(row.tagName != 'TR') {
+-                    row = row.parentNode;
+-                }
+-                row.parentNode.removeChild(row);
+-                row = null;
+-            } else {
+-                alert('<?php echo get_string('spamcannotdelete', 'report_spamcleaner');?>');
+-            }
+-        }
+-    }
+-}
+-var ignore_cb = {
+-    success: function(o){
+-        try {
+-            var resp = YAHOO.lang.JSON.parse(o.responseText);
+-        } catch(e) {
+-            alert('<?php echo get_string('spaminvalidresult', 'report_spamcleaner');?>');
+-            return;
+-        }
+-        if(row) {
+-            if(resp == true){
+-                while(row.tagName != 'TR') {
+-                    row = row.parentNode;
+-                }
+-                row.parentNode.removeChild(row);
+-                row = null;
+-            }
+-        }
+-    }
+-}
+-function del_user(obj, id) {
+-    var yes = confirm('<?php echo get_string('spamdeleteconfirm', 'report_spamcleaner');?>');
+-    if(yes){
+-        row = obj;
+-        var cObj = YAHOO.util.Connect.asyncRequest('POST', '<?php echo me();?>?del=yes&sesskey=<?php echo $sesskey;?>&id='+id, del_cb); 
+-    }
+-}
+-function ignore_user(obj, id) {
+-    row = obj;
+-    var cObj = YAHOO.util.Connect.asyncRequest('POST', '<?php echo me();?>?ignore=yes&sesskey=<?php echo $sesskey;?>&id='+id, ignore_cb); 
+-}
+-YAHOO.util.Event.onDOMReady(init);
+-//]]>
+-</script>
+-
+-<?php 
+-}
+-
+-admin_externalpage_print_footer();
+-
+-?>
++echo $OUTPUT->footer();

@@ -1,0 +1,40 @@
+diff --git a/lib/pear/HTML/QuickForm/hierselect.php b/lib/pear/HTML/QuickForm/hierselect.php
+index 8c0f31e..25de466 100644
+--- a/lib/pear/HTML/QuickForm/hierselect.php
++++ b/lib/pear/HTML/QuickForm/hierselect.php
+@@ -149,7 +149,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
+             // check if all elements have been created
+             $totalNbElements = count($this->_options);
+             for ($i = $this->_nbElements; $i < $totalNbElements; $i ++) {
+-                $this->_elements[] =& new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
++                $this->_elements[] = new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
+                 $this->_nbElements++;
+             }
+         }
+@@ -204,7 +204,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
+             // check if all elements have been created
+             $totalNbElements = 2;
+             for ($i = $this->_nbElements; $i < $totalNbElements; $i ++) {
+-                $this->_elements[] =& new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
++                $this->_elements[] = new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
+                 $this->_nbElements++;
+             }
+         }
+@@ -271,7 +271,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
+     function _createElements()
+     {
+         for ($i = 0; $i < $this->_nbElements; $i++) {
+-            $this->_elements[] =& new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
++            $this->_elements[] = new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
+         }
+     } // end func _createElements
+ 
+@@ -444,7 +444,7 @@ JAVASCRIPT;
+                           $this->_convertArrayToJavascript($values, false) . ";\n";
+         }
+         include_once('HTML/QuickForm/Renderer/Default.php');
+-        $renderer =& new HTML_QuickForm_Renderer_Default();
++        $renderer = new HTML_QuickForm_Renderer_Default();
+         $renderer->setElementTemplate('{element}');
+         parent::accept($renderer);
+ 

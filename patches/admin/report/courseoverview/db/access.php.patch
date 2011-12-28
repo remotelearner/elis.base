@@ -1,0 +1,34 @@
+diff --git a/admin/report/courseoverview/db/access.php b/admin/report/courseoverview/db/access.php
+index ebb0e44..7cbd1ba 100644
+--- a/admin/report/courseoverview/db/access.php
++++ b/admin/report/courseoverview/db/access.php
+@@ -1,4 +1,4 @@
+-<?php  // $Id$
++<?php
+ 
+ ///////////////////////////////////////////////////////////////////////////
+ //                                                                       //
+@@ -23,20 +23,18 @@
+ //                                                                       //
+ ///////////////////////////////////////////////////////////////////////////
+ 
+-$report_courseoverview_capabilities = array(
++$capabilities = array(
+ 
+     'report/courseoverview:view' => array(
+         'riskbitmask' => RISK_PERSONAL,
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
++        'archetypes' => array(
+             'teacher' => CAP_ALLOW,
+             'editingteacher' => CAP_ALLOW,
+-            'admin' => CAP_ALLOW
++            'manager' => CAP_ALLOW
+         ),
+ 
+         'clonepermissionsfrom' => 'moodle/site:viewreports',
+     )
+ );
+-
+-?>

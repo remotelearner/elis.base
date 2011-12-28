@@ -1,0 +1,28 @@
+diff --git a/auth/shibboleth/README.txt b/auth/shibboleth/README.txt
+index 1a39df4..57af63c 100644
+--- a/auth/shibboleth/README.txt
++++ b/auth/shibboleth/README.txt
+@@ -23,7 +23,7 @@ Changes:
+ - 12. 2008: Shibboleth 2.x and Single Logout support added
+ - 1.  2008: Added logout hook and moved Shibboleth config strings to utf8 auth 
+             language files.
+-- 3.  2009: Added various improvements and bug fixes reported by Ina Müller from
++- 3.  2009: Added various improvements and bug fixes reported by Ina Mï¿½ller from
+             university Tuebingen and Peter Ellis of University of Washington
+ - 4.  2009: Added another requirement for logout regarding the call back script
+ - 6.  2009: Changed handler URL when integrated Discovery Service is used
+@@ -212,11 +212,11 @@ Example file:
+         // We want to split this up to get: 
+         // institution, street, zipcode, city and country
+         $address = $_SERVER[$this->config->field_map_address];
+-        list($institution, $street, $zip_city) = split('\$', $address);
+-        ereg(' (.+)',$zip_city, $regs);
++        list($institution, $street, $zip_city) = explode('$', $address);
++        preg_match('/ (.+)/', $zip_city, $regs);
+         $city = $regs[1];
+         
+-        ereg('(.+)-',$zip_city, $regs);
++        preg_match('/(.+)-/',$zip_city, $regs);
+         $country = $regs[1];
+         
+         $result["address"] = $street;

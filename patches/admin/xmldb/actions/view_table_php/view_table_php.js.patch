@@ -1,0 +1,15 @@
+diff --git a/admin/xmldb/actions/view_table_php/view_table_php.js b/admin/xmldb/actions/view_table_php/view_table_php.js
+index 3304925..62b115d 100644
+--- a/admin/xmldb/actions/view_table_php/view_table_php.js
++++ b/admin/xmldb/actions/view_table_php/view_table_php.js
+@@ -42,8 +42,8 @@ function disablePopupHeads() {
+             popup[i].disabled = true;
+         }
+     }
+-    var popup = document.getElementById("menufieldkeyindex");
+-    var i = popup.length;
++    popup = document.getElementById("menufieldkeyindex");
++    i = popup.length;
+     while (i--) {
+         option = popup[i];
+         if (option.value == "fieldshead" || option.value == "keyshead" || option.value == "indexeshead") {

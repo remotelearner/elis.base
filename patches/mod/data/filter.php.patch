@@ -1,0 +1,61 @@
+diff --git a/mod/data/filter.php b/mod/data/filter.php
+index 804e894..6a81b2b 100644
+--- a/mod/data/filter.php
++++ b/mod/data/filter.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+     //
+     // This function provides automatic linking to data contents of text
+     // fields where these fields have autolink enabled.
+@@ -7,7 +7,7 @@
+     // Modified for data module by Vy-Shane SF.
+ 
+     function data_filter($courseid, $text) {
+-        global $CFG;
++        global $CFG, $DB;
+ 
+         static $nothingtodo;
+         static $contentlist;
+@@ -29,19 +29,19 @@
+                    'dr.id AS recordid, ' .
+                    'dc.content AS content, ' .
+                    'd.id AS dataid ' .
+-                        'FROM '.$CFG->prefix.'data d, ' .
+-                        $CFG->prefix.'data_fields df, ' .
+-                        $CFG->prefix.'data_records dr, ' .
+-                        $CFG->prefix.'data_content dc ' .
+-                            "WHERE (d.course = '$courseid' or d.course = '".SITEID."')" .
++                        'FROM {data} d, ' .
++                             '{data_fields} df, ' .
++                             '{data_records} dr, ' .
++                             '{data_content} dc ' .
++                            "WHERE (d.course = ? or d.course = '".SITEID."')" .
+                             'AND d.id = df.dataid ' .
+                             'AND df.id = dc.fieldid ' .
+                             'AND d.id = dr.dataid ' .
+                             'AND dr.id = dc.recordid ' .
+                             "AND df.type = 'text' " .
+-                            "AND " . sql_compare_text('df.param1', 1) . " = '1'";
++                            "AND " . $DB->sql_compare_text('df.param1', 1) . " = '1'";
+ 
+-            if (!$datacontents = get_records_sql($sql)) {
++            if (!$datacontents = $DB->get_records_sql($sql, array($courseid))) {
+                 return $text;
+             }
+ 
+@@ -57,7 +57,7 @@
+                                             '<a class="data autolink" title="'.
+                                             $strippedcontent.'" href="'.
+                                             $CFG->wwwroot.'/mod/data/view.php?d='. $datacontent->dataid .
+-                                            '&amp;rid='. $datacontent->recordid .'" '.$CFG->frametarget.'>',
++                                            '&amp;rid='. $datacontent->recordid .'">',
+                                             '</a>', false, true);
+                 }
+             } // End foreach
+@@ -65,4 +65,4 @@
+         return  filter_phrases($text, $contentlist);  // Look for all these links in the text
+     }
+ 
+-?>
++

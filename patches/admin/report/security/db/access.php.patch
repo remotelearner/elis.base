@@ -1,0 +1,28 @@
+diff --git a/admin/report/security/db/access.php b/admin/report/security/db/access.php
+index 8534dd8..293a66f 100644
+--- a/admin/report/security/db/access.php
++++ b/admin/report/security/db/access.php
+@@ -1,4 +1,4 @@
+-<?php  // $Id$
++<?php
+ 
+ ///////////////////////////////////////////////////////////////////////////
+ //                                                                       //
+@@ -23,14 +23,14 @@
+ //                                                                       //
+ ///////////////////////////////////////////////////////////////////////////
+ 
+-$report_security_capabilities = array(
++$capabilities = array(
+ 
+     'report/security:view' => array(
+         'riskbitmask' => RISK_CONFIG,
+         'captype' => 'read',
+         'contextlevel' => CONTEXT_SYSTEM,
+-        'legacy' => array(
+-            'admin' => CAP_ALLOW
++        'archetypes' => array(
++            'manager' => CAP_ALLOW
+         ),
+     )
+ );

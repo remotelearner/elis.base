@@ -1,0 +1,14 @@
+diff --git a/lib/htmlpurifier/HTMLPurifier/URIScheme/http.php b/lib/htmlpurifier/HTMLPurifier/URIScheme/http.php
+index b097a31..959b8da 100644
+--- a/lib/htmlpurifier/HTMLPurifier/URIScheme/http.php
++++ b/lib/htmlpurifier/HTMLPurifier/URIScheme/http.php
+@@ -9,8 +9,7 @@ class HTMLPurifier_URIScheme_http extends HTMLPurifier_URIScheme {
+     public $browsable = true;
+     public $hierarchical = true;
+ 
+-    public function validate(&$uri, $config, $context) {
+-        parent::validate($uri, $config, $context);
++    public function doValidate(&$uri, $config, $context) {
+         $uri->userinfo = null;
+         return true;
+     }

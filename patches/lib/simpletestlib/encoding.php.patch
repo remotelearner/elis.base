@@ -1,0 +1,195 @@
+diff --git a/lib/simpletestlib/encoding.php b/lib/simpletestlib/encoding.php
+index bffa071..4a4b974 100644
+--- a/lib/simpletestlib/encoding.php
++++ b/lib/simpletestlib/encoding.php
+@@ -1,23 +1,23 @@
+ <?php
+-    /**
++/**
+      *	base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	WebTester
+      *	@version	$Id$
+      */
+      
+-    /**#@+
++/**#@+
+      *	include other SimpleTest class files
+      */
+-    require_once(dirname(__FILE__) . '/socket.php');
+-    /**#@-*/
++require_once(dirname(__FILE__) . '/socket.php');
++/**#@-*/
+ 
+-    /**
++/**
+      *    Single post parameter.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleEncodedPair {
++class SimpleEncodedPair {
+         var $_key;
+         var $_value;
+         
+@@ -79,14 +79,14 @@
+         function getValue() {
+             return $this->_value;
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Single post parameter.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleAttachment {
++class SimpleAttachment {
+         var $_key;
+         var $_content;
+         var $_filename;
+@@ -180,15 +180,15 @@
+         function getValue() {
+             return $this->_filename;
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Bundle of GET/POST parameters. Can include
+      *    repeated parameters.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleEncoding {
++class SimpleEncoding {
+         var $_request;
+         
+         /**
+@@ -318,15 +318,15 @@
+             }
+             return implode('&', $statements);
+         }
+-    }
++}
+     
+-    /**
++/**
+      *    Bundle of GET parameters. Can include
+      *    repeated parameters.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleGetEncoding extends SimpleEncoding {
++class SimpleGetEncoding extends SimpleEncoding {
+         
+         /**
+          *    Starts empty.
+@@ -374,14 +374,14 @@
+         function asUrlRequest() {
+             return $this->_encode();
+         }
+-    }
++}
+     
+-    /**
++/**
+      *    Bundle of URL parameters for a HEAD request.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleHeadEncoding extends SimpleGetEncoding {
++class SimpleHeadEncoding extends SimpleGetEncoding {
+         
+         /**
+          *    Starts empty.
+@@ -402,15 +402,15 @@
+         function getMethod() {
+             return 'HEAD';
+         }
+-    }
++}
+     
+-    /**
++/**
+      *    Bundle of POST parameters. Can include
+      *    repeated parameters.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimplePostEncoding extends SimpleEncoding {
++class SimplePostEncoding extends SimpleEncoding {
+         
+         /**
+          *    Starts empty.
+@@ -420,9 +420,40 @@
+          *    @access public
+          */
+         function SimplePostEncoding($query = false) {
++        if (is_array($query) and $this->hasMoreThanOneLevel($query)) {
++            $query = $this->rewriteArrayWithMultipleLevels($query);
++        }
+             $this->SimpleEncoding($query);
+         }
+         
++    function hasMoreThanOneLevel($query) {
++        foreach ($query as $key => $value) {
++            if (is_array($value)) {
++                return true;
++            }
++        }
++        return false;
++    }
++
++    function rewriteArrayWithMultipleLevels($query) {
++        $query_ = array();
++        foreach ($query as $key => $value) {
++            if (is_array($value)) {
++                foreach ($value as $sub_key => $sub_value) {
++                    $query_[$key."[".$sub_key."]"] = $sub_value;
++                }
++            } else {
++                $query_[$key] = $value;
++            }
++        }
++        if ($this->hasMoreThanOneLevel($query_)) {
++            $query_ = $this->rewriteArrayWithMultipleLevels($query_);
++        }
++        
++        return $query_;
++    }
++    
++    
+         /**
+          *    HTTP request method.
+          *    @return string        Always POST.
+@@ -460,15 +491,15 @@
+         function asUrlRequest() {
+             return '';
+         }
+-    }
++}
+     
+-    /**
++/**
+      *    Bundle of POST parameters in the multipart
+      *    format. Can include file uploads.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleMultipartEncoding extends SimplePostEncoding {
++class SimpleMultipartEncoding extends SimplePostEncoding {
+         var $_boundary;
+         
+         /**
+@@ -517,5 +548,5 @@
+             $stream .= "--" . $this->_boundary . "--\r\n";
+             return $stream;
+         }
+-    }
++}
+ ?>
+\ No newline at end of file

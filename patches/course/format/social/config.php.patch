@@ -1,0 +1,22 @@
+diff --git a/course/format/social/config.php b/course/format/social/config.php
+old mode 100755
+new mode 100644
+index 49720e2..ed05335
+--- a/course/format/social/config.php
++++ b/course/format/social/config.php
+@@ -1,4 +1,4 @@
+-<?php //$Id$
++<?php
+ //
+ // Optional course format configuration file
+ //
+@@ -6,7 +6,6 @@
+ // social format.
+ //
+ // The default blocks layout for this course format:
+-    $format['defaultblocks'] = 'participants,search_forums,calendar_upcoming,'.
+-                               'social_activities,recent_activity,admin,course_list';
++    $format['defaultblocks'] = ':search_forums,calendar_upcoming,social_activities,recent_activity,course_list';
++
+ 
+-?>

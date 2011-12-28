@@ -1,0 +1,130 @@
+diff --git a/mod/chat/gui_header_js/chatinput.php b/mod/chat/gui_header_js/chatinput.php
+index 992e718..a228a92 100644
+--- a/mod/chat/gui_header_js/chatinput.php
++++ b/mod/chat/gui_header_js/chatinput.php
+@@ -1,80 +1,60 @@
+-<?php  // $Id$
+-
+-    $nomoodlecookie = true;     // Session not needed!
++<?php
+ 
+-    require('../../../config.php');
+-    require('../lib.php');
++define('NO_MOODLE_COOKIES', true); // session not used here
+ 
+-    $chat_sid = required_param('chat_sid', PARAM_ALPHANUM);
+-    $chatid   = required_param('chat_id', PARAM_INT);
++require_once('../../../config.php');
++require_once($CFG->dirroot.'/mod/chat/lib.php');
+ 
+-    if (!$chatuser = get_record('chat_users', 'sid', $chat_sid)) {
+-        error('Not logged in!');
+-    }
+-    if (!$chat = get_record('chat', 'id', $chatid)) {
+-        error('Could not find that chat room!');
+-    }
++$chat_sid = required_param('chat_sid', PARAM_ALPHANUM);
++$chatid   = required_param('chat_id', PARAM_INT);
+ 
+-    if (!$course = get_record('course', 'id', $chat->course)) {
+-        error('Could not find the course this belongs to!');
+-    }
++if (!$chatuser = $DB->get_record('chat_users', array('sid'=>$chat_sid))) {
++    print_error('notlogged', 'chat');
++}
++if (!$chat = $DB->get_record('chat', array('id'=>$chatid))) {
++    print_error('invalidid', 'chat');
++}
+ 
+-    if (!$cm = get_coursemodule_from_instance('chat', $chat->id, $course->id)) {
+-        error('Course Module ID was incorrect');
+-    }
++if (!$course = $DB->get_record('course', array('id'=>$chat->course))) {
++    print_error('invalidcourseid');
++}
+     
+-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
++if (!$cm = get_coursemodule_from_instance('chat', $chat->id, $course->id)) {
++    print_error('invalidcoursemodule');
++}
+     
++$PAGE->set_url('/mod/chat/gui_header_js/chatinput.php', array('chat_sid'=>$chat_sid, 'chat_id'=>$chatid));
+ 
+-    //Get the user theme
+-    $USER = get_record('user', 'id', $chatuser->userid);
++$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+ 
+-    //Setup course, lang and theme
+-    course_setup($chatuser->course);
++//Get the user theme
++$USER = $DB->get_record('user', array('id'=>$chatuser->userid));
+ 
+-    ob_start();
+-    ?>
+-    <script type="text/javascript">
+-    //<![CDATA[
+-    var waitFlag = false;
+-    function empty_field_and_submit() {
+-        if(waitFlag) return false;
+-        waitFlag = true;
+-        var input_chat_message = document.getElementById('input_chat_message');
+-        document.getElementById('sendForm').chat_message.value = input_chat_message.value;
+-        input_chat_message.value = '';
+-        input_chat_message.className = 'wait';
+-        document.getElementById('sendForm').submit();
+-        enableForm();
+-        return false;
+-    }
+ 
+-    function enableForm() {
+-        var input_chat_message = document.getElementById('input_chat_message');
+-        waitFlag = false;
+-        input_chat_message.className = '';
+-        input_chat_message.focus();
+-    }
++$module = array(
++    'name'      => 'mod_chat_header',
++    'fullpath'  => '/mod/chat/gui_header_js/module.js',
++    'requires'  => array('node')
++);
++$PAGE->requires->js_init_call('M.mod_chat_header.init_input', array(false), false, $module);
+ 
+-    //]]>
+-    </script>
+-    <?php
++//Setup course, lang and theme
++$PAGE->set_course($course);
++$PAGE->set_pagelayout('embedded');
++$PAGE->set_focuscontrol('input_chat_message');
++$PAGE->set_cacheable(false);
++echo $OUTPUT->header();
+ 
+-    $meta = ob_get_clean();
+-    print_header('', '', '', 'input_chat_message', $meta, false);
++echo html_writer::start_tag('form', array('action'=>'../empty.php', 'method'=>'post', 'target'=>'empty', 'id'=>'inputForm', 'style'=>'margin:0'));
++echo html_writer::empty_tag('input', array('type'=>'text', 'id'=>'input_chat_message', 'name'=>'chat_message', 'size'=>'50', 'value'=>''));
++echo html_writer::empty_tag('input', array('type'=>'checkbox', 'id'=>'auto', 'checked'=>'checked', 'value'=>''));
++echo html_writer::tag('label', get_string('autoscroll', 'chat'), array('for'=>'auto'));
++echo $OUTPUT->help_icon('usingchat', 'chat');
++echo html_writer::end_tag('form');
+ 
+-?>
+-    <form action="../empty.php" method="post" target="empty" id="inputForm"
+-          onsubmit="return empty_field_and_submit()" style="margin:0">
+-        <input type="text" id="input_chat_message" name="chat_message" size="50" value="" />
+-        <?php helpbutton('chatting', get_string('helpchatting', 'chat'), 'chat', true, false); ?><br />
+-        <input type="checkbox" id="auto" size="50" value="" checked='true' /><label for="auto"><?php echo get_string('autoscroll', 'chat');?></label>
+-    </form>
++echo html_writer::start_tag('form', array('action'=>'insert.php', 'method'=>'post', 'target'=>'empty', 'id'=>'sendForm'));
++echo html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'chat_sid', 'value'=>$chat_sid));
++echo html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'chat_message', 'id'=>'insert_chat_message'));
++echo html_writer::end_tag('form');
+ 
+-    <form action="insert.php" method="post" target="empty" id="sendForm">
+-        <input type="hidden" name="chat_sid" value="<?php echo $chat_sid ?>" />
+-        <input type="hidden" name="chat_message" />
+-    </form>
+-<?php
+-    print_footer('empty');
+-?>
++echo $OUTPUT->footer();

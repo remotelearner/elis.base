@@ -1,0 +1,149 @@
+diff --git a/course/report/stats/report.php b/course/report/stats/report.php
+index 40a8014..c6a2108 100644
+--- a/course/report/stats/report.php
++++ b/course/report/stats/report.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+     if (!defined('MOODLE_INTERNAL')) {
+         die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+@@ -11,7 +11,7 @@
+         $context = get_context_instance(CONTEXT_COURSE, $c->id);
+ 
+         if (has_capability('coursereport/stats:view', $context)) {
+-            $courseoptions[$c->id] = $c->shortname;
++            $courseoptions[$c->id] = format_string($c->shortname, true, array('context' => $context));
+         }
+     }
+ 
+@@ -21,21 +21,23 @@
+         print_error('nostatstodisplay', '', $CFG->wwwroot.'/course/view.php?id='.$course->id);
+     }
+ 
++    $table = new html_table();
+     $table->width = 'auto';
+ 
+     if ($mode == STATS_MODE_DETAILED) {
+         $param = stats_get_parameters($time,null,$course->id,$mode); // we only care about the table and the time string (if we have time)
+ 
++        //TODO: lceanup this ugly mess
+         $sql = 'SELECT DISTINCT s.userid, u.firstname, u.lastname, u.idnumber
+-                     FROM '.$CFG->prefix.'stats_user_'.$param->table.' s
+-                     JOIN '.$CFG->prefix.'user u ON u.id = s.userid
++                     FROM {stats_user_'.$param->table.'} s
++                     JOIN {user} u ON u.id = s.userid
+                      WHERE courseid = '.$course->id
+             . ((!empty($param->stattype)) ? ' AND stattype = \''.$param->stattype.'\'' : '')
+             . ((!empty($time)) ? ' AND timeend >= '.$param->timeafter : '')
+             .' ORDER BY u.lastname, u.firstname ASC';
+ 
+-        if (!$us = get_records_sql($sql)) {
+-            error('Cannot enter detailed view: No users found for this course.');
++        if (!$us = $DB->get_records_sql($sql, $param->params)) {
++            print_error('nousers');
+         }
+ 
+         foreach ($us as $u) {
+@@ -43,21 +45,21 @@
+         }
+ 
+         $table->align = array('left','left','left','left','left','left','left','left');
+-        $table->data[] = array(get_string('course'),choose_from_menu($courseoptions,'course',$course->id,'','','',true),
+-                               get_string('users'),choose_from_menu($users,'userid',$userid,'','','',true),
+-                               get_string('statsreporttype'),choose_from_menu($reportoptions,'report',($report == 5) ? $report.$roleid : $report,'','','',true),
+-                               get_string('statstimeperiod'),choose_from_menu($timeoptions,'time',$time,'','','',true),
++        $table->data[] = array(get_string('course'),html_writer::select($courseoptions,'course',$course->id,false),
++                               get_string('users'),html_writer::select($users,'userid',$userid,false),
++                               get_string('statsreporttype'),html_writer::select($reportoptions,'report',($report == 5) ? $report.$roleid : $report,false),
++                               get_string('statstimeperiod'),html_writer::select($timeoptions,'time',$time,false),
+                                '<input type="submit" value="'.get_string('view').'" />') ;
+     } else if ($mode == STATS_MODE_RANKED) {
+         $table->align = array('left','left','left','left','left','left');
+-        $table->data[] = array(get_string('statsreporttype'),choose_from_menu($reportoptions,'report',($report == 5) ? $report.$roleid : $report,'','','',true),
+-                               get_string('statstimeperiod'),choose_from_menu($timeoptions,'time',$time,'','','',true),
++        $table->data[] = array(get_string('statsreporttype'),html_writer::select($reportoptions,'report',($report == 5) ? $report.$roleid : $report,false),
++                               get_string('statstimeperiod'),html_writer::select($timeoptions,'time',$time,false),
+                                '<input type="submit" value="'.get_string('view').'" />') ;
+     } else if ($mode == STATS_MODE_GENERAL) {
+         $table->align = array('left','left','left','left','left','left','left');
+-        $table->data[] = array(get_string('course'),choose_from_menu($courseoptions,'course',$course->id,'','','',true),
+-                               get_string('statsreporttype'),choose_from_menu($reportoptions,'report',($report == 5) ? $report.$roleid : $report,'','','',true),
+-                               get_string('statstimeperiod'),choose_from_menu($timeoptions,'time',$time,'','','',true),
++        $table->data[] = array(get_string('course'),html_writer::select($courseoptions,'course',$course->id,false),
++                               get_string('statsreporttype'),html_writer::select($reportoptions,'report',($report == 5) ? $report.$roleid : $report,false),
++                               get_string('statstimeperiod'),html_writer::select($timeoptions,'time',$time,false),
+                                '<input type="submit" value="'.get_string('view').'" />') ;
+     }
+ 
+@@ -65,14 +67,14 @@
+         .'<div>'."\n"
+         .'<input type="hidden" name="mode" value="'.$mode.'" />'."\n";
+ 
+-    print_table($table);
++    echo html_writer::table($table);
+ 
+     echo '</div>';
+     echo '</form>';
+ 
+     if (!empty($report) && !empty($time)) {
+         if ($report == STATS_REPORT_LOGINS && $course->id != SITEID) {
+-            error('This type of report is only available for the site course');
++            print_error('reportnotavailable');
+         }
+ 
+         $param = stats_get_parameters($time,$report,$course->id,$mode);
+@@ -84,8 +86,9 @@
+         if (!empty($param->sql)) {
+             $sql = $param->sql;
+         } else {
++            //TODO: lceanup this ugly mess
+             $sql = 'SELECT '.((empty($param->fieldscomplete)) ? 'id,roleid,timeend,' : '').$param->fields
+-                .' FROM '.$CFG->prefix.'stats_'.$param->table.' WHERE '
++                .' FROM {stats_'.$param->table.'} WHERE '
+                 .(($course->id == SITEID) ? '' : ' courseid = '.$course->id.' AND ')
+                 .((!empty($userid)) ? ' userid = '.$userid.' AND ' : '')
+                 .((!empty($roleid)) ? ' roleid = '.$roleid.' AND ' : '')
+@@ -95,18 +98,18 @@
+                 .' ORDER BY timeend DESC';
+         }
+ 
+-        $stats = get_records_sql($sql);
++        $stats = $DB->get_records_sql($sql);
+ 
+         if (empty($stats)) {
+-            notify(get_string('statsnodata'));
++            echo $OUTPUT->notification(get_string('statsnodata'));
+ 
+         } else {
+ 
+             $stats = stats_fix_zeros($stats,$param->timeafter,$param->table,(!empty($param->line2)));
+ 
+-            print_heading(format_string($course->shortname).' - '.get_string('statsreport'.$report)
++            echo $OUTPUT->heading(format_string($course->shortname).' - '.get_string('statsreport'.$report)
+                     .((!empty($user)) ? ' '.get_string('statsreportforuser').' ' .fullname($user,true) : '')
+-                    .((!empty($roleid)) ? ' '.get_field('role','name','id',$roleid) : ''));
++                    .((!empty($roleid)) ? ' '.$DB->get_field('role','name', array('id'=>$roleid)) : ''));
+ 
+ 
+             if (empty($CFG->gdversion)) {
+@@ -119,7 +122,7 @@
+                 }
+             }
+ 
+-            $table = new StdClass;
++            $table = new html_table();
+             $table->align = array('left','center','center','center');
+             $param->table = str_replace('user_','',$param->table);
+             switch ($param->table) {
+@@ -218,8 +221,8 @@
+                 $lastrecord[] = $lastlink;
+                 $table->data[] = $lastrecord;
+             }
+-            print_table($table);
++            echo html_writer::table($table);
+         }
+     }
+ 
+-?>
++

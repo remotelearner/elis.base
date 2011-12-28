@@ -1,0 +1,87 @@
+diff --git a/admin/settings/frontpage.php b/admin/settings/frontpage.php
+index 7376ce1..4180579 100644
+--- a/admin/settings/frontpage.php
++++ b/admin/settings/frontpage.php
+@@ -1,15 +1,15 @@
+-<?php // $Id$
++<?php
+ 
+ // This file defines everything related to frontpage
+ 
+-if (get_site()) { //do not use during installation
++if (!during_initial_install()) { //do not use during installation
+     $frontpagecontext = get_context_instance(CONTEXT_COURSE, SITEID);
+ 
+     if ($hassiteconfig or has_any_capability(array(
+             'moodle/course:update',
+             'moodle/role:assign',
+-            'moodle/site:restore',
+-            'moodle/site:backup',
++            'moodle/restore:restorecourse',
++            'moodle/backup:backupcourse',
+             'moodle/course:managefiles',
+             'moodle/question:add',
+             'moodle/question:editmine',
+@@ -47,27 +47,39 @@ if (get_site()) { //do not use during installation
+                    '8' => '8',
+                    '9' => '9',
+                    '10' => '10')));
++        $temp->add(new admin_setting_configtext('commentsperpage', get_string('commentsperpage', 'admin'), '', 15, PARAM_INT));
++
+         $temp->add(new admin_setting_configtext('coursesperpage', get_string('coursesperpage', 'admin'), get_string('configcoursesperpage', 'admin'), 20, PARAM_INT));
+-        $temp->add(new admin_setting_configcheckbox('allowvisiblecoursesinhiddencategories', get_string('allowvisiblecoursesinhiddencategories', 'admin'), get_string('configvisiblecourses', 'admin'), 0));
+ 
+         // front page default role
+-        $roleoptions = array(0=>get_string('none')); // roles to choose from
+-        if ($roles = get_all_roles()) {
+-            foreach ($roles as $role) {
+-                $roleoptions[$role->id] = strip_tags(format_string($role->name, true));
++        $options = array(0=>get_string('none')); // roles to choose from
++        $defaultfrontpageroleid = 0;
++        foreach (get_all_roles() as $role) {
++            if (empty($role->archetype) or $role->archetype === 'guest' or $role->archetype === 'frontpage' or $role->archetype === 'student') {
++                $options[$role->id] = strip_tags(format_string($role->name)) . ' ('. $role->shortname . ')';
++                if ($role->archetype === 'frontpage') {
++                    $defaultfrontpageroleid = $role->id;
++                }
++            }
+             }
++        if ($defaultfrontpageroleid and (!isset($CFG->defaultfrontpageroleid) or $CFG->defaultfrontpageroleid)) {
++            //frotpage role may not exist in old upgraded sites
++            unset($options[0]);
+         }
+-        $temp->add(new admin_setting_configselect('defaultfrontpageroleid', get_string('frontpagedefaultrole', 'admin'), '', 0, $roleoptions));
++        $temp->add(new admin_setting_configselect('defaultfrontpageroleid', get_string('frontpagedefaultrole', 'admin'), '', $defaultfrontpageroleid, $options));
++
+ 
+         $ADMIN->add('frontpage', $temp);
+ 
+         $ADMIN->add('frontpage', new admin_externalpage('frontpageroles', get_string('frontpageroles', 'admin'), "$CFG->wwwroot/$CFG->admin/roles/assign.php?contextid=" . $frontpagecontext->id, 'moodle/role:assign', false, $frontpagecontext));
+ 
+-        $ADMIN->add('frontpage', new admin_externalpage('frontpagebackup', get_string('frontpagebackup', 'admin'), $CFG->wwwroot.'/backup/backup.php?id='.SITEID, 'moodle/site:backup', false, $frontpagecontext));
++        $ADMIN->add('frontpage', new admin_externalpage('frontpagefilters', get_string('frontpagefilters', 'admin'), "$CFG->wwwroot/filter/manage.php?contextid=" . $frontpagecontext->id, 'moodle/filter:manage', false, $frontpagecontext));
++
++        $ADMIN->add('frontpage', new admin_externalpage('frontpagebackup', get_string('frontpagebackup', 'admin'), $CFG->wwwroot.'/backup/backup.php?id='.SITEID, 'moodle/backup:backupcourse', false, $frontpagecontext));
+ 
+-        $ADMIN->add('frontpage', new admin_externalpage('frontpagerestore', get_string('frontpagerestore', 'admin'), $CFG->wwwroot.'/files/index.php?id='.SITEID.'&amp;wdir=/backupdata', 'moodle/site:restore', false, $frontpagecontext));
++        $ADMIN->add('frontpage', new admin_externalpage('frontpagerestore', get_string('frontpagerestore', 'admin'), $CFG->wwwroot.'/files/index.php?id='.SITEID.'&amp;wdir=/backupdata', 'moodle/restore:restorecourse', false, $frontpagecontext));
+ 
+-        $questioncapabilites = array(
++        $questioncapabilities = array(
+                 'moodle/question:add',
+                 'moodle/question:editmine',
+                 'moodle/question:editall',
+@@ -75,9 +87,10 @@ if (get_site()) { //do not use during installation
+                 'moodle/question:viewall',
+                 'moodle/question:movemine',
+                 'moodle/question:moveall');
+-        $ADMIN->add('frontpage', new admin_externalpage('frontpagequestions', get_string('frontpagequestions', 'admin'), $CFG->wwwroot.'/question/edit.php?courseid='.SITEID, $questioncapabilites, false, $frontpagecontext));
++        $ADMIN->add('frontpage', new admin_externalpage('frontpagequestions', get_string('frontpagequestions', 'admin'), $CFG->wwwroot.'/question/edit.php?courseid='.SITEID, $questioncapabilities, false, $frontpagecontext));
+ 
+-        $ADMIN->add('frontpage', new admin_externalpage('sitefiles', get_string('sitefiles'), $CFG->wwwroot . '/files/index.php?id=' . SITEID, 'moodle/course:managefiles', false, $frontpagecontext));
++        if (!empty($SITE->legacyfiles) and $SITE->legacyfiles === 2) {
++            $ADMIN->add('frontpage', new admin_externalpage('sitefiles', get_string('sitelegacyfiles'), $CFG->wwwroot . '/files/index.php?id=' . SITEID, 'moodle/course:managefiles', false, $frontpagecontext));
++        }
+     }
+ }
+-?>

@@ -1,0 +1,65 @@
+diff --git a/lib/simpletestlib/shell_tester.php b/lib/simpletestlib/shell_tester.php
+index d47d2d6..1418679 100644
+--- a/lib/simpletestlib/shell_tester.php
++++ b/lib/simpletestlib/shell_tester.php
+@@ -1,23 +1,23 @@
+ <?php
+-    /**
++/**
+      *	base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	UnitTester
+      *	@version	$Id$
+      */
+ 
+-    /**#@+
++/**#@+
+      *	include other SimpleTest class files
+      */
+-    require_once(dirname(__FILE__) . '/test_case.php');
+-    /**#@-*/
++require_once(dirname(__FILE__) . '/test_case.php');
++/**#@-*/
+ 
+-    /**
++/**
+      *    Wrapper for exec() functionality.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class SimpleShell {
++class SimpleShell {
+         var $_output;
+ 
+         /**
+@@ -59,16 +59,16 @@
+ 		function getOutputAsList() {
+ 			return $this->_output;
+ 		}
+-    }
++}
+ 
+-    /**
++/**
+      *    Test case for testing of command line scripts and
+      *    utilities. Usually scripts that are external to the
+      *    PHP code, but support it in some way.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class ShellTestCase extends SimpleTestCase {
++class ShellTestCase extends SimpleTestCase {
+         var $_current_shell;
+         var $_last_status;
+         var $_last_command;
+@@ -326,8 +326,8 @@
+          *    @access protected
+          */
+         function &_createShell() {
+-            $shell = &new SimpleShell();
++        $shell = new SimpleShell();
+             return $shell;
+         }
+-    }
++}
+ ?>

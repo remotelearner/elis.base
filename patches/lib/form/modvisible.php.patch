@@ -1,0 +1,10 @@
+diff --git a/lib/form/modvisible.php b/lib/form/modvisible.php
+index 0f91e66..0b7b305 100644
+--- a/lib/form/modvisible.php
++++ b/lib/form/modvisible.php
+@@ -51,4 +51,3 @@ class MoodleQuickForm_modvisible extends MoodleQuickForm_select{
+         return parent::onQuickFormEvent($event, $arg, $caller);
+     }
+ }
+-?>
+\ No newline at end of file

@@ -1,0 +1,21 @@
+diff --git a/course/report/log/version.php b/course/report/log/version.php
+index 7aa04cf..819c2f1 100644
+--- a/course/report/log/version.php
++++ b/course/report/log/version.php
+@@ -1,4 +1,4 @@
+-<?PHP // $Id$
++<?php
+ 
+ ///////////////////////////////////////////////////////////////////////////
+ //                                                                       //
+@@ -23,7 +23,7 @@
+ //                                                                       //
+ ///////////////////////////////////////////////////////////////////////////
+ 
+-$plugin->version  = 2007101504;
+-$plugin->requires = 2007101532;
++$plugin->version  = 2010090501;
++$plugin->requires = 2010090501;
++
+ 
+-?>

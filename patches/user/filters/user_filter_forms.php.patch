@@ -1,0 +1,10 @@
+diff --git a/user/filters/user_filter_forms.php b/user/filters/user_filter_forms.php
+index 9cd5079..3186ebc 100644
+--- a/user/filters/user_filter_forms.php
++++ b/user/filters/user_filter_forms.php
+@@ -1,4 +1,4 @@
+-<?php //$Id$
++<?php
+ 
+ require_once($CFG->libdir.'/formslib.php');
+ 

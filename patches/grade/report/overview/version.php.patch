@@ -1,0 +1,15 @@
+diff --git a/grade/report/overview/version.php b/grade/report/overview/version.php
+index e9590e3..dca0503 100644
+--- a/grade/report/overview/version.php
++++ b/grade/report/overview/version.php
+@@ -15,8 +15,7 @@
+ // You should have received a copy of the GNU General Public License
+ // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ 
++$plugin->version  = 2010090501;
++$plugin->requires = 2010090501;
+ 
+-$plugin->version  = 2009022500;
+-$plugin->requires = 2007101000;
+ 
+-?>

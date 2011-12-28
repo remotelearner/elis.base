@@ -1,0 +1,16 @@
+diff --git a/course/report/stats/mod.php b/course/report/stats/mod.php
+index e1257b4..1f70b7a 100644
+--- a/course/report/stats/mod.php
++++ b/course/report/stats/mod.php
+@@ -1,4 +1,4 @@
+-<?php  //$Id$
++<?php
+ 
+     if (!defined('MOODLE_INTERNAL')) {
+         die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+@@ -15,4 +15,4 @@
+             echo '</p>';
+         }
+     }
+-?>
++

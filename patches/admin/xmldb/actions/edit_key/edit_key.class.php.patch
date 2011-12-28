@@ -1,0 +1,117 @@
+diff --git a/admin/xmldb/actions/edit_key/edit_key.class.php b/admin/xmldb/actions/edit_key/edit_key.class.php
+index 4a0d890..88cb746 100644
+--- a/admin/xmldb/actions/edit_key/edit_key.class.php
++++ b/admin/xmldb/actions/edit_key/edit_key.class.php
+@@ -1,31 +1,33 @@
+-<?php // $Id$
+-
+-///////////////////////////////////////////////////////////////////////////
+-//                                                                       //
+-// NOTICE OF COPYRIGHT                                                   //
+-//                                                                       //
+-// Moodle - Modular Object-Oriented Dynamic Learning Environment         //
+-//          http://moodle.com                                            //
+-//                                                                       //
+-// Copyright (C) 1999 onwards Martin Dougiamas        http://dougiamas.com  //
+-//           (C) 2001-3001 Eloy Lafuente (stronk7) http://contiento.com  //
+-//                                                                       //
+-// This program is free software; you can redistribute it and/or modify  //
+-// it under the terms of the GNU General Public License as published by  //
+-// the Free Software Foundation; either version 2 of the License, or     //
+-// (at your option) any later version.                                   //
+-//                                                                       //
+-// This program is distributed in the hope that it will be useful,       //
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+-// GNU General Public License for more details:                          //
+-//                                                                       //
+-//          http://www.gnu.org/copyleft/gpl.html                         //
+-//                                                                       //
+-///////////////////////////////////////////////////////////////////////////
+-
+-/// This class will provide the interface for all the edit key actions
++<?php
++
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * @package   xmldb-editor
++ * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
+ 
++/**
++ * This class will provide the interface for all the edit key actions
++ *
++ * @package   xmldb-editor
++ * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
+ class edit_key extends XMLDBAction {
+ 
+     /**
+@@ -62,12 +64,12 @@ class edit_key extends XMLDBAction {
+         $this->does_generate = ACTION_GENERATE_HTML;
+ 
+     /// These are always here
+-        global $CFG, $XMLDB;
++        global $CFG, $XMLDB, $OUTPUT;
+ 
+     /// Do the job, setting result as needed
+     /// Get the dir containing the file
+         $dirpath = required_param('dir', PARAM_PATH);
+-        $dirpath = $CFG->dirroot . stripslashes_safe($dirpath);
++        $dirpath = $CFG->dirroot . $dirpath;
+ 
+     /// Get the correct dirs
+         if (!empty($XMLDB->dbdirs)) {
+@@ -117,7 +119,7 @@ class edit_key extends XMLDBAction {
+         $o.= '      <tr valign="top"><td><label for="name" accesskey="n">Name:</label></td><td colspan="2"><input name="name" type="text" size="30" id="name"' . $disabled . ' value="' . s($key->getName()) . '" /></td></tr>';
+     /// XMLDB key comment
+         $o.= '      <tr valign="top"><td><label for="comment" accesskey="c">Comment:</label></td><td colspan="2"><textarea name="comment" rows="3" cols="80" id="comment">' . s($key->getComment()) . '</textarea></td></tr>';
+-    /// XMLDBKey Type
++    /// xmldb_key Type
+         $typeoptions = array (XMLDB_KEY_PRIMARY => $key->getXMLDBKeyName(XMLDB_KEY_PRIMARY),
+                               XMLDB_KEY_UNIQUE  => $key->getXMLDBKeyName(XMLDB_KEY_UNIQUE),
+                               XMLDB_KEY_FOREIGN   => $key->getXMLDBKeyName(XMLDB_KEY_FOREIGN),
+@@ -126,15 +128,17 @@ class edit_key extends XMLDBAction {
+     /// if ($key->getType() != XMLDB_KEY_FOREIGN_UNIQUE) {
+     ///     unset ($typeoptions[XMLDB_KEY_FOREIGN_UNIQUE);
+     /// }
++        $select = html_writer::select($typeoptions, 'type', $key->getType(), false);
++
+         $o.= '      <tr valign="top"><td><label for="menutype" accesskey="t">Type:</label></td>';
+-        $o.= '        <td colspan="2">' . choose_from_menu($typeoptions, 'type', $key->getType(), '', '', '', true) . '</td></tr>';
+-    /// XMLDBKey Fields
++        $o.= '        <td colspan="2">' . $select . '</td></tr>';
++    /// xmldb_key Fields
+         $o.= '      <tr valign="top"><td><label for="fields" accesskey="f">Fields:</label></td>';
+         $o.= '        <td colspan="2"><input name="fields" type="text" size="40" maxlength="80" id="fields" value="' . s(implode(', ', $key->getFields())) . '" /></td></tr>';
+-    /// XMLDBKey Reftable
++    /// xmldb_key Reftable
+         $o.= '      <tr valign="top"><td><label for="reftable" accesskey="t">Reftable:</label></td>';
+         $o.= '        <td colspan="2"><input name="reftable" type="text" size="20" maxlength="40" id="reftable" value="' . s($key->getReftable()) . '" /></td></tr>';
+-    /// XMLDBKey Reffields
++    /// xmldb_key Reffields
+         $o.= '      <tr valign="top"><td><label for="reffields" accesskey="t">Reffields:</label></td>';
+         $o.= '        <td colspan="2"><input name="reffields" type="text" size="40" maxlength="80" id="reffields" value="' . s(implode(', ', $key->getRefFields())) . '" /></td></tr>';
+     /// Change button
+@@ -171,4 +175,4 @@ class edit_key extends XMLDBAction {
+         return $result;
+     }
+ }
+-?>
++

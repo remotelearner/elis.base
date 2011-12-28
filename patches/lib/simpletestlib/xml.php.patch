@@ -1,0 +1,150 @@
+diff --git a/lib/simpletestlib/xml.php b/lib/simpletestlib/xml.php
+index 0de9a5e..ce5f0bb 100644
+--- a/lib/simpletestlib/xml.php
++++ b/lib/simpletestlib/xml.php
+@@ -1,24 +1,24 @@
+ <?php
+-    /**
++/**
+      *	base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	UnitTester
+      *	@version	$Id$
+      */
+ 
+-    /**#@+
++/**#@+
+      *	include other SimpleTest class files
+      */
+-    require_once(dirname(__FILE__) . '/scorer.php');
+-    /**#@-*/
++require_once(dirname(__FILE__) . '/scorer.php');
++/**#@-*/
+ 
+-    /**
++/**
+      *    Creates the XML needed for remote communication
+      *    by SimpleTest.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class XmlReporter extends SimpleReporter {
++class XmlReporter extends SimpleReporter {
+         var $_indent;
+         var $_namespace;
+ 
+@@ -243,7 +243,7 @@
+          *    @param mixed $payload      Message or object.
+          *    @access public
+          */
+-        function paintSignal($type, &$payload) {
++    function paintSignal($type, $payload) {
+             parent::paintSignal($type, $payload);
+             print $this->_getIndent(1);
+             print "<" . $this->_namespace . "signal type=\"$type\">";
+@@ -280,16 +280,16 @@
+         function paintFooter($test_name) {
+             print "</" . $this->_namespace . "run>\n";
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Accumulator for incoming tag. Holds the
+      *    incoming test structure information for
+      *    later dispatch to the reporter.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class NestingXmlTag {
++class NestingXmlTag {
+         var $_name;
+         var $_attributes;
+ 
+@@ -330,16 +330,16 @@
+         function _getAttributes() {
+             return $this->_attributes;
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Accumulator for incoming method tag. Holds the
+      *    incoming test structure information for
+      *    later dispatch to the reporter.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class NestingMethodTag extends NestingXmlTag {
++class NestingMethodTag extends NestingXmlTag {
+ 
+         /**
+          *    Sets the basic test information except
+@@ -370,16 +370,16 @@
+         function paintEnd(&$listener) {
+             $listener->paintMethodEnd($this->getName());
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Accumulator for incoming case tag. Holds the
+      *    incoming test structure information for
+      *    later dispatch to the reporter.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class NestingCaseTag extends NestingXmlTag {
++class NestingCaseTag extends NestingXmlTag {
+ 
+         /**
+          *    Sets the basic test information except
+@@ -410,16 +410,16 @@
+         function paintEnd(&$listener) {
+             $listener->paintCaseEnd($this->getName());
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Accumulator for incoming group tag. Holds the
+      *    incoming test structure information for
+      *    later dispatch to the reporter.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class NestingGroupTag extends NestingXmlTag {
++class NestingGroupTag extends NestingXmlTag {
+ 
+         /**
+          *    Sets the basic test information except
+@@ -463,15 +463,15 @@
+             }
+             return 0;
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Parser for importing the output of the XmlReporter.
+      *    Dispatches that output to another reporter.
+ 	 *	  @package SimpleTest
+ 	 *	  @subpackage UnitTester
+      */
+-    class SimpleTestXmlParser {
++class SimpleTestXmlParser {
+         var $_listener;
+         var $_expat;
+         var $_tag_stack;
+@@ -643,5 +643,5 @@
+          */
+         function _default($expat, $default) {
+         }
+-    }
++}
+ ?>

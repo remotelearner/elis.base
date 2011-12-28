@@ -1,0 +1,79 @@
+diff --git a/lib/simpletestlib/socket.php b/lib/simpletestlib/socket.php
+index 4205482..735a198 100644
+--- a/lib/simpletestlib/socket.php
++++ b/lib/simpletestlib/socket.php
+@@ -1,24 +1,24 @@
+ <?php
+-    /**
++/**
+      *	base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	MockObjects
+      *	@version	$Id$
+      */
+ 
+-    /**#@+
++/**#@+
+      * include SimpleTest files
+      */
+-    require_once(dirname(__FILE__) . '/compatibility.php');
+-    /**#@-*/
++require_once(dirname(__FILE__) . '/compatibility.php');
++/**#@-*/
+ 
+-    /**
++/**
+      *    Stashes an error for later. Useful for constructors
+      *    until PHP gets exceptions.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleStickyError {
++class SimpleStickyError {
+         var $_error = 'Constructor not chained';
+ 
+         /**
+@@ -64,14 +64,14 @@
+         function _clearError() {
+             $this->_setError('');
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Wrapper for TCP/IP socket.
+      *    @package SimpleTest
+      *    @subpackage WebTester
+      */
+-    class SimpleSocket extends SimpleStickyError {
++class SimpleSocket extends SimpleStickyError {
+         var $_handle;
+         var $_is_open = false;
+         var $_sent = '';
+@@ -180,14 +180,14 @@
+         function _openSocket($host, $port, &$error_number, &$error, $timeout) {
+             return @fsockopen($host, $port, $error_number, $error, $timeout);
+         }
+-    }
++}
+ 
+-    /**
++/**
+      *    Wrapper for TCP/IP socket over TLS.
+ 	 *    @package SimpleTest
+ 	 *    @subpackage WebTester
+      */
+-    class SimpleSecureSocket extends SimpleSocket {
++class SimpleSecureSocket extends SimpleSocket {
+ 
+         /**
+          *    Opens a secure socket for reading and writing.
+@@ -212,5 +212,5 @@
+         function _openSocket($host, $port, &$error_number, &$error, $timeout) {
+             return parent::_openSocket("tls://$host", $port, $error_number, $error, $timeout);
+         }
+-    }
++}
+ ?>
+\ No newline at end of file

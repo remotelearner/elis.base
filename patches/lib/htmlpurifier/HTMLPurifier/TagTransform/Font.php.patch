@@ -1,0 +1,20 @@
+diff --git a/lib/htmlpurifier/HTMLPurifier/TagTransform/Font.php b/lib/htmlpurifier/HTMLPurifier/TagTransform/Font.php
+index ed24637..9db2db7 100644
+--- a/lib/htmlpurifier/HTMLPurifier/TagTransform/Font.php
++++ b/lib/htmlpurifier/HTMLPurifier/TagTransform/Font.php
+@@ -63,6 +63,7 @@ class HTMLPurifier_TagTransform_Font extends HTMLPurifier_TagTransform
+         // handle size transform
+         if (isset($attr['size'])) {
+             // normalize large numbers
++            if ($attr['size'] !== '') {
+             if ($attr['size']{0} == '+' || $attr['size']{0} == '-') {
+                 $size = (int) $attr['size'];
+                 if ($size < -2) $attr['size'] = '-2';
+@@ -71,6 +72,7 @@ class HTMLPurifier_TagTransform_Font extends HTMLPurifier_TagTransform
+                 $size = (int) $attr['size'];
+                 if ($size > 7) $attr['size'] = '7';
+             }
++            }
+             if (isset($this->_size_lookup[$attr['size']])) {
+                 $prepend_style .= 'font-size:' .
+                   $this->_size_lookup[$attr['size']] . ';';

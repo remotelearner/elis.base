@@ -1,0 +1,35 @@
+diff --git a/user/profile/field/textarea/define.class.php b/user/profile/field/textarea/define.class.php
+index f35f6de..c74b2e4 100644
+--- a/user/profile/field/textarea/define.class.php
++++ b/user/profile/field/textarea/define.class.php
+@@ -1,23 +1,17 @@
+-<?php  //$Id$
++<?php
+ 
+ class profile_define_textarea extends profile_define_base {
+ 
+     function define_form_specific(&$form) {
+         /// Default data
+-        $form->addElement('htmleditor', 'defaultdata', get_string('profiledefaultdata', 'admin'));
+-        $form->setType('defaultdata', PARAM_CLEAN);
+-
+-        /// Param 1 for textarea type is the number of columns
+-        $form->addElement('text', 'param1', get_string('profilefieldcolumns', 'admin'), 'size="6"');
+-        $form->setDefault('param1', 30);
+-        $form->setType('param1', PARAM_INT);
++        $form->addElement('editor', 'defaultdata', get_string('profiledefaultdata', 'admin'));
++        $form->setType('defaultdata', PARAM_RAW); // we have to trust person with capability to edit this default description
++    }
+ 
+-        /// Param 2 for text type is the number of rows
+-        $form->addElement('text', 'param2', get_string('profilefieldrows', 'admin'), 'size="6"');
+-        $form->setDefault('param2', 10);
+-        $form->setType('param2', PARAM_INT);
++    function define_editors() {
++        return array('defaultdata');
+     }
+ 
+ }
+ 
+-?>
++

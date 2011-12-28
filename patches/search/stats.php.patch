@@ -1,0 +1,187 @@
+diff --git a/search/stats.php b/search/stats.php
+index 84e4d12..8ecb097 100644
+--- a/search/stats.php
++++ b/search/stats.php
+@@ -7,6 +7,7 @@
+ * @subpackage search_engine
+ * @author Michael Champanis (mchampan) [cynnical@gmail.com], Valery Fremaux [valery.fremaux@club-internet.fr] > 1.8
+ * @date 2008/03/31
++* @version prepared for 2.0
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ *
+ * Prints some basic statistics about the current index.
+@@ -18,7 +19,9 @@
+ * includes and requires
+ */
+ require_once('../config.php');
+-require_once("{$CFG->dirroot}/search/lib.php");
++require_once($CFG->dirroot.'/search/lib.php');
++
++$block_instanceid = required_param('block_instanceid', PARAM_INT);// Block Instance ID
+ 
+ /// checks global search is enabled
+ 
+@@ -27,39 +30,48 @@ require_once("{$CFG->dirroot}/search/lib.php");
+     }
+     
+     if (empty($CFG->enableglobalsearch)) {
+-        error(get_string('globalsearchdisabled', 'search'));
++        print_error('globalsearchdisabled', 'search');
++    }
++    //Check user's permissions against the block instance from which the user came
++    if (empty($block_instanceid)) {
++        print_error('searchnotpermitted', 'search');
++    }
++    if (!$DB->record_exists('block_instances', array('id' => $block_instanceid, 'blockname' => 'search'))) {
++        print_error('searchnotpermitted', 'search');
+     }
++    $contextblock = get_context_instance(CONTEXT_BLOCK, $block_instanceid);
++    require_capability('moodle/block:view', $contextblock);
+     
+ /// check for php5, but don't die yet
+ 
+-    require_once("{$CFG->dirroot}/search/indexlib.php");
++    require_once($CFG->dirroot.'/search/indexlib.php');
+         
+     $indexinfo = new IndexInfo();
+     
+-    if (!$site = get_site()) {
+-        redirect("index.php");
+-    } 
++    $site = get_site();
+     
+     $strsearch = get_string('search', 'search');
+     $strquery  = get_string('statistics', 'search'); 
+     
+-    if (!function_exists('build_navigation')){
+-        print_header("$site->shortname: $strsearch: $strquery", "$site->fullname",
+-                   "<a href=\"index.php\">$strsearch</a> -> $strquery");
+-    } else {
+-        $navlinks[] = array('name' => $strsearch, 'link' => "index.php", 'type' => 'misc');
+-        $navlinks[] = array('name' => $strquery, 'link' => null, 'type' => 'misc');
+-        $navigation = build_navigation($navlinks);
+         $site = get_site();
+-        print_header("$strsearch", "$site->fullname" , $navigation, "", "", true, "&nbsp;", navmenu($site));
+-    }
++
++    $url = new moodle_url('/search/stats.php');
++    $url->param('block_instanceid', $block_instanceid);
++    $PAGE->set_url($url);
++
++    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
++    $PAGE->navbar->add($strsearch, new moodle_url('/search/query.php?block_instanceid=' . $block_instanceid));
++    $PAGE->navbar->add($strquery, new moodle_url('/search/stats.php?block_instanceid=' . $block_instanceid));
++    $PAGE->set_title($strsearch);
++    $PAGE->set_heading($site->fullname);
++    echo $OUTPUT->header();
+     
+ /// keep things pretty, even if php5 isn't available
+ 
+-    print_box_start();
+-    print_heading($strquery);
++    echo $OUTPUT->box_start();
++    echo $OUTPUT->heading($strquery);
+     
+-    print_box_start();
++    echo $OUTPUT->box_start();
+     
+     $databasestr = get_string('database', 'search');
+     $documentsinindexstr = get_string('documentsinindex', 'search');
+@@ -69,7 +81,7 @@ require_once("{$CFG->dirroot}/search/lib.php");
+     
+ /// this table is only for admins, shows index directory size and location
+ 
+-    if (has_capability('moodle/site:doanything', get_context_instance(CONTEXT_SYSTEM))) {
++    if (has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
+         $datadirectorystr = get_string('datadirectory', 'search');
+         $inindexdirectorystr = get_string('filesinindexdirectory', 'search');
+         $totalsizestr = get_string('totalsize', 'search');
+@@ -82,9 +94,10 @@ require_once("{$CFG->dirroot}/search/lib.php");
+         $runindexerteststr = get_string('runindexertest', 'search');
+         $runindexerstr = get_string('runindexer', 'search');
+         
+-        $admin_table->tablealign = "center";
+-        $admin_table->align = array ("right", "left");
+-        $admin_table->wrap = array ("nowrap", "nowrap");
++        $admin_table = new html_table();
++        $admin_table->tablealign = 'center';
++        $admin_table->align = array ('right', 'left');
++        $admin_table->wrap = array ('nowrap', 'nowrap');
+         $admin_table->cellpadding = 5;
+         $admin_table->cellspacing = 0;
+         $admin_table->width = '500';
+@@ -107,9 +120,10 @@ require_once("{$CFG->dirroot}/search/lib.php");
+             } 
+         }
+     
+-        print_table($admin_table);
+-        print_spacer(20);
+-        print_heading($solutionsstr);
++        echo html_writer::table($admin_table);
++        $spacer = array('height'=>20, 'br'=>true);
++        echo $OUTPUT->spacer($spacer); // should be done with CSS instead
++        echo $OUTPUT->heading($solutionsstr);
+         
+         unset($admin_table->data);
+         if (isset($errors['dir'])) {
+@@ -122,15 +136,16 @@ require_once("{$CFG->dirroot}/search/lib.php");
+         $admin_table->data[] = array($runindexerteststr, '<a href="tests/index.php" target="_blank">tests/index.php</a>');
+         $admin_table->data[] = array($runindexerstr, '<a href="indexersplash.php" target="_blank">indexersplash.php</a>');
+         
+-        print_table($admin_table);
+-        print_spacer(20);
++        echo html_writer::table($admin_table);
++        echo $OUTPUT->spacer($spacer) . '<br />';
+     } 
+     
+ /// this is the standard summary table for normal users, shows document counts
+ 
+-    $table->tablealign = "center";
+-    $table->align = array ("right", "left");
+-    $table->wrap = array ("nowrap", "nowrap");
++    $table = new html_table();
++    $table->tablealign = 'center';
++    $table->align = array ('right', 'left');
++    $table->wrap = array ('nowrap', 'nowrap');
+     $table->cellpadding = 5;
+     $table->cellspacing = 0;
+     $table->width = '500';
+@@ -139,7 +154,7 @@ require_once("{$CFG->dirroot}/search/lib.php");
+     
+ /// add extra fields if we're admin
+ 
+-    if (has_capability('moodle/site:doanything', get_context_instance(CONTEXT_SYSTEM))) {
++    if (has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
+         //don't want to confuse users if the two totals don't match (hint: they should)
+         $table->data[] = array($documentsinindexstr, $indexinfo->indexcount);
+         
+@@ -150,14 +165,21 @@ require_once("{$CFG->dirroot}/search/lib.php");
+     
+     $table->data[] = array($documentsindatabasestr, $indexinfo->dbcount);
+     
+-    foreach($indexinfo->types as $key => $value) {
+-        $table->data[] = array(get_string('documentsfor', 'search') . " '".get_string('modulenameplural', $key)."'", $value);
++    foreach($indexinfo->types as $type) {
++        if ($type->type == 'mod'){
++            $table->data[] = array(get_string('documentsfor', 'search') . " '".get_string('modulenameplural', $type->name)."'", $type->records);
++        } else if ($type->type == 'block') {
++            $table->data[] = array(get_string('documentsfor', 'search') . " '".get_string('pluginname', $type->name)."'", $type->records);
++        } else {
++            $table->data[] = array(get_string('documentsfor', 'search') . " '".get_string($type->name)."'", $type->records);
++        }
++
+     } 
+     
+-    print_heading($databasestatestr);
+-    print_table($table);
++    echo $OUTPUT->heading($databasestatestr);
++    echo html_writer::table($table);
+     
+-    print_box_end();
+-    print_box_end();
+-    print_footer();
++    echo $OUTPUT->box_end();
++    echo $OUTPUT->box_end();
++    echo $OUTPUT->footer();
+ ?>
+\ No newline at end of file

@@ -1,0 +1,163 @@
+diff --git a/admin/xmldb/actions/new_table_from_mysql/new_table_from_mysql.class.php b/admin/xmldb/actions/new_table_from_mysql/new_table_from_mysql.class.php
+index 8bcb1dd..68b14c1 100644
+--- a/admin/xmldb/actions/new_table_from_mysql/new_table_from_mysql.class.php
++++ b/admin/xmldb/actions/new_table_from_mysql/new_table_from_mysql.class.php
+@@ -1,32 +1,34 @@
+-<?php // $Id$
+-
+-///////////////////////////////////////////////////////////////////////////
+-//                                                                       //
+-// NOTICE OF COPYRIGHT                                                   //
+-//                                                                       //
+-// Moodle - Modular Object-Oriented Dynamic Learning Environment         //
+-//          http://moodle.com                                            //
+-//                                                                       //
+-// Copyright (C) 1999 onwards Martin Dougiamas        http://dougiamas.com  //
+-//           (C) 2001-3001 Eloy Lafuente (stronk7) http://contiento.com  //
+-//                                                                       //
+-// This program is free software; you can redistribute it and/or modify  //
+-// it under the terms of the GNU General Public License as published by  //
+-// the Free Software Foundation; either version 2 of the License, or     //
+-// (at your option) any later version.                                   //
+-//                                                                       //
+-// This program is distributed in the hope that it will be useful,       //
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+-// GNU General Public License for more details:                          //
+-//                                                                       //
+-//          http://www.gnu.org/copyleft/gpl.html                         //
+-//                                                                       //
+-///////////////////////////////////////////////////////////////////////////
+-
+-/// This class will ask and retrofit all the information from one
+-/// mysql table present in the Moodle DB to one XMLDBTable structure
++<?php
++
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * @package   xmldb-editor
++ * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
+ 
++/**
++ * This class will ask and retrofit all the information from one
++ * mysql table present in the Moodle DB to one xmldb_table structure
++ *
++ * @package   xmldb-editor
++ * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
+ class new_table_from_mysql extends XMLDBAction {
+ 
+     /**
+@@ -60,12 +62,12 @@ class new_table_from_mysql extends XMLDBAction {
+         $this->does_generate = ACTION_GENERATE_HTML;
+ 
+     /// These are always here
+-        global $CFG, $XMLDB, $db;
++        global $CFG, $XMLDB, $DB, $OUTPUT;
+ 
+     /// Do the job, setting result as needed
+     /// Get the dir containing the file
+         $dirpath = required_param('dir', PARAM_PATH);
+-        $dirpath = $CFG->dirroot . stripslashes_safe($dirpath);
++        $dirpath = $CFG->dirroot . $dirpath;
+ 
+     /// Get the correct dirs
+         if (!empty($XMLDB->dbdirs)) {
+@@ -85,10 +87,9 @@ class new_table_from_mysql extends XMLDBAction {
+         /// No postaction here
+             $this->postaction = NULL;
+         /// Get list of tables
+-            $dbtables = $db->MetaTables('TABLES');
++            $dbtables = $DB->get_tables();
+             $selecttables = array();
+             foreach ($dbtables as $dbtable) {
+-                $dbtable = strtolower(str_replace($CFG->prefix, '', $dbtable));
+                 $i = $structure->findTableInArray($dbtable);
+                 if ($i === NULL) {
+                     $selecttables[$dbtable] = $dbtable;
+@@ -113,7 +114,7 @@ class new_table_from_mysql extends XMLDBAction {
+             $o.= '    <input type="hidden" name ="postaction" value="edit_table" />';
+             $o.= '    <input type="hidden" name ="sesskey" value="' . sesskey() . '" />';
+             $o.= '    <table id="formelements" class="boxaligncenter" cellpadding="5">';
+-            $o.= '      <tr><td><label for="table" accesskey="t">' . $this->str['createtable'] .' </label>' . choose_from_menu($selecttables, 'table', '', 'choose', '', 0, true) . '<label for="after" accesskey="a">' . $this->str['aftertable'] . ' </label>' .choose_from_menu($aftertables, 'after', '', 'choose', '', 0, true) . '</td></tr>';
++            $o.= '      <tr><td><label for="table" accesskey="t">' . $this->str['createtable'] .' </label>' . html_writer::select($selecttables, 'table') . '<label for="after" accesskey="a">' . $this->str['aftertable'] . ' </label>' .html_writer::select($aftertables, 'after') . '</td></tr>';
+             $o.= '      <tr><td colspan="2" align="center"><input type="submit" value="' .$this->str['create'] . '" /></td></tr>';
+             $o.= '      <tr><td colspan="2" align="center"><a href="index.php?action=edit_xml_file&amp;dir=' . urlencode(str_replace($CFG->dirroot, '', $dirpath)) . '">[' . $this->str['back'] . ']</a></td></tr>';
+             $o.= '    </table>';
+@@ -129,18 +130,15 @@ class new_table_from_mysql extends XMLDBAction {
+             $tableparam = required_param('table', PARAM_CLEAN);
+             $afterparam = required_param('after', PARAM_CLEAN);
+ 
+-        /// Create one new XMLDBTable
+-            $table = new XMLDBTable(strtolower(trim($tableparam)));
++        /// Create one new xmldb_table
++            $table = new xmldb_table(strtolower(trim($tableparam)));
+             $table->setComment($table->getName() . ' table retrofitted from MySQL');
+         /// Get fields info from ADODb
+-            if(!$dbfields = $db->MetaColumns($CFG->prefix . $tableparam)) {
+-            ///Try it without prefix if doesn't exist
+-                $dbfields = $db->MetaColumns($tableparam);
+-            }
++            $dbfields = $DB->get_columns($tableparam);
+             if ($dbfields) {
+                 foreach ($dbfields as $dbfield) {
+                 /// Create new XMLDB field
+-                    $field = new XMLDBField(strtolower($dbfield->name));
++                    $field = new xmldb_field($dbfield->name);
+                 /// Set field with info retrofitted
+                     $field->setFromADOField($dbfield);
+                 /// Add field to the table
+@@ -148,15 +146,15 @@ class new_table_from_mysql extends XMLDBAction {
+                 }
+             }
+         /// Get PK, UK and indexes info from ADODb
+-            $dbindexes = $db->MetaIndexes($CFG->prefix . $tableparam, true);
++            $dbindexes = $DB->get_indexes($tableparam);
+             if ($dbindexes) {
+                 $lastkey = NULL; //To temp store the last key processed
+                 foreach ($dbindexes as $indexname => $dbindex) {
+                 /// Add the indexname to the array
+                     $dbindex['name'] = $indexname;
+-                /// We are handling one XMLDBKey (primaries + uniques)
++                /// We are handling one xmldb_key (primaries + uniques)
+                     if ($dbindex['unique']) {
+-                        $key = new XMLDBKey(strtolower($dbindex['name']));
++                        $key = new xmldb_key(strtolower($dbindex['name']));
+                     /// Set key with info retrofitted
+                         $key->setFromADOKey($dbindex);
+                     /// Set default comment to PKs
+@@ -165,9 +163,9 @@ class new_table_from_mysql extends XMLDBAction {
+                     /// Add key to the table
+                         $table->addKey($key);
+ 
+-                /// We are handling one XMLDBIndex (non-uniques)
++                /// We are handling one xmldb_index (non-uniques)
+                     } else {
+-                        $index = new XMLDBIndex(strtolower($dbindex['name']));
++                        $index = new xmldb_index(strtolower($dbindex['name']));
+                     /// Set index with info retrofitted
+                         $index->setFromADOIndex($dbindex);
+                     /// Add index to the table
+@@ -189,4 +187,4 @@ class new_table_from_mysql extends XMLDBAction {
+         return $result;
+     }
+ }
+-?>
++

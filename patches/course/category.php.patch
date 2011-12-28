@@ -1,0 +1,597 @@
+diff --git a/course/category.php b/course/category.php
+index 7caa121..9ed7ebc 100644
+--- a/course/category.php
++++ b/course/category.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+       // Displays the top level category or all courses
+       // In editing mode, allows the admin to edit a category,
+       // and rearrange courses
+@@ -17,128 +17,59 @@
+     $moveto = optional_param('moveto', 0, PARAM_INT);
+     $resort = optional_param('resort', 0, PARAM_BOOL);
+ 
+-    if ($CFG->forcelogin) {
+-        require_login();
+-    }
+-
+-    if (!$site = get_site()) {
+-        error('Site isn\'t defined!');
+-    }
++    $site = get_site();
+ 
+     if (empty($id)) {
+-        error("Category not known!");
++        print_error("unknowcategory");
+     }
+ 
+-    if (!$context = get_context_instance(CONTEXT_COURSECAT, $id)) {
+-        error("Category not known!");
++    $PAGE->set_category_by_id($id);
++    $urlparams = array('id' => $id);
++    if ($page) {
++        $urlparams['page'] = $page;
+     }
+-
+-    if (!$category = get_record("course_categories", "id", $id)) {
+-        error("Category not known!");
+-    }
+-    if (!$category->visible) {
+-        require_capability('moodle/category:viewhiddencategories', $context);
++    if ($perpage) {
++        $urlparams['perpage'] = $perpage;
+     }
++    $PAGE->set_url(new moodle_url('/course/category.php', array('id' => $id)));
++    navigation_node::override_active_url($PAGE->url);
++    $context = $PAGE->context;
++    $category = $PAGE->category;
+ 
+-    if (update_category_button($category->id)) {
++    $canedit = can_edit_in_category($category->id);
++    if ($canedit) {
+         if ($categoryedit !== -1) {
+-            $USER->categoryediting = $categoryedit;
++            $USER->editing = $categoryedit;
+         }
+-        $editingon = !empty($USER->categoryediting);
+-        $navbaritem = update_category_button($category->id); // Must call this again after updating the state.
++        require_login();
++        $editingon = $PAGE->user_is_editing();
+     } else {
+-        $navbaritem = print_course_search("", true, "navbar");
++        if ($CFG->forcelogin) {
++            require_login();
++        }
+         $editingon = false;
+     }
+ 
++    if (!$category->visible) {
++        require_capability('moodle/category:viewhiddencategories', $context);
++    }
++
+     // Process any category actions.
+     if (has_capability('moodle/category:manage', $context)) {
+         /// Resort the category if requested
+         if ($resort and confirm_sesskey()) {
+             if ($courses = get_courses($category->id, "fullname ASC", 'c.id,c.fullname,c.sortorder')) {
+-                // move it off the range
+-
+-                $sortorderresult = get_record_sql('SELECT MIN(sortorder) AS min, 1
+-                                         FROM ' . $CFG->prefix . 'course WHERE category=' . $category->id);
+-                $sortordermin = $sortorderresult->min;
+-
+-                $sortorderresult = get_record_sql('SELECT MAX(sortorder) AS max, 1
+-                                         FROM ' . $CFG->prefix . 'course WHERE category=' . $category->id);
+-                $sortorder = $sortordermax = $sortorderresult->max + 100;
+-
+-                //place the courses above the maximum existing sortorder to avoid duplicate index errors
+-                //after they've been sorted we'll shift them down again
+-                begin_sql();
++                $i = 1;
+                 foreach ($courses as $course) {
+-                    set_field('course', 'sortorder', $sortorder, 'id', $course->id);
+-                    $sortorder++;
+-                }
+-                commit_sql();
+-
+-                //shift course sortorder back down the amount we moved them up
+-                execute_sql('UPDATE '. $CFG->prefix .'course SET sortorder = sortorder-'.($sortordermax-$sortordermin).
+-                        ' WHERE category='.$category->id);
+-
+-                fix_course_sortorder($category->id);
++                    $DB->set_field('course', 'sortorder', $category->sortorder+$i, array('id'=>$course->id));
++                    $i++;
+             }
++                fix_course_sortorder(); // should not be needed
+         }
+     }
+-
+-    if(!empty($CFG->allowcategorythemes) && isset($category->theme)) {
+-        // specifying theme here saves us some dbqs
+-        theme_setup($category->theme);
+-    }
+-
+-/// Print headings
+-    $numcategories = count_records('course_categories');
+-
+-    $stradministration = get_string('administration');
+-    $strcategories = get_string('categories');
+-    $strcategory = get_string('category');
+-    $strcourses = get_string('courses');
+-
+-    $navlinks = array();
+-    $navlinks[] = array('name' => $strcategories, 'link' => 'index.php', 'type' => 'misc');
+-    $navlinks[] = array('name' => format_string($category->name), 'link' => null, 'type' => 'misc');
+-    $navigation = build_navigation($navlinks);
+-
+-    if ($editingon && update_category_button()) {
+-        // Integrate into the admin tree only if the user can edit categories at the top level,
+-        // otherwise the admin block does not appear to this user, and you get an error.
+-        require_once($CFG->libdir.'/adminlib.php');
+-        admin_externalpage_setup('coursemgmt', $navbaritem, array('id' => $id,
+-                'page' => $page, 'perpage' => $perpage), $CFG->wwwroot . '/course/category.php');
+-        admin_externalpage_print_header();
+-    } else {
+-        print_header("$site->shortname: $category->name", "$site->fullname: $strcourses", $navigation, '', '', true, $navbaritem);
+-    }
+-
+-/// Print link to roles
+-    if (has_capability('moodle/role:assign', $context)) {
+-        echo '<div class="rolelink"><a href="'.$CFG->wwwroot.'/'.$CFG->admin.'/roles/assign.php?contextid='.
+-         $context->id.'">'.get_string('assignroles','role').'</a></div>';
+-    }
+-
+-/// Print the category selector
+-    $displaylist = array();
+-    $notused = array();
+-    make_categories_list($displaylist, $notused);
+-
+-    echo '<div class="categorypicker">';
+-    popup_form('category.php?id=', $displaylist, 'switchcategory', $category->id, '', '', '', false, 'self', $strcategories.':');
+-    echo '</div>';
+-
+-/// Print current category description
+-    if (!$editingon && $category->description) {
+-        print_box_start();
+-        $options = new stdClass();
+-        $options->noclean = true;
+-        $options->para = false;
+-        echo format_text($category->description, FORMAT_MOODLE, $options); // for multilang filter
+-        print_box_end();
+     }
+ 
+-/// Process any course actions.
++    // Process any course actions.
+     if ($editingon) {
+     /// Move a specified course to a new category
+         if (!empty($moveto) and $data = data_submitted() and confirm_sesskey()) {   // Some courses are being moved
+@@ -146,8 +77,8 @@
+             require_capability('moodle/category:manage', $context);
+             require_capability('moodle/category:manage', get_context_instance(CONTEXT_COURSECAT, $moveto));
+ 
+-            if (!$destcategory = get_record('course_categories', 'id', $data->moveto)) {
+-                error('Error finding the category');
++            if (!$destcategory = $DB->get_record('course_categories', array('id' => $data->moveto))) {
++                print_error('cannotfindcategory', '', '', $data->moveto);
+             }
+ 
+             $courses = array();
+@@ -157,12 +88,12 @@
+                     array_push($courses, $courseid);
+ 
+                     // check this course's category
+-                    if ($movingcourse = get_record('course', 'id', $courseid)) {
++                    if ($movingcourse = $DB->get_record('course', array('id'=>$courseid))) {
+                         if ($movingcourse->category != $id ) {
+-                            error('The course doesn\'t belong to this category');
++                            print_error('coursedoesnotbelongtocategory');
+                         }
+                     } else {
+-                        error('Error finding the course');
++                        print_error('cannotfindcourse');
+                     }
+                 }
+             }
+@@ -172,80 +103,123 @@
+     /// Hide or show a course
+         if ((!empty($hide) or !empty($show)) and confirm_sesskey()) {
+             if (!empty($hide)) {
+-                $course = get_record('course', 'id', $hide);
++                $course = $DB->get_record('course', array('id' => $hide));
+                 $visible = 0;
+             } else {
+-                $course = get_record('course', 'id', $show);
++                $course = $DB->get_record('course', array('id' => $show));
+                 $visible = 1;
+             }
+ 
+             if ($course) {
+                 $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
+                 require_capability('moodle/course:visibility', $coursecontext);
+-                if (!set_field('course', 'visible', $visible, 'id', $course->id)) {
+-                    notify('Could not update that course!');
+-                }
++                $DB->set_field('course', 'visible', $visible, array('id' => $course->id));
++                $DB->set_field('course', 'visibleold', $visible, array('id' => $course->id)); // we set the old flag when user manually changes visibility of course
+             }
+         }
+ 
++
+     /// Move a course up or down
+         if ((!empty($moveup) or !empty($movedown)) and confirm_sesskey()) {
+             require_capability('moodle/category:manage', $context);
+-            $movecourse = NULL;
+-            $swapcourse = NULL;
+ 
+-            // ensure the course order has no gaps and isn't at 0
+-            fix_course_sortorder($category->id);
+-
+-            // we are going to need to know the range
+-            $max = get_record_sql('SELECT MAX(sortorder) AS max, 1
+-                    FROM ' . $CFG->prefix . 'course WHERE category=' . $category->id);
+-            $max = $max->max + 100;
++            // Ensure the course order has continuous ordering
++            fix_course_sortorder();
++            $swapcourse = NULL;
+ 
+             if (!empty($moveup)) {
+-                $movecourse = get_record('course', 'id', $moveup);
+-                $swapcourse = get_record('course', 'category',  $category->id,
+-                        'sortorder', $movecourse->sortorder - 1);
++                if ($movecourse = $DB->get_record('course', array('id' => $moveup))) {
++                    $swapcourse = $DB->get_record('course', array('sortorder' => $movecourse->sortorder - 1));
++                }
+             } else {
+-                $movecourse = get_record('course', 'id', $movedown);
+-                $swapcourse = get_record('course', 'category',  $category->id,
+-                        'sortorder', $movecourse->sortorder + 1);
++                if ($movecourse = $DB->get_record('course', array('id' => $movedown))) {
++                    $swapcourse = $DB->get_record('course', array('sortorder' => $movecourse->sortorder + 1));
++                }
+             }
+             if ($swapcourse and $movecourse) {
+                 // check course's category
+                 if ($movecourse->category != $id) {
+-                    error('The course doesn\'t belong to this category');
++                    print_error('coursedoesnotbelongtocategory');
+                 }
+-                // Renumber everything for robustness
+-                begin_sql();
+-                if (!(    set_field('course', 'sortorder', $max, 'id', $swapcourse->id)
+-                       && set_field('course', 'sortorder', $swapcourse->sortorder, 'id', $movecourse->id)
+-                       && set_field('course', 'sortorder', $movecourse->sortorder, 'id', $swapcourse->id)
+-                    )) {
+-                    notify('Could not update that course!');
++                $DB->set_field('course', 'sortorder', $swapcourse->sortorder, array('id' => $movecourse->id));
++                $DB->set_field('course', 'sortorder', $movecourse->sortorder, array('id' => $swapcourse->id));
+                 }
+-                commit_sql();
+             }
+ 
+-        }
+     } // End of editing stuff
+ 
++    // Print headings
++    $numcategories = $DB->count_records('course_categories');
++
++    $stradministration = get_string('administration');
++    $strcategories = get_string('categories');
++    $strcategory = get_string('category');
++    $strcourses = get_string('courses');
++
++    if ($editingon && can_edit_in_category()) {
++        // Integrate into the admin tree only if the user can edit categories at the top level,
++        // otherwise the admin block does not appear to this user, and you get an error.
++        require_once($CFG->libdir . '/adminlib.php');
++        admin_externalpage_setup('coursemgmt', '', $urlparams, $CFG->wwwroot . '/course/category.php');
++        $PAGE->set_context($context);   // Ensure that we are actually showing blocks etc for the cat context
++
++        $settingsnode = $PAGE->settingsnav->find_active_node();
++        if ($settingsnode) {
++            $settingsnode->make_inactive();
++            $settingsnode->force_open();
++            $PAGE->navbar->add($settingsnode->text, $settingsnode->action);
++        }
++        echo $OUTPUT->header();
++    } else {
++        $PAGE->set_title("$site->shortname: $category->name");
++        $PAGE->set_heading($site->fullname);
++        $PAGE->set_button(print_course_search('', true, 'navbar'));
++        $PAGE->set_pagelayout('coursecategory');
++        echo $OUTPUT->header();
++    }
++
++/// Print the category selector
++    $displaylist = array();
++    $notused = array();
++    make_categories_list($displaylist, $notused);
++
++    echo '<div class="categorypicker">';
++    $select = new single_select(new moodle_url('category.php'), 'id', $displaylist, $category->id, null, 'switchcategory');
++    $select->set_label($strcategories.':');
++    echo $OUTPUT->render($select);
++    echo '</div>';
++
++/// Print current category description
++    if (!$editingon && $category->description) {
++        echo $OUTPUT->box_start();
++        $options = new stdClass;
++        $options->noclean = true;
++        $options->para = false;
++        $options->overflowdiv = true;
++        if (!isset($category->descriptionformat)) {
++            $category->descriptionformat = FORMAT_MOODLE;
++        }
++        $text = file_rewrite_pluginfile_urls($category->description, 'pluginfile.php', $context->id, 'coursecat', 'description', null);
++        echo format_text($text, $category->descriptionformat, $options);
++        echo $OUTPUT->box_end();
++    }
++
+     if ($editingon && has_capability('moodle/category:manage', $context)) {
+-        echo '<div class="buttons">';
++        echo $OUTPUT->container_start('buttons');
+ 
+         // Print button to update this category
+         $options = array('id' => $category->id);
+-        print_single_button($CFG->wwwroot.'/course/editcategory.php', $options, get_string('editcategorythis'), 'get');
++        echo $OUTPUT->single_button(new moodle_url('/course/editcategory.php', $options), get_string('editcategorythis'), 'get');
+ 
+         // Print button for creating new categories
+         $options = array('parent' => $category->id);
+-        print_single_button($CFG->wwwroot.'/course/editcategory.php', $options, get_string('addsubcategory'), 'get');
++        echo $OUTPUT->single_button(new moodle_url('/course/editcategory.php', $options), get_string('addsubcategory'), 'get');
+ 
+-        echo '</div>';
++        echo $OUTPUT->container_end();
+     }
+ 
+ /// Print out all the sub-categories
+-    if ($subcategories = get_records('course_categories', 'parent', $category->id, 'sortorder ASC')) {
++    if ($subcategories = $DB->get_records('course_categories', array('parent' => $category->id), 'sortorder ASC')) {
+         $firstentry = true;
+         foreach ($subcategories as $subcategory) {
+             if ($subcategory->visible || has_capability('moodle/category:viewhiddencategories', $context)) {
+@@ -256,9 +230,9 @@
+                     echo '<tr><td style="white-space: nowrap">';
+                     $firstentry = false;
+                 }
+-                $catlinkcss = $subcategory->visible ? '' : 'class="dimmed" ';
++                $catlinkcss = $subcategory->visible ? '' : ' class="dimmed" ';
+                 echo '<a '.$catlinkcss.' href="category.php?id='.$subcategory->id.'">'.
+-                     format_string($subcategory->name).'</a><br />';
++                     format_string($subcategory->name, true, array('context' => get_context_instance(CONTEXT_COURSECAT, $subcategory->id))).'</a><br />';
+             }
+         }
+         if (!$firstentry) {
+@@ -267,25 +241,24 @@
+         }
+     }
+ 
+-
+ /// Print out all the courses
+     $courses = get_courses_page($category->id, 'c.sortorder ASC',
+-            'c.id,c.sortorder,c.shortname,c.fullname,c.summary,c.visible,c.teacher,c.guest,c.password',
++            'c.id,c.sortorder,c.shortname,c.fullname,c.summary,c.visible',
+             $totalcount, $page*$perpage, $perpage);
+     $numcourses = count($courses);
+ 
+     if (!$courses) {
+         if (empty($subcategorieswereshown)) {
+-            print_heading(get_string("nocoursesyet"));
++            echo $OUTPUT->heading(get_string("nocoursesyet"));
+         }
+ 
+     } else if ($numcourses <= COURSE_MAX_SUMMARIES_PER_PAGE and !$page and !$editingon) {
+-        print_box_start('courseboxes');
++        echo $OUTPUT->box_start('courseboxes');
+         print_courses($category);
+-        print_box_end();
++        echo $OUTPUT->box_end();
+ 
+     } else {
+-        print_paging_bar($totalcount, $page, $perpage, "category.php?id=$category->id&amp;perpage=$perpage&amp;");
++        echo $OUTPUT->paging_bar($totalcount, $page, $perpage, "/course/category.php?id=$category->id&perpage=$perpage");
+ 
+         $strcourses = get_string('courses');
+         $strselect = get_string('select');
+@@ -300,9 +273,6 @@
+         $strshow = get_string('show');
+         $strsummary = get_string('summary');
+         $strsettings = get_string('settings');
+-        $strassignteachers = get_string('assignteachers');
+-        $strallowguests = get_string('allowguests');
+-        $strrequireskey = get_string('requireskey');
+ 
+ 
+         echo '<form id="movecourses" action="category.php" method="post"><div>';
+@@ -335,13 +305,8 @@
+             $atlastpage = true;
+         }
+ 
+-        $spacer = '<img src="'.$CFG->wwwroot.'/pix/spacer.gif" class="iconsmall" alt="" /> ';
+         foreach ($courses as $acourse) {
+-            if (isset($acourse->context)) {
+-                $coursecontext = $acourse->context;
+-            } else {
+                 $coursecontext = get_context_instance(CONTEXT_COURSE, $acourse->id);
+-            }
+ 
+             $count++;
+             $up = ($count > 1 || !$atfirstpage);
+@@ -353,76 +318,62 @@
+             if ($editingon) {
+                 echo '<td>';
+                 if (has_capability('moodle/course:update', $coursecontext)) {
+-                    echo '<a title="'.$strsettings.'" href="'.$CFG->wwwroot.'/course/edit.php?id='.$acourse->id.'">'.
+-                            '<img src="'.$CFG->pixpath.'/t/edit.gif" class="iconsmall" alt="'.$stredit.'" /></a> ';
+-                } else {
+-                    echo $spacer;
++                    echo $OUTPUT->action_icon(new moodle_url('/course/edit.php',
++                            array('id' => $acourse->id, 'category' => $id, 'returnto' => 'category')),
++                            new pix_icon('t/edit', $strsettings));
+                 }
+ 
+                 // role assignment link
+-                if (has_capability('moodle/role:assign', $coursecontext)) {
+-                    echo '<a title="'.get_string('assignroles', 'role').'" href="'.$CFG->wwwroot.'/'.$CFG->admin.'/roles/assign.php?contextid='.$coursecontext->id.'">'.
+-                            '<img src="'.$CFG->pixpath.'/i/roles.gif" class="iconsmall" alt="'.get_string('assignroles', 'role').'" /></a> ';
+-                } else {
+-                    echo $spacer;
++                if (has_capability('moodle/course:enrolreview', $coursecontext)) {
++                    echo $OUTPUT->action_icon(new moodle_url('/enrol/users.php', array('id' => $acourse->id)),
++                            new pix_icon('i/users', get_string('enrolledusers', 'enrol')));
+                 }
+ 
+                 if (can_delete_course($acourse->id)) {
+-                    echo '<a title="'.$strdelete.'" href="delete.php?id='.$acourse->id.'">'.
+-                            '<img src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt="'.$strdelete.'" /></a> ';
+-                } else {
+-                    echo $spacer;
++                    echo $OUTPUT->action_icon(new moodle_url('/course/delete.php', array('id' => $acourse->id)),
++                            new pix_icon('t/delete', $strdelete));
+                 }
+ 
+                 // MDL-8885, users with no capability to view hidden courses, should not be able to lock themselves out
+                 if (has_capability('moodle/course:visibility', $coursecontext) && has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
+                     if (!empty($acourse->visible)) {
+-                        echo '<a title="'.$strhide.'" href="category.php?id='.$category->id.'&amp;page='.$page.
+-                            '&amp;perpage='.$perpage.'&amp;hide='.$acourse->id.'&amp;sesskey='.$USER->sesskey.'">'.
+-                            '<img src="'.$CFG->pixpath.'/t/hide.gif" class="iconsmall" alt="'.$strhide.'" /></a> ';
++                        echo $OUTPUT->action_icon(new moodle_url('/course/category.php',
++                                array('id' => $category->id, 'page' => $page, 'perpage' => $perpage,
++                                        'hide' => $acourse->id, 'sesskey' => sesskey())),
++                                new pix_icon('t/hide', $strhide));
+                     } else {
+-                        echo '<a title="'.$strshow.'" href="category.php?id='.$category->id.'&amp;page='.$page.
+-                            '&amp;perpage='.$perpage.'&amp;show='.$acourse->id.'&amp;sesskey='.$USER->sesskey.'">'.
+-                            '<img src="'.$CFG->pixpath.'/t/show.gif" class="iconsmall" alt="'.$strshow.'" /></a> ';
++                        echo $OUTPUT->action_icon(new moodle_url('/course/category.php',
++                                array('id' => $category->id, 'page' => $page, 'perpage' => $perpage,
++                                        'show' => $acourse->id, 'sesskey' => sesskey())),
++                                new pix_icon('t/show', $strshow));
+                     }
+-                } else {
+-                    echo $spacer;
+                 }
+ 
+-                if (has_capability('moodle/site:backup', $coursecontext)) {
+-                    echo '<a title="'.$strbackup.'" href="../backup/backup.php?id='.$acourse->id.'">'.
+-                            '<img src="'.$CFG->pixpath.'/t/backup.gif" class="iconsmall" alt="'.$strbackup.'" /></a> ';
+-                } else {
+-                    echo $spacer;
++                if (has_capability('moodle/backup:backupcourse', $coursecontext)) {
++                    echo $OUTPUT->action_icon(new moodle_url('/backup/backup.php', array('id' => $acourse->id)),
++                            new pix_icon('t/backup', $strbackup));
+                 }
+ 
+-                if (has_capability('moodle/site:restore', $coursecontext)) {
+-                    echo '<a title="'.$strrestore.'" href="../files/index.php?id='.$acourse->id.
+-                         '&amp;wdir=/backupdata">'.
+-                         '<img src="'.$CFG->pixpath.'/t/restore.gif" class="iconsmall" alt="'.$strrestore.'" /></a> ';
+-                } else {
+-                    echo $spacer;
++                if (has_capability('moodle/restore:restorecourse', $coursecontext)) {
++                    echo $OUTPUT->action_icon(new moodle_url('/backup/restorefile.php', array('contextid' => $coursecontext->id)),
++                            new pix_icon('t/restore', $strrestore));
+                 }
+ 
+                 if (has_capability('moodle/category:manage', $context)) {
+                     if ($up) {
+-                        echo '<a title="'.$strmoveup.'" href="category.php?id='.$category->id.'&amp;page='.$page.
+-                             '&amp;perpage='.$perpage.'&amp;moveup='.$acourse->id.'&amp;sesskey='.$USER->sesskey.'">'.
+-                             '<img src="'.$CFG->pixpath.'/t/up.gif" class="iconsmall" alt="'.$strmoveup.'" /></a> ';
+-                    } else {
+-                        echo $spacer;
++                        echo $OUTPUT->action_icon(new moodle_url('/course/category.php',
++                                array('id' => $category->id, 'page' => $page, 'perpage' => $perpage,
++                                        'moveup' => $acourse->id, 'sesskey' => sesskey())),
++                                new pix_icon('t/up', $strmoveup));
+                     }
+ 
+                     if ($down) {
+-                        echo '<a title="'.$strmovedown.'" href="category.php?id='.$category->id.'&amp;page='.$page.
+-                             '&amp;perpage='.$perpage.'&amp;movedown='.$acourse->id.'&amp;sesskey='.$USER->sesskey.'">'.
+-                             '<img src="'.$CFG->pixpath.'/t/down.gif" class="iconsmall" alt="'.$strmovedown.'" /></a> ';
+-                    } else {
+-                        echo $spacer;
++                        echo $OUTPUT->action_icon(new moodle_url('/course/category.php',
++                                array('id' => $category->id, 'page' => $page, 'perpage' => $perpage,
++                                        'movedown' => $acourse->id, 'sesskey' => sesskey())),
++                                new pix_icon('t/down', $strmovedown));
+                     }
+                     $abletomovecourses = true;
+-                } else {
+-                    echo $spacer, $spacer;
+                 }
+ 
+                 echo '</td>';
+@@ -431,20 +382,16 @@
+                 echo '</td>';
+             } else {
+                 echo '<td align="right">';
+-                if (!empty($acourse->guest)) {
+-                    echo '<a href="view.php?id='.$acourse->id.'"><img title="'.
+-                         $strallowguests.'" class="icon" src="'.
+-                         $CFG->pixpath.'/i/guest.gif" alt="'.$strallowguests.'" /></a>';
++                // print enrol info
++                if ($icons = enrol_get_course_info_icons($acourse)) {
++                    foreach ($icons as $pix_icon) {
++                        echo $OUTPUT->render($pix_icon);
+                 }
+-                if (!empty($acourse->password)) {
+-                    echo '<a href="view.php?id='.$acourse->id.'"><img title="'.
+-                         $strrequireskey.'" class="icon" src="'.
+-                         $CFG->pixpath.'/i/key.gif" alt="'.$strrequireskey.'" /></a>';
+                 }
+                 if (!empty($acourse->summary)) {
+-                    link_to_popup_window ("/course/info.php?id=$acourse->id", "courseinfo",
+-                                          '<img alt="'.get_string('info').'" class="icon" src="'.$CFG->pixpath.'/i/info.gif" />',
+-                                           400, 500, $strsummary);
++                    $link = new moodle_url("/course/info.php?id=$acourse->id");
++                    echo $OUTPUT->action_link($link, '<img alt="'.get_string('info').'" class="icon" src="'.$OUTPUT->pix_url('i/info') . '" />',
++                        new popup_action('click', $link, 'courseinfo'), array('title'=>$strsummary));
+                 }
+                 echo "</td>";
+             }
+@@ -457,7 +404,8 @@
+             make_categories_list($movetocategories, $notused, 'moodle/category:manage');
+             $movetocategories[$category->id] = get_string('moveselectedcoursesto');
+             echo '<tr><td colspan="3" align="right">';
+-            choose_from_menu($movetocategories, 'moveto', $category->id, '', "javascript:submitFormById('movecourses')");
++            echo html_writer::select($movetocategories, 'moveto', $category->id, null, array('id'=>'movetoid'));
++            $PAGE->requires->js_init_call('M.util.init_select_autosubmit', array('movecourses', 'movetoid', false));
+             echo '<input type="hidden" name="id" value="'.$category->id.'" />';
+             echo '</td></tr>';
+         }
+@@ -473,24 +421,24 @@
+         unset($options);
+         $options['id'] = $category->id;
+         $options['resort'] = 'name';
+-        $options['sesskey'] = $USER->sesskey;
+-        print_single_button('category.php', $options, get_string('resortcoursesbyname'), 'get');
++        $options['sesskey'] = sesskey();
++        echo $OUTPUT->single_button(new moodle_url('category.php', $options), get_string('resortcoursesbyname'), 'get');
+     }
+ 
+     if (has_capability('moodle/course:create', $context)) {
+     /// Print button to create a new course
+         unset($options);
+         $options['category'] = $category->id;
+-        print_single_button('edit.php', $options, get_string('addnewcourse'), 'get');
++        $options['returnto'] = 'category';
++        echo $OUTPUT->single_button(new moodle_url('edit.php', $options), get_string('addnewcourse'), 'get');
+     }
+ 
+-    if (!empty($CFG->enablecourserequests) && $category->id == $CFG->enablecourserequests) {
++    if (!empty($CFG->enablecourserequests) && $category->id == $CFG->defaultrequestcategory) {
+         print_course_request_buttons(get_context_instance(CONTEXT_SYSTEM));
+     }
+     echo '</div>';
+ 
+     print_course_search();
+ 
+-    print_footer();
++    echo $OUTPUT->footer();
+ 
+-?>

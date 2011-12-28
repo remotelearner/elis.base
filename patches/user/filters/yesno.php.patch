@@ -1,0 +1,10 @@
+diff --git a/user/filters/yesno.php b/user/filters/yesno.php
+index 95aeebe..ee22711 100644
+--- a/user/filters/yesno.php
++++ b/user/filters/yesno.php
+@@ -1,4 +1,4 @@
+-<?php //$Id$
++<?php
+ 
+ /**
+  * Generic yes/no filter with radio buttons for integer fields.

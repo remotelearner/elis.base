@@ -1,0 +1,129 @@
+diff --git a/lib/simpletestlib/unit_tester.php b/lib/simpletestlib/unit_tester.php
+index 6efaf60..ce51b88 100644
+--- a/lib/simpletestlib/unit_tester.php
++++ b/lib/simpletestlib/unit_tester.php
+@@ -1,26 +1,26 @@
+ <?php
+-    /**
++/**
+      *	base include file for SimpleTest
+      *	@package	SimpleTest
+      *	@subpackage	UnitTester
+      *	@version	$Id$
+      */
+ 
+-    /**#@+
++/**#@+
+      *	include other SimpleTest class files
+      */
+-    require_once(dirname(__FILE__) . '/test_case.php');
+-    require_once(dirname(__FILE__) . '/dumper.php');
+-    /**#@-*/
++require_once(dirname(__FILE__) . '/test_case.php');
++require_once(dirname(__FILE__) . '/dumper.php');
++/**#@-*/
+ 
+-    /**
++/**
+      *    Standard unit test class for day to day testing
+      *    of PHP code XP style. Adds some useful standard
+      *    assertions.
+ 	 *	  @package	SimpleTest
+ 	 *	  @subpackage	UnitTester
+      */
+-    class UnitTestCase extends SimpleTestCase {
++class UnitTestCase extends SimpleTestCase {
+ 
+         /**
+          *    Creates an empty test case. Should be subclassed
+@@ -71,7 +71,7 @@
+          *    @access public
+          */
+         function assertNull($value, $message = '%s') {
+-            $dumper = &new SimpleDumper();
++        $dumper = new SimpleDumper();
+             $message = sprintf(
+                     $message,
+                     '[' . $dumper->describeValue($value) . '] should be null');
+@@ -86,7 +86,7 @@
+          *    @access public
+          */
+         function assertNotNull($value, $message = '%s') {
+-            $dumper = &new SimpleDumper();
++        $dumper = new SimpleDumper();
+             $message = sprintf(
+                     $message,
+                     '[' . $dumper->describeValue($value) . '] should not be null');
+@@ -235,7 +235,7 @@
+          *    @access public
+          */
+         function assertReference(&$first, &$second, $message = '%s') {
+-            $dumper = &new SimpleDumper();
++        $dumper = new SimpleDumper();
+             $message = sprintf(
+                     $message,
+                     '[' . $dumper->describeValue($first) .
+@@ -257,13 +257,13 @@
+          *    @access public
+          */
+         function assertClone(&$first, &$second, $message = '%s') {
+-            $dumper = &new SimpleDumper();
++        $dumper = new SimpleDumper();
+             $message = sprintf(
+                     $message,
+                     '[' . $dumper->describeValue($first) .
+                             '] and [' . $dumper->describeValue($second) .
+                             '] should not be the same object');
+-            $identical = &new IdenticalExpectation($first);
++        $identical = new IdenticalExpectation($first);
+             return $this->assertTrue(
+                     $identical->test($second) &&
+                             ! SimpleTestCompatibility::isReference($first, $second),
+@@ -274,7 +274,7 @@
+          *    @deprecated
+          */
+         function assertCopy(&$first, &$second, $message = "%s") {
+-            $dumper = &new SimpleDumper();
++        $dumper = new SimpleDumper();
+             $message = sprintf(
+                     $message,
+                     "[" . $dumper->describeValue($first) .
+@@ -385,7 +385,10 @@
+         function expectException($expected = false, $message = '%s') {
+             $context = &SimpleTest::getContext();
+             $queue = &$context->get('SimpleExceptionTrap');
+-            $queue->expectException($expected, $message . $this->getAssertionLine());
++        // :HACK: Directly substituting in seems to cause a segfault with
++        // Zend Optimizer on some systems
++        $line = $this->getAssertionLine();
++        $queue->expectException($expected, $message . $line);
+         }
+ 
+         /**
+@@ -398,15 +401,13 @@
+          */
+         function _coerceExpectation($expected) {
+             if ($expected == false) {
+-                return new AnythingExpectation();
++            return new TrueExpectation();
+             }
+             if (SimpleTestCompatibility::isA($expected, 'SimpleExpectation')) {
+                 return $expected;
+             }
+-			if(is_string($expected)) {
+-				$expected = str_replace('%', '%%', $expected);
+-			}
+-            return new EqualExpectation($expected);
++        return new EqualExpectation(
++                is_string($expected) ? str_replace('%', '%%', $expected) : $expected);
+         }
+ 
+         /**
+@@ -415,5 +416,5 @@
+         function assertErrorPattern($pattern, $message = '%s') {
+             return $this->assertError(new PatternExpectation($pattern), $message);
+         }
+-    }
++}
+ ?>
+\ No newline at end of file

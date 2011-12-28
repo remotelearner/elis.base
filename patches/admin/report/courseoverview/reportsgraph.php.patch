@@ -1,0 +1,51 @@
+diff --git a/admin/report/courseoverview/reportsgraph.php b/admin/report/courseoverview/reportsgraph.php
+index 8e26518..45ea7d8 100644
+--- a/admin/report/courseoverview/reportsgraph.php
++++ b/admin/report/courseoverview/reportsgraph.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+     require_once('../../../config.php');
+     require_once($CFG->dirroot.'/lib/statslib.php');
+@@ -19,17 +19,19 @@
+     if (!empty($param->sql)) {
+         $sql = $param->sql;
+     } else {
+-        $sql = "SELECT courseid,".$param->fields." FROM ".$CFG->prefix.'stats_'.$param->table
+-            ." WHERE timeend >= $param->timeafter AND stattype = 'activity' AND roleid = 0"
+-            ." GROUP BY courseid "
+-            .$param->extras
+-            ." ORDER BY ".$param->orderby;
++        $sql = "SELECT courseid, $param->fields
++                  FROM {".'stats_'.$param->table."}
++                 WHERE timeend >= $param->timeafter AND stattype = 'activity' AND roleid = 0
++              GROUP BY courseid
++                       $param->extras
++              ORDER BY $param->orderby";
+     }
+ 
+-    $courses = get_records_sql($sql, 0, $numcourses);
++    $courses = $DB->get_records_sql($sql, $param->params, 0, $numcourses);
+ 
+     if (empty($courses)) {
+-        print_error('statsnodata', "", $CFG->wwwroot.'/'.$CFG->admin.'/report/courseoverview/index.php');
++        $PAGE->set_url('/admin/report/courseoverview/index.php');
++        print_error('statsnodata', 'error', $PAGE->url->out());
+     }
+ 
+ 
+@@ -46,12 +48,10 @@
+     }
+ 
+     foreach ($courses as $c) {
+-        $graph->x_data[] = get_field('course','shortname','id',$c->courseid);
++        $graph->x_data[] = $DB->get_field('course', 'shortname', array('id'=>$c->courseid));
+         $graph->y_data['bar1'][] = $c->{$param->graphline};
+     }
+     $graph->y_order = array('bar1');
+     $graph->y_format['bar1'] = array('colour' => 'blue','bar' => 'fill','legend' => $param->{$param->graphline});
+ 
+     $graph->draw_stack();
+-
+-?>

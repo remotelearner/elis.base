@@ -1,0 +1,13 @@
+diff --git a/lib/pear/HTML/QuickForm/RuleRegistry.php b/lib/pear/HTML/QuickForm/RuleRegistry.php
+index 9bb849e..6e65362 100644
+--- a/lib/pear/HTML/QuickForm/RuleRegistry.php
++++ b/lib/pear/HTML/QuickForm/RuleRegistry.php
+@@ -115,7 +115,7 @@ class HTML_QuickForm_RuleRegistry
+             if (!empty($path)) {
+                 include_once($path);
+             }
+-            $this->_rules[$class] =& new $class();
++            $this->_rules[$class] = new $class();
+         }
+         $this->_rules[$class]->setName($ruleName);
+         return $this->_rules[$class];

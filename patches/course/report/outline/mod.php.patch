@@ -1,0 +1,16 @@
+diff --git a/course/report/outline/mod.php b/course/report/outline/mod.php
+index 1caf681..22a5b66 100644
+--- a/course/report/outline/mod.php
++++ b/course/report/outline/mod.php
+@@ -1,4 +1,4 @@
+-<?php  // $Id$
++<?php
+ 
+     if (!defined('MOODLE_INTERNAL')) {
+         die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+@@ -11,4 +11,3 @@
+         echo "$activityreport</a>\n";
+         echo '</p>';
+     }
+-?>
+\ No newline at end of file

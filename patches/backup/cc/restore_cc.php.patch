@@ -1,0 +1,11 @@
+diff --git a/backup/cc/restore_cc.php b/backup/cc/restore_cc.php
+old mode 100755
+new mode 100644
+index 4568280..17d9170
+--- a/backup/cc/restore_cc.php
++++ b/backup/cc/restore_cc.php
+@@ -139,4 +139,3 @@ function detect_cc_format ($xml_file) {
+     }
+ 
+ }
+-?>

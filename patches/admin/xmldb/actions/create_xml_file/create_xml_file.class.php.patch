@@ -1,0 +1,25 @@
+diff --git a/admin/xmldb/actions/create_xml_file/create_xml_file.class.php b/admin/xmldb/actions/create_xml_file/create_xml_file.class.php
+index f4fa487..1ef91c8 100644
+--- a/admin/xmldb/actions/create_xml_file/create_xml_file.class.php
++++ b/admin/xmldb/actions/create_xml_file/create_xml_file.class.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+ ///////////////////////////////////////////////////////////////////////////
+ //                                                                       //
+@@ -66,7 +66,7 @@ class create_xml_file extends XMLDBAction {
+ 
+     /// Get the dir containing the file
+         $dirpath = required_param('dir', PARAM_PATH);
+-        $dirpath = $CFG->dirroot . stripslashes_safe($dirpath);
++        $dirpath = $CFG->dirroot . $dirpath;
+         $file = $dirpath . '/install.xml';
+ 
+     /// Some variables
+@@ -105,4 +105,4 @@ class create_xml_file extends XMLDBAction {
+         return $result;
+     }
+ }
+-?>
++

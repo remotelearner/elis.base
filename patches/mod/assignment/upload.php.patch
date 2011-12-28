@@ -1,0 +1,75 @@
+diff --git a/mod/assignment/upload.php b/mod/assignment/upload.php
+index e866cdf..c884349 100644
+--- a/mod/assignment/upload.php
++++ b/mod/assignment/upload.php
+@@ -1,42 +1,44 @@
+-<?php  // $Id$
++<?php
+ 
+-    require_once("../../config.php");
+-    require_once("lib.php");
++require_once("../../config.php");
++require_once("lib.php");
+ 
+-    $id = optional_param('id', 0, PARAM_INT);  // Course module ID
+-    $a  = optional_param('a', 0, PARAM_INT);   // Assignment ID
++$id = optional_param('id', 0, PARAM_INT);  // Course module ID
++$a  = optional_param('a', 0, PARAM_INT);   // Assignment ID
+ 
+-    if ($id) {
++$url = new moodle_url('/mod/assignment/upload.php');
++if ($id) {
+         if (! $cm = get_coursemodule_from_id('assignment', $id)) {
+-            error("Course Module ID was incorrect");
++        print_error('invalidcoursemodule');
+         }
+ 
+-        if (! $assignment = get_record("assignment", "id", $cm->instance)) {
+-            error("assignment ID was incorrect");
++    if (! $assignment = $DB->get_record("assignment", array("id"=>$cm->instance))) {
++        print_error('invalidid', 'assignment');
+         }
+ 
+-        if (! $course = get_record("course", "id", $assignment->course)) {
+-            error("Course is misconfigured");
++    if (! $course = $DB->get_record("course", array("id"=>$assignment->course))) {
++        print_error('coursemisconf', 'assignment');
+         }
+-    } else {
+-        if (!$assignment = get_record("assignment", "id", $a)) {
+-            error("Course module is incorrect");
++    $url->param('id', $id);
++} else {
++    if (!$assignment = $DB->get_record("assignment", array("id"=>$a))) {
++        print_error('invalidcoursemodule');
+         }
+-        if (! $course = get_record("course", "id", $assignment->course)) {
+-            error("Course is misconfigured");
++    if (! $course = $DB->get_record("course", array("id"=>$assignment->course))) {
++        print_error('invalidid', 'assignment');
+         }
+         if (! $cm = get_coursemodule_from_instance("assignment", $assignment->id, $course->id)) {
+-            error("Course Module ID was incorrect");
+-        }
++        print_error('invalidcoursemodule', 'assignment');
+     }
++    $url->param('a', $a);
++}
+ 
+-    require_login($course->id, false, $cm);
++$PAGE->set_url($url);
++require_login($course->id, false, $cm);
+ 
+ /// Load up the required assignment code
+-    require($CFG->dirroot.'/mod/assignment/type/'.$assignment->assignmenttype.'/assignment.class.php');
+-    $assignmentclass = 'assignment_'.$assignment->assignmenttype;
+-    $assignmentinstance = new $assignmentclass($cm->id, $assignment, $cm, $course);
+-
+-    $assignmentinstance->upload();   // Upload files
++require_once($CFG->dirroot.'/mod/assignment/type/'.$assignment->assignmenttype.'/assignment.class.php');
++$assignmentclass = 'assignment_'.$assignment->assignmenttype;
++$assignmentinstance = new $assignmentclass($cm->id, $assignment, $cm, $course);
+ 
+-?>
++$assignmentinstance->upload();   // Upload files
+\ No newline at end of file

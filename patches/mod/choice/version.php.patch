@@ -1,0 +1,21 @@
+diff --git a/mod/choice/version.php b/mod/choice/version.php
+index 51a67c3..a31312f 100644
+--- a/mod/choice/version.php
++++ b/mod/choice/version.php
+@@ -1,12 +1,12 @@
+-<?php // $Id$
++<?php
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+ //  Code fragment to define the module version etc.
+ //  This fragment is called by /admin/index.php
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+-$module->version  = 2007101509;
+-$module->requires = 2007101509;  // Requires this Moodle version
++$module->version  = 2010101301;
++$module->requires = 2010080300;  // Requires this Moodle version
+ $module->cron     = 0;
+ 
+-?>
++

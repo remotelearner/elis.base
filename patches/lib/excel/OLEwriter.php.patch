@@ -1,0 +1,13 @@
+diff --git a/lib/excel/OLEwriter.php b/lib/excel/OLEwriter.php
+index 6af35d2..8c017d2 100644
+--- a/lib/excel/OLEwriter.php
++++ b/lib/excel/OLEwriter.php
+@@ -232,7 +232,7 @@ class OLEwriter
+     *
+     * @param string $data string of bytes to be written
+     */
+-    function write($data) //por ahora sólo a STDOUT
++    function write($data) //por ahora sï¿½lo a STDOUT
+     {
+         fwrite($this->_filehandle,$data,strlen($data));
+     }

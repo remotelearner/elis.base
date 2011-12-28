@@ -1,0 +1,10 @@
+diff --git a/grade/edit/outcome/tabs.php b/grade/edit/outcome/tabs.php
+index 40a7aa2..23355bd 100644
+--- a/grade/edit/outcome/tabs.php
++++ b/grade/edit/outcome/tabs.php
+@@ -35,4 +35,4 @@
+     print_tabs($tabs, $currenttab);
+     echo '</div>';
+ 
+-?>
++

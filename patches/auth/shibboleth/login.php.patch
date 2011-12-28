@@ -1,0 +1,73 @@
+diff --git a/auth/shibboleth/login.php b/auth/shibboleth/login.php
+index 87ea564..1591c24 100644
+--- a/auth/shibboleth/login.php
++++ b/auth/shibboleth/login.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+     require_once("../../config.php");
+     require_once($CFG->dirroot."/auth/shibboleth/auth.php");
+@@ -15,32 +15,17 @@
+     }
+ 
+ 
+-//HTTPS is potentially required in this page
+-httpsrequired();
++//HTTPS is required in this page when $CFG->loginhttps enabled
++$PAGE->https_required();
+ 
+ /// Define variables used in page
+-    if (!$site = get_site()) {
+-        error("No site found!");
+-    }
+-
+-    if (empty($CFG->langmenu)) {
+-        $langmenu = "";
+-    } else {
+-        $currlang = current_language();
+-        $langs    = get_list_of_languages();
+-        $langlabel = get_accesshide(get_string('language'));
+-        $langmenu = popup_form ("$CFG->httpswwwroot/login/index.php?lang=", $langs, "chooselang", $currlang, "", "", "", true, 'self', $langlabel);
+-    }
++    $site = get_site();
+ 
+     $loginsite = get_string("loginsite");
+ 
+     $loginurl = (!empty($CFG->alternateloginurl)) ? $CFG->alternateloginurl : '';
+ 
+ 
+-    if (get_moodle_cookie() == '') {   
+-        set_moodle_cookie('nobody');   // To help search for cookies
+-    }
+-
+     if (!empty($CFG->registerauth) or is_enabled_auth('none') or !empty($CFG->auth_instructions)) {
+         $show_instructions = true;
+     } else {
+@@ -72,17 +57,18 @@ httpsrequired();
+             // header('Location: /Shibboleth.sso/DS?entityID='. urlencode($selectedIdP) .'&target='. urlencode($CFG->wwwroot.'/auth/shibboleth/index.php'));
+         }
+     } elseif (isset($_POST['idp']) && !isset($IdPs[$_POST['idp']]))  {
+-        $errormsg = get_string('auth_shibboleth_errormsg', 'auth');
++        $errormsg = get_string('auth_shibboleth_errormsg', 'auth_shibboleth');
+     }
+ 
+     $loginsite = get_string("loginsite");
+-    $navlinks = array(array('name' => $loginsite, 'link' => null, 'type' => 'misc'));
+-    $navigation = build_navigation($navlinks);
+-    $focus = 'idp';
+-    print_header("$site->fullname: $loginsite", $site->fullname, $navigation, $focus,
+-                 '', true, '<div class="langmenu">'.$langmenu.'</div>');
+ 
++    $PAGE->set_url('/auth/shibboleth/login.php');
++    $PAGE->navbar->add($loginsite);
++    $PAGE->set_title("$site->fullname: $loginsite");
++    $PAGE->set_heading($site->fullname);
++
++    echo $OUTPUT->header();
+     include("index_form.html");
+-    print_footer();
++    echo $OUTPUT->footer();
++
+ 
+-?>

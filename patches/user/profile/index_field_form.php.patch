@@ -1,0 +1,26 @@
+diff --git a/user/profile/index_field_form.php b/user/profile/index_field_form.php
+index e61848a..a891504 100644
+--- a/user/profile/index_field_form.php
++++ b/user/profile/index_field_form.php
+@@ -1,4 +1,8 @@
+-<?php //$Id$
++<?php
++
++if (!defined('MOODLE_INTERNAL')) {
++    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
++}
+ 
+ require_once($CFG->dirroot.'/lib/formslib.php');
+ 
+@@ -45,6 +49,10 @@ class field_form extends moodleform {
+     function validation($data, $files) {
+         return $this->field->define_validate($data, $files);
+     }
++
++    function editors() {
++        return $this->field->define_editors();
++    }
+ }
+ 
+-?>
++

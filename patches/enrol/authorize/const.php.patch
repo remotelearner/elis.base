@@ -1,0 +1,34 @@
+diff --git a/enrol/authorize/const.php b/enrol/authorize/const.php
+index c666986..16030df 100644
+--- a/enrol/authorize/const.php
++++ b/enrol/authorize/const.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+ /**#@+
+  * Authorize.net payment methods.
+@@ -41,7 +41,7 @@ define('AN_STATUS_TEST',            0xff); // dummy status
+ /**#@-*/
+ 
+ /**#@+
+- * Actions used in authorize_action() function.
++ * Actions used in AuthorizeNet::process() method.
+  *
+  * NONE: No action. Function always returns false.
+  * AUTH_ONLY: Used to authorize only, don't capture.
+@@ -75,7 +75,7 @@ define('AN_ACTION_VOID',                6);
+ /**#@-*/
+ 
+ /**#@+
+- * Return codes for authorize_action() function.
++ * Return codes for AuthorizeNet::process() method.
+  *
+  * AN_RETURNZERO: No connection was made on authorize.net.
+  * AN_APPROVED: The transaction was accepted.
+@@ -89,4 +89,4 @@ define('AN_ERROR',      3);
+ define('AN_REVIEW',     4);
+ /**#@-*/
+ 
+-?>
++

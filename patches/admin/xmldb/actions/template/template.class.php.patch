@@ -1,0 +1,25 @@
+diff --git a/admin/xmldb/actions/template/template.class.php b/admin/xmldb/actions/template/template.class.php
+index a2ddae1..5d7a082 100644
+--- a/admin/xmldb/actions/template/template.class.php
++++ b/admin/xmldb/actions/template/template.class.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+ ///////////////////////////////////////////////////////////////////////////
+ //                                                                       //
+@@ -62,7 +62,7 @@ class template extends XMLDBAction {
+     /// Do the job, setting result as needed
+     /// Get the dir containing the file
+         $dirpath = required_param('dir', PARAM_PATH);
+-        $dirpath = $CFG->dirroot . stripslashes_safe($dirpath);
++        $dirpath = $CFG->dirroot . $dirpath;
+ 
+     /// Get the correct dirs
+         if (!empty($XMLDB->dbdirs)) {
+@@ -88,4 +88,4 @@ class template extends XMLDBAction {
+         return $result;
+     }
+ }
+-?>
++

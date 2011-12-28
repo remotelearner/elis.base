@@ -1,0 +1,17 @@
+diff --git a/blocks/online_users/settings.php b/blocks/online_users/settings.php
+index 0098fb6..eb7753c 100644
+--- a/blocks/online_users/settings.php
++++ b/blocks/online_users/settings.php
+@@ -1,6 +1,9 @@
+-<?php  //$Id$
++<?php
+ 
+-$settings->add(new admin_setting_configtext('block_online_users_timetosee', get_string('timetosee', 'block_online_users'),
++defined('MOODLE_INTERNAL') || die;
++
++if ($ADMIN->fulltree) {
++    $settings->add(new admin_setting_configtext('block_online_users_timetosee', get_string('timetosee', 'block_online_users'),
+                    get_string('configtimetosee', 'block_online_users'), 5, PARAM_INT));
++}
+ 
+-?>

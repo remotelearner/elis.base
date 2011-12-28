@@ -1,0 +1,25 @@
+diff --git a/admin/xmldb/actions/move_updown_table/move_updown_table.class.php b/admin/xmldb/actions/move_updown_table/move_updown_table.class.php
+index 25f3911..f9b2043 100644
+--- a/admin/xmldb/actions/move_updown_table/move_updown_table.class.php
++++ b/admin/xmldb/actions/move_updown_table/move_updown_table.class.php
+@@ -1,4 +1,4 @@
+-<?php // $Id$
++<?php
+ 
+ ///////////////////////////////////////////////////////////////////////////
+ //                                                                       //
+@@ -62,7 +62,7 @@ class move_updown_table extends XMLDBAction {
+     /// Do the job, setting result as needed
+     /// Get the dir containing the file
+         $dirpath = required_param('dir', PARAM_PATH);
+-        $dirpath = $CFG->dirroot . stripslashes_safe($dirpath);
++        $dirpath = $CFG->dirroot . $dirpath;
+ 
+     /// Get the correct dirs
+         if (!empty($XMLDB->dbdirs)) {
+@@ -137,4 +137,4 @@ class move_updown_table extends XMLDBAction {
+         return $result;
+     }
+ }
+-?>
++

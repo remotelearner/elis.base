@@ -1,0 +1,226 @@
+diff --git a/admin/report/unittest/ex_reporter.php b/admin/report/unittest/ex_reporter.php
+index 6dde1e2..8e3fc6c 100644
+--- a/admin/report/unittest/ex_reporter.php
++++ b/admin/report/unittest/ex_reporter.php
+@@ -5,7 +5,6 @@
+  * @copyright &copy; 2006 The Open University
+  * @author N.D.Freear@open.ac.uk, T.J.Hunt@open.ac.uk
+  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+- * @version $Id$
+  * @package SimpleTestEx
+  */
+ 
+@@ -33,14 +32,14 @@ class ExHtmlReporter extends HtmlReporter {
+ 
+     var $strseparator;
+ 
++    var $timestart;
++
+     /**
+      * Constructor.
+      *
+      * @param bool $showpasses Whether this reporter should output anything for passes.
+      */
+     function ExHtmlReporter($showpasses) {
+-        global $CFG, $THEME;
+-
+         $this->HtmlReporter();
+         $this->showpasses = $showpasses;
+ 
+@@ -70,6 +69,15 @@ class ExHtmlReporter extends HtmlReporter {
+     }
+ 
+     /**
++     * Called when a skip needs to be output.
++     */
++    function paintSkip($message) {
++        // Explicitly call grandparent, not parent::paintFail.
++        SimpleScorer::paintSkip($message);
++        $this->_paintPassFail('skip', $message);
++    }
++
++    /**
+      * Called when an error (uncaught exception or PHP error) needs to be output.
+      */
+     function paintError($message) {
+@@ -84,24 +92,49 @@ class ExHtmlReporter extends HtmlReporter {
+     function paintException($exception) {
+         // Explicitly call grandparent, not parent::paintException.
+         SimpleScorer::paintException($exception);
++
++        if (is_a($exception, 'moodle_exception') &&
++                !get_string_manager()->string_exists($exception->errorcode, $exception->module)) {
++            $exceptionmessage = 'Exception with missing language string {' .
++                    $exception->errorcode . '} from language file {' . $exception->module . '}';
++
++            if (!empty($exception->a)) {
++                if (is_string($exception->a)) {
++                    $data = $exception->a;
++                } else {
++                    $data = array();
++                    foreach ((array)$exception->a as $name => $value) {
++                        $data[] = $name . ' => [' . $value . ']';
++                    }
++                    $data = implode(', ', $data);
++                }
++                $exceptionmessage .= ' with data {' . $data . '}';
++            }
++
++        } else {
++            $exceptionmessage = $exception->getMessage();
++        }
+         $message = 'Unexpected exception of type [' . get_class($exception) .
+-                '] with message ['. $exception->getMessage() .
++                '] with message ['. $exceptionmessage .
+                 '] in ['. $exception->getFile() .
+                 ' line ' . $exception->getLine() . ']';
+-        $stacktrace = null;
+-        if (method_exists($exception, 'getTrace')) {
+-            $stacktrace = $exception->getTrace();
++
++        $debuginfo = null;
++        if (!empty($exception->debuginfo)) {
++            $debuginfo = $exception->debuginfo;
+         }
+-        $this->_paintPassFail('exception', $message, $stacktrace);
++
++        $this->_paintPassFail('exception', $message, $exception->getTrace(), $debuginfo);
+     }
+ 
+     /**
+-     * Private method. Used by printPass/Fail/Error/Exception.
++     * Private method. Used by printPass/Fail/Skip/Error.
+      */
+-    function _paintPassFail($passorfail, $message, $stacktrace = null) {
+-        global $FULLME, $CFG;
++    function _paintPassFail($passorfail, $message, $stacktrace = null, $debuginfo = null) {
++        global $FULLME, $CFG, $OUTPUT;
++
++        echo $OUTPUT->box_start($passorfail . ' generalbox ');
+ 
+-        print_simple_box_start('', '100%', '', 5, $passorfail . ' generalbox');
+         $url = $this->_htmlEntities($this->_stripParameterFromUrl($FULLME, 'path'));
+         echo '<b class="', $passorfail, '">', $this->get_string($passorfail), '</b>: ';
+         $breadcrumb = $this->getTestList();
+@@ -116,13 +149,21 @@ class ExHtmlReporter extends HtmlReporter {
+         }
+         echo "<a href=\"{$url}path=$folder$file\" title=\"$this->strrunonlyfile\">$file</a>";
+         echo $this->strseparator, implode($this->strseparator, $breadcrumb);
+-        echo $this->strseparator, '<br />', $this->_htmlEntities($message), "\n\n";
++
++        echo '<br />', $this->_htmlEntities($message), "\n\n";
++
++        if (!empty($debuginfo)) {
++            print_object('Debug info:');
++            print_object($debuginfo);
++        }
++
+         if ($stacktrace) {
+             $dotsadded = false;
+             $interestinglines = 0;
+             $filteredstacktrace = array();
+             foreach ($stacktrace as $frame) {
+-                if (empty($frame['file']) || (strpos($frame['file'], 'simpletestlib') === false
++                if (empty($frame['file']) || (strpos($frame['file'], 'simpletestlib') === false &&
++                        strpos($frame['file'], 'simpletestcoveragelib') === false
+                         && strpos($frame['file'], 'report/unittest') === false)) {
+                     $filteredstacktrace[] = $frame;
+                     $interestinglines += 1;
+@@ -132,11 +173,12 @@ class ExHtmlReporter extends HtmlReporter {
+                     $dotsadded = true;
+                 }
+             }
+-            if ($interestinglines > 1 || $passorfail == 'exception') {
++            if ($interestinglines > 1 || ($passorfail == 'exception' && $interestinglines > 0)) {
+                 echo '<div class="notifytiny">' . format_backtrace($filteredstacktrace) . "</div>\n\n";
+             }
+         }
+-        print_simple_box_end();
++
++        echo $OUTPUT->box_end();
+         flush();
+     }
+ 
+@@ -152,14 +194,15 @@ class ExHtmlReporter extends HtmlReporter {
+      * @param string $message Text to display.
+      */
+     function paintMessage($message) {
++        global $OUTPUT;
+         if ($this->showpasses) {
+-            print_simple_box_start('', '100%');
++            echo $OUTPUT->box_start();
+             echo '<span class="notice">', $this->get_string('notice'), '</span>: ';
+             $breadcrumb = $this->getTestList();
+             array_shift($breadcrumb);
+             echo implode($this->strseparator, $breadcrumb);
+             echo $this->strseparator, '<br />', $message, "\n";
+-            print_simple_box_end();
++            echo $OUTPUT->box_end();
+             flush();
+         }
+     }
+@@ -168,6 +211,7 @@ class ExHtmlReporter extends HtmlReporter {
+      * Output anything that should appear above all the test output.
+      */
+     function paintHeader($test_name) {
++        $this->timestart = time();
+         // We do this the moodle way instead.
+     }
+ 
+@@ -192,7 +236,8 @@ class ExHtmlReporter extends HtmlReporter {
+         echo '</div>';
+ 
+         echo '<div class="performanceinfo">',
+-                $this->get_string('runat', date('<b>d-m-Y H:i T</b>')),
++                $this->get_string('runat', userdate($this->timestart)), ' ',
++                $this->get_string('timetakes', format_time(time() - $this->timestart)), ' ',
+                 $this->get_string('version', SimpleTestOptions::getVersion()),
+                 '</div>';
+     }
+@@ -229,45 +274,3 @@ class ExHtmlReporter extends HtmlReporter {
+         return get_string($identifier, 'simpletest', $a);
+     }
+ }
+-
+-/**
+- * Formats a backtrace ready for output.
+- *
+- * @param array $callers backtrace array, as returned by debug_backtrace().
+- * @param boolean $plaintext if false, generates HTML, if true generates plain text.
+- * @return string formatted backtrace, ready for output.
+- */
+-function format_backtrace($callers, $plaintext = false) {
+-    // do not use $CFG->dirroot because it might not be available in destructors
+-    $dirroot = dirname(dirname(__FILE__));
+-
+-    if (empty($callers)) {
+-        return '';
+-    }
+-
+-    $from = $plaintext ? '' : '<ul style="text-align: left">';
+-    foreach ($callers as $caller) {
+-        if (!isset($caller['line'])) {
+-            $caller['line'] = '?'; // probably call_user_func()
+-        }
+-        if (!isset($caller['file'])) {
+-            $caller['file'] = 'unknownfile'; // probably call_user_func()
+-        }
+-        $from .= $plaintext ? '* ' : '<li>';
+-        $from .= 'line ' . $caller['line'] . ' of ' . str_replace($dirroot, '', $caller['file']);
+-        if (isset($caller['function'])) {
+-            $from .= ': call to ';
+-            if (isset($caller['class'])) {
+-                $from .= $caller['class'] . $caller['type'];
+-            }
+-            $from .= $caller['function'] . '()';
+-        } else if (isset($caller['exception'])) {
+-            $from .= ': '.$caller['exception'].' thrown';
+-        }
+-        $from .= $plaintext ? "\n" : '</li>';
+-    }
+-    $from .= $plaintext ? '' : '</ul>';
+-
+-    return $from;
+-}
+-?>
+\ No newline at end of file
