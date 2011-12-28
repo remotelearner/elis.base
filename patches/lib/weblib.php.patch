@@ -1,5 +1,5 @@
 diff --git a/lib/weblib.php b/lib/weblib.php
-index 78a7ad2..8a1a8e1 100644
+index 36271fc..b4973e5 100644
 --- a/lib/weblib.php
 +++ b/lib/weblib.php
 @@ -94,6 +94,9 @@ define('REQUIREJS_AFTERHEADER',  2);

@@ -1,5 +1,5 @@
 diff --git a/lib/adminlib.php b/lib/adminlib.php
-index 2efe8a8..f115471 100644
+index 3edd526..b2e8c1f 100644
 --- a/lib/adminlib.php
 +++ b/lib/adminlib.php
 @@ -54,6 +54,8 @@ function upgrade_blocks_savepoint($result, $version, $type) {
