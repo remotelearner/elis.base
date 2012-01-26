@@ -116,8 +116,8 @@ Each repository includes the ability to both fork or clone the code via Git itse
 
 The direct download zip archive links for the latest version of the code in each ELIS community repository are as follows:
 
-* elis.alfresco --- https://github.com/remotelearner/elis.alfresco/zipball/master
-* elis.base --- https://github.com/remotelearner/elis.base/zipball/master
-* elis.cm --- https://github.com/remotelearner/elis.cm/zipball/master
-* elis.openid --- https://github.com/remotelearner/elis.openid/zipball/master
-* elis.reporting --- https://github.com/remotelearner/elis.reporting/zipball/master
+* elis.alfresco --- https://github.com/remotelearner/elis.alfresco/zipball/elis2
+* elis.base --- https://github.com/remotelearner/elis.base/zipball/elis2
+* elis.cm --- https://github.com/remotelearner/elis.cm/zipball/elis2
+* elis.openid --- https://github.com/remotelearner/elis.openid/zipball/elis2
+* elis.reporting --- https://github.com/remotelearner/elis.reporting/zipball/elis2
