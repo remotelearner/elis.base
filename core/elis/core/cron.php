@@ -4,7 +4,7 @@
  * http://docs.moodle.org/en/Development:Scheduled_Tasks_Proposal
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
  * @subpackage core
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 

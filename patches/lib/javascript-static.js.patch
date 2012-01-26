@@ -1,8 +1,8 @@
 diff --git a/lib/javascript-static.js b/lib/javascript-static.js
-index 5841864..11eed69 100644
+index 2d5bc24..cff1d44 100644
 --- a/lib/javascript-static.js
 +++ b/lib/javascript-static.js
-@@ -526,7 +526,7 @@ function fix_column_widths() {
+@@ -527,7 +527,7 @@ function fix_column_widths() {
  function fix_column_width(colName) {
      if(column = document.getElementById(colName)) {
          if(!column.offsetWidth) {
