@@ -1,0 +1,16 @@
+diff --git a/lib/cronlib.php b/lib/cronlib.php
+index c008318..5aec8fb 100644
+--- a/lib/cronlib.php
++++ b/lib/cronlib.php
+@@ -454,6 +454,11 @@ function cron_run() {
+     cron_execute_plugin_type('plagiarism', 'plagiarism plugins');
+     cron_execute_plugin_type('theme', 'themes');
+ 
++    // run the ELIS cron jobs
++    mtrace("Running ELIS cron tasks...");
++    require_once($CFG->dirroot.'/elis/core/cron.php');
++    elis_cron();
++
+     // and finally run any local cronjobs, if any
+     if ($locals = get_plugin_list('local')) {
+         mtrace('Processing customized cron scripts ...', '');

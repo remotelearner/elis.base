@@ -1,0 +1,29 @@
+diff --git a/lib/upgradelib.php b/lib/upgradelib.php
+index 6a93f6e..b047fc0 100644
+--- a/lib/upgradelib.php
++++ b/lib/upgradelib.php
+@@ -266,6 +266,8 @@ function upgrade_plugin_savepoint($result, $version, $type, $plugin, $allowabort
+ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
+     global $CFG, $DB;
+ 
++    require_once($CFG->dirroot . '/elis/core/lib/tasklib.php');
++
+ /// special cases
+     if ($type === 'mod') {
+         return upgrade_plugins_modules($startcallback, $endcallback, $verbose);
+@@ -365,6 +367,7 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
+             log_update_descriptions($component);
+             external_update_descriptions($component);
+             events_update_definition($component);
++            elis_tasks_update_definition($component);
+             message_update_providers($component);
+             if ($type === 'message') {
+                 message_update_processors($plug);
+@@ -398,6 +401,7 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
+             log_update_descriptions($component);
+             external_update_descriptions($component);
+             events_update_definition($component);
++            elis_tasks_update_definition($component);
+             message_update_providers($component);
+             if ($type === 'message') {
+                 message_update_processors($plug);

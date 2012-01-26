@@ -1,0 +1,21 @@
+diff --git a/lang/en/plugin.php b/lang/en/plugin.php
+index b9c0a16..e2e2474 100644
+--- a/lang/en/plugin.php
++++ b/lang/en/plugin.php
+@@ -37,6 +37,7 @@ $string['plugindisable'] = 'Disable';
+ $string['plugindisabled'] = 'Disabled';
+ $string['pluginenable'] = 'Enable';
+ $string['pluginenabled'] = 'Enabled';
++$string['release'] = 'Release';
+ $string['rootdir'] = 'Directory';
+ $string['settings'] = 'Settings';
+ $string['somehighlighted'] = 'Number of plugins requiring attention during this upgrade: {$a}';
+@@ -60,6 +61,8 @@ $string['type_coursereport'] = 'Course report';
+ $string['type_coursereport_plural'] = 'Course reports';
+ $string['type_editor'] = 'Editor';
+ $string['type_editor_plural'] = 'Editors';
++$string['type_elis'] = 'ELIS';
++$string['type_elis_plural'] = 'ELIS';
+ $string['type_enrol'] = 'Enrolment method';
+ $string['type_enrol_plural'] = 'Enrolment methods';
+ $string['type_filter'] = 'Text filter';
