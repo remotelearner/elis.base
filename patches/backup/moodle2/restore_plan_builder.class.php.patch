@@ -1,0 +1,13 @@
+diff --git a/backup/moodle2/restore_plan_builder.class.php b/backup/moodle2/restore_plan_builder.class.php
+index 5232b5b..97085e2 100644
+--- a/backup/moodle2/restore_plan_builder.class.php
++++ b/backup/moodle2/restore_plan_builder.class.php
+@@ -170,7 +170,7 @@ abstract class restore_plan_builder {
+     /**
+      * Restore one 1-course backup
+      */
+-    static protected function build_course_plan($controller, $courseid) {
++    static public function build_course_plan($controller, $courseid) {
+ 
+         $plan = $controller->get_plan();
+         $info = $controller->get_info();

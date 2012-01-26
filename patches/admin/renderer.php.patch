@@ -1,0 +1,45 @@
+diff --git a/admin/renderer.php b/admin/renderer.php
+index 08b81e3..0f4cc47 100644
+--- a/admin/renderer.php
++++ b/admin/renderer.php
+@@ -199,12 +199,14 @@ class core_admin_renderer extends plugin_renderer_base {
+             get_string('systemname', 'core_plugin'),
+             get_string('source', 'core_plugin'),
+             get_string('version', 'core_plugin'),
++            get_string('release', 'core_plugin'), // ELIS_2.0.0
+             get_string('availability', 'core_plugin'),
+             get_string('settings', 'core_plugin'),
+             get_string('uninstall','core_plugin'),
+         );
+         $table->colclasses = array(
+-            'displayname', 'systemname', 'source', 'version', 'availability', 'settings', 'uninstall',
++            'displayname', 'systemname', 'source', 'version', 'release', // ELIS_2.0.0
++            'availability', 'settings', 'uninstall',
+         );
+ 
+         foreach ($plugininfo as $type => $plugins) {
+@@ -255,6 +257,14 @@ class core_admin_renderer extends plugin_renderer_base {
+ 
+                 $version = new html_table_cell($plugin->versiondb);
+ 
++                // ELIS_2.0.0 Release
++                $versionfile = $plugin->rootdir .'/version.php';
++                if (file_exists($versionfile)) {
++                    include($versionfile);
++                }
++                $release = new html_table_cell(!empty($plugin->release)
++                                               ? $plugin->release : ''); // TBD
++
+                 $isenabled = $plugin->is_enabled();
+                 if (is_null($isenabled)) {
+                     $availability = new html_table_cell('');
+@@ -285,7 +295,8 @@ class core_admin_renderer extends plugin_renderer_base {
+                 }
+ 
+                 $row->cells = array(
+-                    $displayname, $systemname, $source, $version, $availability, $settings, $uninstall
++                    $displayname, $systemname, $source, $version, $release, // ELIS_2.0.0
++                    $availability, $settings, $uninstall
+                 );
+                 $table->data[] = $row;
+             }

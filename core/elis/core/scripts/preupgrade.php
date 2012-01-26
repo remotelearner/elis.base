@@ -3,7 +3,7 @@
  * A script to run certain steps that are required before an upgrade to Moodle 2.x / ELIS 2.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  * @subpackage core
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -281,7 +281,7 @@ if ($status) {
         if ($found) {
             mtrace(' --- '.get_string('preup_as_found', 'elis_core'));
 
-            $DB->set_field('config', 'value', implode(',', $auth), array('name' => 'auth'));
+            $DB->set_field('config', 'value', implode(',', $auths), array('name' => 'auth'));
             mtrace(' --- '.get_string('preup_as_success', 'elis_core'));
         }
     } catch (Excpetion $e) {

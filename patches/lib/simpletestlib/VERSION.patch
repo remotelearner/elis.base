@@ -1,9 +1,0 @@
-diff --git a/lib/simpletestlib/VERSION b/lib/simpletestlib/VERSION
-index fff5748..7f20734 100644
---- a/lib/simpletestlib/VERSION
-+++ b/lib/simpletestlib/VERSION
-@@ -1 +1 @@
--1.0.1beta
-\ No newline at end of file
-+1.0.1
-\ No newline at end of file
