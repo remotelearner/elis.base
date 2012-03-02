@@ -44,10 +44,10 @@ class generalized_filter_date extends generalized_filter_type {
     function setupForm(&$mform) {
         $objs = array();
 
-        $objs[] =& $mform->createElement('checkbox', $this->_uniqueid.'_sck', null, get_string('isafter', 'filters'));
+        $objs[] =& $mform->createElement('advcheckbox', $this->_uniqueid.'_sck', null, get_string('isafter', 'filters'), null, array('0', '1'));
         $objs[] =& $mform->createElement('date_selector', $this->_uniqueid.'_sdt', null, array('optional' => false));
         $objs[] =& $mform->createElement('static', $this->_uniqueid.'_break', null, '<br/>');
-        $objs[] =& $mform->createElement('checkbox', $this->_uniqueid.'_eck', null, get_string('isbefore', 'filters'));
+        $objs[] =& $mform->createElement('advcheckbox', $this->_uniqueid.'_eck', null, get_string('isbefore', 'filters'), null, array('0', '1'));
         $objs[] =& $mform->createElement('date_selector', $this->_uniqueid.'_edt', null, array('optional' => false));
 
         if ($this->_never_included) {
@@ -61,15 +61,15 @@ class generalized_filter_date extends generalized_filter_type {
             $mform->setAdvanced($this->_uniqueid.'_grp');
         }
 
-        $mform->disabledIf($this->_uniqueid.'_sdt[day]', $this->_uniqueid.'_sck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_sdt[month]', $this->_uniqueid.'_sck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_sdt[year]', $this->_uniqueid.'_sck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_edt[day]', $this->_uniqueid.'_eck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_edt[month]', $this->_uniqueid.'_eck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_edt[year]', $this->_uniqueid.'_eck', 'notchecked');
+        $mform->disabledIf($this->_uniqueid.'_sdt[day]', $this->_uniqueid.'_sck', '0');
+        $mform->disabledIf($this->_uniqueid.'_sdt[month]', $this->_uniqueid.'_sck', '0');
+        $mform->disabledIf($this->_uniqueid.'_sdt[year]', $this->_uniqueid.'_sck', '0');
+        $mform->disabledIf($this->_uniqueid.'_edt[day]', $this->_uniqueid.'_eck', '0');
+        $mform->disabledIf($this->_uniqueid.'_edt[month]', $this->_uniqueid.'_eck', '0');
+        $mform->disabledIf($this->_uniqueid.'_edt[year]', $this->_uniqueid.'_eck', '0');
 
         if ($this->_never_included) {
-            $mform->disabledIf($this->_uniqueid.'_never', $this->_uniqueid.'_eck', 'notchecked');
+            $mform->disabledIf($this->_uniqueid.'_never', $this->_uniqueid.'_eck', '0');
         }
     }
 

@@ -9,15 +9,15 @@ class generalized_filter_simpleselect extends generalized_filter_type {
     /**
      * options for the list values
      */
-    var $_options;
+    var $_options = array();
 
     var $_field;
-
-    var $_numeric;
-
-    var $_anyvalue;
-
-    var $_noany;
+    var $_numeric  = false;
+    var $_anyvalue = null;
+    var $_noany    = false;
+    var $_onchange = '';
+    var $_multiple = '';
+    var $_class    = '';
 
     /**
      * Constructor
@@ -33,10 +33,26 @@ class generalized_filter_simpleselect extends generalized_filter_type {
                     ? $options['help']
                     : array('simpleselect', $label, 'filters'));
         $this->_field    = $field;
-        $this->_options  = $options['choices'];
-        $this->_numeric  = $options['numeric'];
-        $this->_anyvalue = (isset($options['anyvalue'])) ? $options['anyvalue'] : NULL;
-        $this->_noany = (isset($options['noany'])) ? $options['noany'] : false;
+
+        $extrafields = array(
+            '_options' => 'choices',
+            '_numeric' => 'numeric',
+            '_anyvalue' => 'anyvalue',
+            '_noany' => 'noany',
+            '_onchange' => 'onchange',
+            '_multiple' => 'multiple',
+            '_class'   => 'class'
+            );
+
+        if (! is_array($options)) {
+            $options = array($options);
+        }
+
+        foreach ($extrafields as $var => $extra) {
+            if (array_key_exists($extra, $options)) {
+                $this->$var = $options[$extra];
+            }
+        }
     }
 
     /**
@@ -53,7 +69,16 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         } else {
             $choices = $this->_options;
         }
-        $mform->addElement('select', $this->_uniqueid, $this->_label, $choices);
+
+        $options = array();
+        if (! empty($this->_onchange)) {
+            $options['onchange'] = $this->_onchange;
+        }
+        if (! empty($this->_multiple)) {
+            $options['multiple'] = $this->_multiple;
+        }
+
+        $mform->addElement('select', $this->_uniqueid, $this->_label, $choices, $options);
         $mform->setHelpButton($this->_uniqueid, $this->_filterhelp);
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid);
@@ -68,8 +93,18 @@ class generalized_filter_simpleselect extends generalized_filter_type {
     function check_data($formdata) {
         $field = $this->_uniqueid;
 
-        if (array_key_exists($field, $formdata) and $formdata->$field !== '') {
-            return array('value'=>(string)$formdata->$field);
+        if (array_key_exists($field, $formdata)) {
+            $value = $formdata->$field;
+            if ($this->_multiple && is_array($value)) {
+                foreach ($value as $val) {
+                    if ($val === '') {
+                        return false;
+                    }
+                }
+                return array('value'=>$value);
+            } else if ($value !== '') {
+                return array('value'=>(string)$value);
+            }
         }
 
         return false;
@@ -86,11 +121,18 @@ class generalized_filter_simpleselect extends generalized_filter_type {
      * @return string active filter label
      */
     function get_label($data) {
-        $value = $data['value'];
+        $value = is_array($data['value']) ? $data['value']
+                                          : array($data['value']);
 
         $a = new object();
-        $a->label    = $this->_label;
-        $a->value    = '"'.s($this->_options[$value]).'"';
+        $a->label = $this->_label;
+        $a->value = '';
+        foreach ($value as $val) {
+            if (!empty($a->value)) {
+                $a->value .= ' '. get_string('or', 'elis_core') .' ';
+            }
+            $a->value .= '"'. s($this->_options[$val]) .'"';
+        }
         $a->operator = get_string('isequalto','filters');
 
         return get_string('selectlabel', 'filters', $a);
@@ -109,12 +151,28 @@ class generalized_filter_simpleselect extends generalized_filter_type {
 
         $value = $data['value'];
 
-        $value = addslashes($value);
+        if (is_array($value) && (sizeof($value) == 1)) {
+            $value = reset($value);
+        }
 
-        if(!empty($this->_numeric)) {
-            return "{$full_fieldname} = {$value}";
+        if ($this->_multiple && is_array($value)) {
+            foreach ($value as $key => $val) {
+                $val = addslashes($val);
+                if (!empty($this->_numeric)) {
+                    $val = "'$val'";
+                }
+                $value[$key] = $val;
+            }
+
+            return "{$full_fieldname} IN (". implode(',', $value) .')';
         } else {
-            return "{$full_fieldname} = '{$value}'";
+            $value = addslashes($value);
+
+            if(!empty($this->_numeric)) {
+                return "{$full_fieldname} = {$value}";
+            } else {
+                return "{$full_fieldname} = '{$value}'";
+            }
         }
     }
 

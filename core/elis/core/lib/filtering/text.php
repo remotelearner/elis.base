@@ -70,7 +70,7 @@ class generalized_filter_text extends generalized_filter_type {
         $operator = $field.'_op';
 
         if (array_key_exists($operator, $formdata)) {
-            if ($formdata->$operator != 5 and $formdata->$field == '') {
+            if ($formdata->$operator != 5 and empty($formdata->$field)) {
                 // no data - no change except for empty filter
                 return false;
             }

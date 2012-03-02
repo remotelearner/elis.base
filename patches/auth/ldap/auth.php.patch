@@ -1,0 +1,100 @@
+diff --git a/auth/ldap/auth.php b/auth/ldap/auth.php
+index d1ce83b..0bdef27 100644
+--- a/auth/ldap/auth.php
++++ b/auth/ldap/auth.php
+@@ -549,6 +549,9 @@ class auth_plugin_ldap extends auth_plugin_base {
+     function sync_users ($bulk_insert_records = 1000, $do_updates = true) {
+ 
+         global $CFG;
++        global $db;
++
++        require_once($CFG->libdir.'/ddllib.php');
+ 
+         $textlib = textlib_get_instance();
+ 
+@@ -556,38 +559,17 @@ class auth_plugin_ldap extends auth_plugin_base {
+                                  /// some persistent drivers like ODBTP (mssql) or if this function is invoked
+                                  /// from within a PHP application using persistent connections
+         $temptable = $CFG->prefix . 'extuser';
+-        $createtemptablesql = '';
+ 
+         // configure a temp table
+         print "Configuring temp table\n";
+-        switch (strtolower($CFG->dbfamily)) {
+-            case 'mysql':
+-                $droptablesql[] = 'DROP TEMPORARY TABLE ' . $temptable; // sql command to drop the table (because session scope could be a problem)
+-                $createtemptablesql = 'CREATE TEMPORARY TABLE ' . $temptable . ' (username VARCHAR(64), PRIMARY KEY (username)) ENGINE=MyISAM';
+-                break;
+-            case 'postgres':
+-                $droptablesql[] = 'DROP TABLE ' . $temptable; // sql command to drop the table (because session scope could be a problem)
+-                $bulk_insert_records = 1; // no support for multiple sets of values
+-                $createtemptablesql = 'CREATE TEMPORARY TABLE '. $temptable . ' (username VARCHAR(64), PRIMARY KEY (username))';
+-                break;
+-            case 'mssql':
+-                $temptable = '#'. $temptable; /// MSSQL temp tables begin with #
+-                $droptablesql[] = 'DROP TABLE ' . $temptable; // sql command to drop the table (because session scope could be a problem)
+-                $bulk_insert_records = 1; // no support for multiple sets of values
+-                $createtemptablesql = 'CREATE TABLE ' . $temptable . ' (username VARCHAR(64), PRIMARY KEY (username))';
+-                break;
+-            case 'oracle':
+-                $droptablesql[] = 'TRUNCATE TABLE ' . $temptable; // oracle requires truncate before being able to drop a temp table
+-                $droptablesql[] = 'DROP TABLE ' . $temptable; // sql command to drop the table (because session scope could be a problem)
+-                $bulk_insert_records = 1; // no support for multiple sets of values
+-                $createtemptablesql = 'CREATE GLOBAL TEMPORARY TABLE '.$temptable.' (username VARCHAR(64), PRIMARY KEY (username)) ON COMMIT PRESERVE ROWS';
+-                break;
+-        }
+ 
++        $table = new XMLDBTable('extuser');
++        $table->addFieldInfo('username', XMLDB_TYPE_CHAR, 100, null, null, null, null, null, null);
++        $table->addFieldInfo('mnethostid', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, null, null, null, null, null);
++        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('username', 'mnethostid'));
+ 
+-        execute_sql_arr($droptablesql, true, false); /// Drop temp table to avoid persistence problems later
+         echo "Creating temp table $temptable\n";
+-        if(! execute_sql($createtemptablesql, false) ){
++        if (!create_temp_table($table, false)) {
+             print  "Failed to create temporary users table - aborting\n";
+             exit;
+         }
+@@ -674,6 +656,7 @@ class auth_plugin_ldap extends auth_plugin_base {
+             $sql = "SELECT u.id, u.username, u.email, u.auth 
+                     FROM {$CFG->prefix}user u
+                         LEFT JOIN $temptable e ON u.username = e.username
++                              AND u.mnethostid = e.mnethostid
+                     WHERE u.auth='ldap'
+                         AND u.deleted=0
+                         AND e.username IS NULL";
+@@ -711,6 +694,7 @@ class auth_plugin_ldap extends auth_plugin_base {
+             $sql = "SELECT u.id, u.username
+                     FROM $temptable e, {$CFG->prefix}user u
+                     WHERE e.username=u.username
++                        AND e.mnethostid=u.mnethostid
+                         AND u.auth='nologin'";
+             $revive_users = get_records_sql($sql);
+ 
+@@ -814,7 +798,7 @@ class auth_plugin_ldap extends auth_plugin_base {
+         // and gives me a nifty object I don't want.
+         // note: we do not care about deleted accounts anymore, this feature was replaced by suspending to nologin auth plugin
+         $sql = "SELECT e.username, e.username
+-                FROM $temptable e LEFT JOIN {$CFG->prefix}user u ON e.username = u.username
++                FROM $temptable e LEFT JOIN {$CFG->prefix}user u ON e.username = u.username AND e.mnethostid = u.mnethostid
+                 WHERE u.id IS NULL";
+         $add_users = get_records_sql($sql); // get rid of the fat
+ 
+@@ -930,13 +914,14 @@ class auth_plugin_ldap extends auth_plugin_base {
+      * @param array $users is an array of usernames
+      */
+     function ldap_bulk_insert($users, $temptable) {
++        global $CFG;
+ 
+         // bulk insert -- superfast with $bulk_insert_records
+-        $sql = 'INSERT INTO ' . $temptable . ' (username) VALUES ';
++        $sql = 'INSERT INTO ' . $temptable . ' (username, mnethostid) VALUES ';
+         // make those values safe
+         $users = addslashes_recursive($users);
+         // join and quote the whole lot
+-        $sql = $sql . "('" . implode("'),('", $users) . "')";
++        $sql = $sql . "('" . implode("', $CFG->mnet_localhost_id),('", $users) . "', $CFG->mnet_localhost_id)";
+         print "\t+ " . count($users) . " users\n";
+         execute_sql($sql, false);
+     }

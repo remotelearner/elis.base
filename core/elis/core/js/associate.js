@@ -117,6 +117,8 @@ function load_form(ev) {
     var data = YAHOO.util.Connect.setForm(target);
     var link = document.getElementById(target.getAttribute("id")).getAttribute('action');
     lastrequest = link + '?' + data;
+    //todo: considering changing the ? to a & in the next line
+    //and figure out if we still need this file and curriculum/js/associate.js (CM repo)
     YAHOO.util.Connect.asyncRequest("POST", link + "?mode=bare", set_content_callback, null);
     YAHOO.util.Event.preventDefault(ev);
 }
