@@ -1,5 +1,20 @@
 <?php //$Id$
 /**
+ * radiobuttons.php - filter
+ *
+ * Group of radio buttons (TBD: add layout options, columns/row designation ...)
+ * for selecting choices for DB field using SQL =
+ * options include:
+ *   ['choices']   = array(key = 'DB field value' => value = 'label string' ...)
+ *   ['prelabels'] = array(key = 'DB field value' => value = 'pre-label string')
+ *   ['checked']   = (string) 'DB field value' - initially checked on form (optional)
+ *   ['advanced']  = boolean - true if radio buttons are advanced form elements,
+ *                             false (default) is not advanced.
+ *   ['heading']   = string - the radio group heading (optional, raw html)
+ *   ['footer']    = string - the radio group footer (optional, raw html)
+ *   ['numeric']   = boolean - true if DB field is numeric,
+ *                             false (the default) -> string
+ *
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *

@@ -1,8 +1,8 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index 047430b..cce31fd 100644
+index d1b1203..07ca4cf 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
-@@ -1944,7 +1944,7 @@ function get_user_timezone($tz = 99) {
+@@ -1945,7 +1945,7 @@ function get_user_timezone($tz = 99) {
  
      $tz = 99;
  
@@ -11,7 +11,7 @@ index 047430b..cce31fd 100644
          $tz = $next['value'];
      }
  
-@@ -5786,6 +5786,8 @@ class core_string_manager implements string_manager {
+@@ -5828,6 +5828,8 @@ class core_string_manager implements string_manager {
              if ($plugintype === 'mod') {
                  // bloody mod hack
                  $file = $pluginname;
@@ -20,7 +20,7 @@ index 047430b..cce31fd 100644
              } else {
                  $file = $plugintype . '_' . $pluginname;
              }
-@@ -7126,6 +7128,7 @@ function get_plugin_types($fullpaths=true) {
+@@ -7177,6 +7179,7 @@ function get_plugin_types($fullpaths=true) {
                        'qbehaviour'    => 'question/behaviour',
                        'qformat'       => 'question/format',
                        'plagiarism'    => 'plagiarism',
@@ -28,7 +28,7 @@ index 047430b..cce31fd 100644
                        'theme'         => 'theme'); // this is a bit hacky, themes may be in $CFG->themedir too
  
          $mods = get_plugin_list('mod');
-@@ -7139,6 +7142,28 @@ function get_plugin_types($fullpaths=true) {
+@@ -7190,6 +7193,28 @@ function get_plugin_types($fullpaths=true) {
              }
          }
  
@@ -57,7 +57,7 @@ index 047430b..cce31fd 100644
          // local is always last!
          $info['local'] = 'local';
  
-@@ -7178,6 +7203,14 @@ function get_plugin_list($plugintype) {
+@@ -7229,6 +7254,14 @@ function get_plugin_list($plugintype) {
          // mod is an exception because we have to call this function from get_plugin_types()
          $fulldirs[] = $CFG->dirroot.'/mod';
  

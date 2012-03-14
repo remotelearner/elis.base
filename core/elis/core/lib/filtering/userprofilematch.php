@@ -1,4 +1,4 @@
-<?php //$Id$
+<?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
@@ -24,10 +24,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
- * userprofilematch.php:
+ * userprofilematch.php - PHP Report filter
  *
  * Group of filters for matching user profile fields
- * 
+ *
  * Configuration options include:
  *  ['choices'] => array, defines included DB user fields [as key],
  *                 *optional* value (string) as form field label
@@ -70,8 +70,7 @@
  *    Instead call:
  *        new generalized_filter_userprofilematch( ... ) - CORRECT!
  *
- * 3. Class constructor returns userprofilematch filter object and 
- *    get_filters() methods returns the array of componenet filters!
+ * 3. Class constructor and get_filters() methods return an array!
  *    Therefore, do _NOT_ put return inside another array in your report's
  *    get_filters() method.
  *
@@ -96,8 +95,8 @@
  * class some_user_report extends table_report {
  *     ...
  *     function get_filters() {
- *         return( 
- *             array( 
+ *         return(
+ *             array(
  *                 new generalized_filter_userprofilematch( ... ),
  *                 new generalized_filter_entry( ... ),
  *                 new generalized_filter_entry( ... ) [, ...]
@@ -117,67 +116,83 @@
  *     ...
  * }
  *
+ * @author Brent Boghosian <brent.boghosian@remote-learner.net>
+ * @package elis-core
+ * @subpackage filtering
+ * @license  http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot.'/user/filters/lib.php');
 
-require_once($CFG->dirroot .'/user/filters/lib.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/simpleselect.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/text.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/date.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofileselect.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofiletext.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofiledatetime.php');
-
-define('MAX_FILTER_SUFFIX_LEN', 30); // TBD: limited by table field
+require_once(elis::lib('filtering/multifilter.php'));
+require_once(elis::lib('filtering/userprofileselect.php'));
+require_once(elis::lib('filtering/userprofiletext.php'));
+require_once(elis::lib('filtering/userprofiledatetime.php'));
 
 /**
- * Generic userprofilematch filter class - standalone, no parent!
+ * Generic userprofilematch filter class
  */
-class generalized_filter_userprofilematch {
+class generalized_filter_userprofilematch extends generalized_filter_multifilter {
 
     /**
-     * Class contants: required sub-filter types
+     * Class contants: Additional required sub-filter types
      */
-    const filtertypetext = 'text';
-    const filtertypecountry = 'simpleselect'; // any, equal, not equal (TBD: country)
-    const filtertypetristate = 'simpleselect'; // any, No, Yes (yesno, tristate)
-    const filtertypeselect = 'simpleselect'; // any + choices
-    const filtertypedate = 'date';
-    const filtertype_userprofiletext = 'userprofiletext';
-    const filtertype_userprofileselect = 'userprofileselect';
     const filtertype_userprofiledatetime = 'userprofiledatetime';
+    const filtertype_userprofiletext     = 'userprofiletext';
+    const filtertype_userprofileselect   = 'userprofileselect';
+
+    //const languagefile = 'elis_core';
+
+    // Data type map
+    protected $datatypemap = array(
+        'char'     => self::filtertype_userprofiletext, // TBD
+        'text'     => self::filtertype_userprofiletext,
+        'textarea' => self::filtertype_userprofiletext,
+        'checkbox' => self::filtertype_userprofileselect,
+        'bool'     => self::filtertype_userprofileselect,
+        'menu'     => self::filtertype_userprofileselect,
+        'datetime' => self::filtertype_userprofiledatetime,
+    );
+
+    protected $selects = array(
+        self::filtertypeselect => 1,
+        self::filtertype_userprofileselect => 1,
+    );
+
+    protected $_fieldids = array();
 
     /**
      * Class properties
      */
     // Array $fieldtofiltermap maps fields to filter type
-    var $fieldtofiltermap = array(
-         //fullname_field => generalized_filter_userprofilematch::filtertypetext,
-        // fullname_field must be added later, requires user table alias
-         'lastname'     => generalized_filter_userprofilematch::filtertypetext,
-         'firstname'    => generalized_filter_userprofilematch::filtertypetext,
-         'idnumber'     => generalized_filter_userprofilematch::filtertypetext,
-         'email'        => generalized_filter_userprofilematch::filtertypetext,
-         'city'         => generalized_filter_userprofilematch::filtertypetext,
-         'country'      => generalized_filter_userprofilematch::filtertypecountry,
-         'username'     => generalized_filter_userprofilematch::filtertypetext,
-         'lang'         => generalized_filter_userprofilematch::filtertypeselect,
-         'confirmed'    => generalized_filter_userprofilematch::filtertypetristate,
-         'crsrole'      => generalized_filter_userprofilematch::filtertypeselect,
-         'crscat'       => generalized_filter_userprofilematch::filtertypeselect,
-         'sysrole'      => generalized_filter_userprofilematch::filtertypeselect,
-         'firstaccess'  => generalized_filter_userprofilematch::filtertypedate,
-         'lastaccess'   => generalized_filter_userprofilematch::filtertypedate,
-         'lastlogin'    => generalized_filter_userprofilematch::filtertypedate,
-         'timemodified' => generalized_filter_userprofilematch::filtertypedate,
-          'auth'        => generalized_filter_userprofilematch::filtertypeselect
+    protected $fieldtofiltermap = array(
+        'up' => array(
+            // fullname_field must be added later, requires user table alias
+            'lastname'     => self::filtertypetext,
+            'firstname'    => self::filtertypetext,
+            'idnumber'     => self::filtertypetext,
+            'email'        => self::filtertypetext,
+            'city'         => self::filtertypetext,
+            'country'      => self::filtertypecountry,
+            'username'     => self::filtertypetext,
+            'lang'         => self::filtertypeselect,
+            'confirmed'    => self::filtertypetristate,
+            'crsrole'      => self::filtertypeselect,
+            'crscat'       => self::filtertypeselect,
+            'sysrole'      => self::filtertypeselect,
+            'firstaccess'  => self::filtertypedate,
+            'lastaccess'   => self::filtertypedate,
+            'lastlogin'    => self::filtertypedate,
+            'timemodified' => self::filtertypedate,
+            'auth'         => self::filtertypeselect
+        )
     );
 
-    // Array $defaultlabels are default user profile field labels
+    // Array $labels are default user profile field labels
     // - maybe overridden in $options array
-    var $defaultlabels =
-        array(
+    protected $labels = array(
+        'up' => array(
             'fullname'     => 'fld_fullname',
             'lastname'     => 'fld_lastname',
             'firstname'    => 'fld_firstname',
@@ -197,310 +212,232 @@ class generalized_filter_userprofilematch {
             'lastlogin'    => 'fld_lastlogin',
             'timemodified' => 'fld_timemodified',
             'auth'         => 'fld_auth',
-        );
+        )
+    );
 
-    var $defaulttables =
-        array(          'user' => 'u',
-              'user_info_data' => 'uidata',
+    protected $tables = array(
+        'up' => array(
+            'user'             => 'u',
+            'user_info_data'   => 'uidata',
             'role_assignments' => 'ra'
-        );
+        )
+    );
 
-    var $_fields; // array, key is field id, value is filter return object
-    var $_label;
-    var $_heading;
-    var $_footer;
+    protected $_label;
+    protected $_heading;
+    protected $_footer;
+    protected $_choices = array();
+
+    protected $sections = array('up' => array('name' => 'user'));
+
+    //specify that we use the "data" column to filter user profile data
+    var $_outerfield = array('up' => 'data');
 
     /**
      * Constructor
-     * @param  string $uniqueid - unique id for filter
-     * @param  string $label - filter label
-     * @param  array $options - filter options (see above)
-     * @uses   $DB
-     * @return  compound filter object
+     *
+     * @param string $uniqueid Unique id for filter
+     * @param string $label    Filter label
+     * @param array  $options  Filter options (see above)
+     * @return array of sub-filters
+     * @uses $DB
      */
-    function generalized_filter_userprofilematch($uniqueid, $label, $options = array()) {
+    function __construct($uniqueid, $label, $options = array()) {
         global $DB;
 
-        // initialize
-        $this->_label = $label;
-        if (!empty($options['heading'])) {
-            $this->_heading = $options['heading'];
+        parent::__construct($uniqueid, $label, $options);
+
+        if (empty($options['help'])) {
+            $options['help'] = array();
         }
-        if (!empty($options['footer'])) {
-            $this->_footer = $options['footer'];
-        }
-        $langfile = empty($options['langfile']) ? 'elis_core' : $options['langfile'];
 
         // Get table aliases
         if (empty($options['tables'])) {
             $options['tables'] = array();
         }
 
-        $shortfields = array(); // to store/check truncated field names used for filterids
-        foreach ($this->defaultlabels as $key => $val) {
-            $shortfieldname = substr($key, 0, MAX_FILTER_SUFFIX_LEN);
-            if (in_array($shortfieldname, $shortfields)) {
-                error_log("generalized_filter_userprofilematch::non-unique field name: '{$shortfieldname}' in main user profile - modify code!");
-            } else {
-                $shortfields[] = $shortfieldname;
-            }
+        $this->fieldtofiltermap['up']['fullname'] = self::filtertypetext;
+
+        if (!empty($options['extra'])) {
+            $extrafields = $DB->get_records('user_info_field', null,
+                               'sortorder ASC', 'id, shortname, name, datatype');
+            $extrafields = $extrafields ? $extrafields : array();
+            $this->get_custom_fields('up', $extrafields);
         }
 
-        // Check for & assign table aliases
-        foreach ($this->defaulttables as $key => $val) {
-            if (empty($options['tables'][$key])) {
-                // use defaults table aliases if not specified
-                $options['tables'][$key] = $val;
+        $this->_filters['up'] = array();
+        foreach ($this->_fields as $group => $fields) {
+            foreach ($fields as $userfield => $fieldlabel) {
+                //error_log("userprofilematch.php: creating filter for {$userfield} => {$fieldlabel}");
+                // must setup select choices for specific fields
+                $myoptions = $this->make_filter_options_custom(array(), $group, $userfield);
+                $filterid = $uniqueid . substr($userfield, 0, MAX_FILTER_SUFFIX_LEN);
+                $ftype = (string)$this->fieldtofiltermap[$group][$userfield];
+                $advanced = (!empty($options['advanced']) &&
+                             in_array($userfield, $options['advanced']))
+                            || (!empty($options['notadvanced']) &&
+                                !in_array($userfield, $options['notadvanced']));
+                //error_log("userprofilematch.php: creating filter using: new generalized_filter_entry( $filterid, $talias, $dbfield, $fieldlabel, $advanced, $ftype, $myoptions)");
+                // Create the filter
+                $this->_filters[$group][$userfield] =
+                    new generalized_filter_entry($filterid, $myoptions['talias'], $myoptions['dbfield'],
+                        $fieldlabel, $advanced, $ftype, $myoptions);
             }
         }
+    }
 
-        // Setup fullname_field w/ user table alias
-        $firstname = $options['tables']['user'] .'.firstname';
-        $lastname  = $options['tables']['user'] .'.lastname';
-        $fullname_field = $DB->sql_concat($firstname, "' '", $lastname);
-        $this->fieldtofiltermap[$fullname_field] =
-                    generalized_filter_userprofilematch::filtertypetext;
+    /**
+     * Get Extra Options
+     *
+     * Created this function to simplify the constructor.
+     *
+     * @param array $fields An array of db records representing custom fields
+     * @return array
+     * @uses $DB
+     */
+    function get_custom_fields($group, $fields) {
+        global $DB;
 
-        // Add custom user profile fields to array
-        $extrafields = $DB->get_records('user_info_field', null, 'sortorder ASC', 'id, shortname, name, datatype');
-        $datatypemap = 
-            array(
-               'text'
-                   => generalized_filter_userprofilematch::filtertype_userprofiletext,
-               'textarea'
-                   => generalized_filter_userprofilematch::filtertype_userprofiletext,
-               'checkbox'
-                   => generalized_filter_userprofilematch::filtertype_userprofileselect,
-               'menu'
-                   => generalized_filter_userprofilematch::filtertype_userprofileselect,
-               'datetime'
-                   => generalized_filter_userprofilematch::filtertype_userprofiledatetime,
-            );
+        $options = array();
 
-        // Array $xoptions to append to existing options['choices']
-        $xoptions = array();
-        if (!empty($extrafields)) {
-            // Array $xchoices to hold sub options for extra field ($myoptions)
-            $xchoices = array();
-            foreach ($extrafields as $xfield) {
-                $shortfieldname = substr($xfield->shortname, 0,
-                                         MAX_FILTER_SUFFIX_LEN);
-                if (in_array($shortfieldname, $shortfields)) {
-                    error_log("generalized_filter_userprofilematch::non-unique field name: '{$shortfieldname}' in extra profile fields - skipped.");
-                    continue;
-                }
-                $shortfields[] = $shortfieldname;
-                $this->fieldtofiltermap[$xfield->shortname]
-                    = array_key_exists($xfield->datatype, $datatypemap)
-                      ? $datatypemap[$xfield->datatype]
-                      : generalized_filter_userprofilematch::filtertype_userprofiletext;
-                // ^default to text input - TBD??? Or create userprofiledatetime filter ???
-                $xoptions[$xfield->shortname] = $xfield->name;
-                switch ($xfield->datatype) {
-                    case 'datetime':
-                        // no options required for datetime fields
-                        break;
+        if (!empty($fields)) {
+
+            foreach ($fields as $field) {
+                $this->_fieldids[$field->shortname] = $field->id;
+                $this->_fields[$group][$field->shortname] = $field->name; // TBD???
+                $this->record_short_field_name($field->shortname);
+                $this->fieldtofiltermap[$group][$field->shortname] = $this->datatypemap[$field->datatype];
+                $options[$field->shortname] = $field->name;
+                switch ($field->datatype) {
+                    case 'char': // TBD
                     case 'text':
                         // fall-thru case!
                     case 'textarea':
                         // no options required for text fields
                         break;
 
+                    case 'bool':
                     case 'checkbox':
-                        $xchoices[$xfield->shortname] = 
-                            array('0' => 'No', 1 => 'Yes');
+                        $this->_choices[$field->shortname] =
+                            array('0' => get_string('no'),
+                                   1  => get_string('yes'));
+                        break;
+
+                    case 'datetime': // start, stop year => param1, param2
+                        $this->_choices[$field->shortname] = array();
+                        $this->_choices[$field->shortname]['startyear'] = $DB->get_field('user_info_field', 'param1', array('shortname' => $field->shortname));
+                        $this->_choices[$field->shortname]['stopyear'] = $DB->get_field('user_info_field', 'param2', array('shortname' => $field->shortname));
                         break;
 
                     case 'menu':
-                        $fieldvals = $DB->get_field('user_info_field', 'param1', array('shortname' => $xfield->shortname));
+                        $fieldvals = $DB->get_field('user_info_field', 'param1', array('shortname' => $field->shortname));
                         if (!empty($fieldvals)) {
                             $valarray = explode("\n", $fieldvals);
-                            $xchoices[$xfield->shortname] = array();
+                            $this->_choices[$field->shortname] = array();
                             foreach($valarray as $opt) {
-                                $xchoices[$xfield->shortname][$opt] = $opt;
+                                $this->_choices[$field->shortname][$opt] = $opt;
                             }
                         }
-                        if (empty($fieldvals) ||
-                            empty($xchoices[$xfield->shortname])) 
-                        {
-                            error_log("userprofilematch.php:: error getting menu choices for user_info_field: {$xfield->shortname}");
+                        if (empty($fieldvals) || empty($this->_choices[$field->shortname])) {
+                            error_log("userprofilematch.php:: error getting menu choices for field: {$field->shortname}");
                         }
                         break;
 
                     default:
-                        error_log("userprofilematch.php::user_info_field datatype = {$xfield->datatype} not supported");
+                        error_log("userprofilematch.php:: datatype = {$field->datatype} not supported");
                 }
             }
         }
 
-        $this->_fields = array();
-        $allfields = array();
-        // First check if $options['choices'] is associative array with labels
-        if (!$this->is_assoc_array($options['choices'])) {
-            foreach ($options['choices'] as $upfield) {
-                $allfields[$upfield] = array_key_exists($upfield,
-                                                        $this->defaultlabels)
-                                       ? get_string($this->defaultlabels[$upfield], 'elis_core' /* TBD */)
-                                       : (array_key_exists($upfield, $xoptions)
-                                          ? $xoptions[$upfield] : $upfield);
-            }
-        } else { // just fillin empty labels
-            foreach ($options['choices'] as $key => $val) {
-                $allfields[$key] = !empty($val)
-                                   ? get_string($val, $langfile)
-                                   : (array_key_exists($key,
-                                                       $this->defaultlabels)
-                                      ? get_string($this->defaultlabels[$key],
-                                                   'elis_core' /* TBD */)
-                                      : (array_key_exists($key, $xoptions)
-                                         ? $xoptions[$key] : $key));
-            }
-        }
-        if (!empty($options['extra']) && !empty($xoptions)) {
-            $allfields += $xoptions;
-        }
-        foreach ($allfields as $userfield => $fieldlabel) {
-            // must setup select choices for specific fields
-            $myoptions = array();
-            $myoptions['numeric'] = 0; // TBD: default ???
-            $is_xfield = array_key_exists($userfield, $xoptions);
-            if ($is_xfield) {
-                $dbfield = 'data';
-                $talias = ''; // $options['tables']['user_info_data'];
-                $myoptions['tables'] = $options['tables'];
-                foreach ($extrafields as $xfield) {
-                    if ($userfield == $xfield->shortname) {
-                        $myoptions['fieldid'] = $xfield->id;
-                        break;
-                    }
-                }
-            } else {
-                $dbfield = ($userfield == 'fullname')
-                           ? $fullname_field: $userfield;
-                $talias = ($userfield == 'fullname')
-                          ? '' // CONCAT cannot have table alias prepended!
-                          : $options['tables']['user'];
-            }
-            switch ($userfield) {
-                case 'country': // TBD: new 'country' filter spec???
-                    $countries = get_string_manager()->get_list_of_countries();
-                    $myoptions['choices'] = $countries; // TBD: foreach assoc.
-                    //$this->err_dump($countries, '$countries');
-                    break;
-                case 'confirmed': // TBD: yesno filter???
-                    $myoptions['choices'] = array('0' => 'No', 1 => 'Yes');
-                    $myoptions['numeric'] = 1;
-                    //$this->err_dump($myoptions['choices'],'options for confirmed');
-                    break;
-                case 'crsrole':
-                    $roles = $DB->get_records('role', null, '', 'id, name');
-                    $myoptions['choices'] = array();
-                    foreach ($roles as $role) {
-                        $myoptions['choices'][$role->id] = $role->name; 
-                    }
-                    $myoptions['numeric'] = 1;
-                    $talias = $options['tables']['role_assignments'];
-                    $dbfield = 'roleid';
-                    break;
-                case 'lang':
-                    $myoptions['choices'] = get_string_manager()->get_list_of_translations(true); // TBD
-                    //$this->err_dump($myoptions['choices'], 'list_of_translations');
-                    break;
-                //case 'crscat':
-                //    break;
-                //case 'sysrole':
-                //    break;
-                case 'auth':
-                    $auths = get_list_of_plugins('auth');
-                    //$this->err_dump($auths, '$auths');
-                    $myoptions['choices'] = array();
-                    foreach ($auths as $auth) {
-                        $myoptions['choices'][$auth] = $auth; // TBD
-                    }
-                    break;
-            }
-            if ($is_xfield && !empty($xchoices[$userfield])) {
-                $myoptions['choices'] = $xchoices[$userfield];
-            }
-            $myfield = $is_xfield ? $userfield : $dbfield;
-            if ($this->fieldtofiltermap[$myfield] !=
-                 generalized_filter_userprofilematch::filtertypetext && 
-                $this->fieldtofiltermap[$myfield] !=
-                 generalized_filter_userprofilematch::filtertypedate &&
-                $this->fieldtofiltermap[$myfield] !=
-                 generalized_filter_userprofilematch::filtertype_userprofiledatetime &&
-                $this->fieldtofiltermap[$myfield] !=
-                 generalized_filter_userprofilematch::filtertype_userprofiletext
-                && empty($myoptions['choices']))
-            {
-                $this->err_dump($myoptions, '$myoptions');
-                error_log("curriculum/lib/filtering/userprofilematch.php: empty options['choices'] - requested for user field: $userfield");
-                continue;
-            }
-            $filterid = $uniqueid . substr($userfield, 0, MAX_FILTER_SUFFIX_LEN);
-            $ftype = (string)$this->fieldtofiltermap[$myfield];
-            $advanced = (!empty($options['advanced']) &&
-                         in_array($userfield, $options['advanced']))
-                        || (!empty($options['notadvanced']) &&
-                            !in_array($userfield, $options['notadvanced']));
-            if (!$is_xfield) {
-                // default help for standard user profile fields
-                if (empty($options['help'][$userfield])) {
-                    $helpid = isset($this->defaultlabels[$userfield])
-                              ? $this->defaultlabels[$userfield] : $ftype;
-                    $options['help'][$userfield] =
-                        array($helpid,
-                              array_key_exists($userfield, $this->defaultlabels)
-                              ? get_string($this->defaultlabels[$userfield],
-                                           'elis_core' /* TBD */)
-                              : $userfield, $langfile /* TBD */);
-                }
-            }
-            if (!empty($options['help']) && array_key_exists($userfield, $options['help'])) {
-                $myoptions['help'] = $options['help'][$userfield];
-            }
-            //error_log("userprofilematch.php: creating filter using: new generalized_filter_entry( $filterid, $talias, $dbfield, $fieldlabel, $advanced, $ftype, $myoptions)");
-            // Create the filter
-            $this->_fields[$myfield] =
-                new generalized_filter_entry($filterid, $talias, $dbfield,
-                    $fieldlabel, $advanced, $ftype, $myoptions);
-        }
-
+        $this->sections[$group]['custom'] = $options;
     }
 
     /**
-     * Method to return all sub-filters as array
+     * Make Custom Filter Options
      *
-     * @param none
-     * @uses none
-     * @return array of sub-filters
+     * This function handles filters that require custom values (languages, countries, etc).
+     *
+     * @param string $group  The index of the group to which the sub filter belongs to.
+     * @param string $name   The name of the sub filter to process.
+     * @param array  $help   An array representing the help icon for the filter
+     * @return array The customized options for the selected sub-filter
+     * @uses $DB
      */
-    function get_filters() {
-        $filters = array();
-        foreach ($this->_fields as $fieldfilter) {
-            if (!empty($fieldfilter)) {
-                $filters[] = $fieldfilter;
-            }
+    function make_filter_options_custom($options, $group, $name) {
+        global $DB;
+
+        $manager = get_string_manager();
+
+        $options['tables'] = $this->tables[$group]; // TBD: default?
+        $options['dbfield'] = $name; // TBD: default?
+        if (isset($this->tables[$group]['user'])) {
+            $options['talias'] = $this->tables[$group]['user']; // default table?
+        } else {
+            $options['talias'] = ''; // TBD???
+            error_log("userprofilematch::make_filter_options_custom(options, $group, $name) ... setting 'talias' empty!");
         }
-        //$this->err_dump($filters, 'get_filters()::$filters');
-        return $filters;
+        switch ($name) {
+            case 'fullname':
+                $firstname = $this->tables[$group]['user'] .'.firstname';
+                $lastname  = $this->tables[$group]['user'] .'.lastname';
+                $options['dbfield'] = $DB->sql_concat($firstname, "' '", $lastname);
+                $options['talias'] = '';
+                $this->fieldtofiltermap[$group][$options['dbfield']] = self::filtertypetext;
+                break;
+            case 'country': // TBD: new 'country' filter spec???
+                $countries = $manager->get_list_of_countries();
+                $options['choices'] = $countries; // TBD: foreach assoc.
+                //$this->err_dump($countries, '$countries');
+                break;
+            case 'confirmed': // TBD: yesno filter???
+                $options['choices'] = array('0' => 'No', 1 => 'Yes');
+                $options['numeric'] = 1;
+                //$this->err_dump($myoptions['choices'],'options for confir
+                break;
+            case 'crsrole':
+                $roles = $DB->get_records('role', array(), '', 'id,name');
+                $options['choices'] = array();
+                foreach ($roles as $role) {
+                    $options['choices'][$role->id] = $role->name;
+                }
+                $options['numeric'] = 1;
+                $options['talias'] = $this->tables[$group]['role_assignments'];
+                $options['dbfield'] = 'roleid';
+                break;
+            case 'lang':
+                $options['choices'] = $manager->get_list_of_translations(true); // TBD
+                //$this->err_dump($myoptions['choices'], 'list_of_languages
+                break;
+            case 'crscat':
+                break;
+            case 'sysrole':
+                break;
+            case 'auth':
+                $auths = get_list_of_plugins('auth');
+                //$this->err_dump($auths, '$auths');
+                $options['choices'] = array();
+                foreach ($auths as $auth) {
+                    $options['choices'][$auth] = $auth; // TBD
+                }
+                break;
+        }
+
+        if (array_key_exists($name, $this->_choices)) {
+            $options['choices'] = $this->_choices[$name];
+        }
+        if (array_key_exists($name, $this->_fieldids)) {
+            $options['fieldid'] = $this->_fieldids[$name];
+        }
+
+        $is_xfield = array_key_exists($name, $this->sections[$group]['custom']);
+        if ($is_xfield) {
+            // custom profile field
+            $options['talias'] = '';
+            $options['dbfield'] = 'data';
+        }
+
+        return $options;
     }
 
-    // Test whether array is associative
-    function is_assoc_array( $a ) {
-        return(is_array($a) && 
-                (count($a) == 0 || 
-                 0 !== count(array_diff_key($a, array_keys(array_keys($a)))))
-        );
-    }
-
-    // Debug helper function
-    function err_dump($obj, $name = '') {
-        ob_start();
-        var_dump($obj);
-        $tmp = ob_get_contents();
-        ob_end_clean();
-        error_log('err_dump:: '.$name." = {$tmp}");
-    }
 }
 
