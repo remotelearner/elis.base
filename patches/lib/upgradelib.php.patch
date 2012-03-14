@@ -1,5 +1,5 @@
 diff --git a/lib/upgradelib.php b/lib/upgradelib.php
-index 6a93f6e..b047fc0 100644
+index 44dd3fb..e8e38f5 100644
 --- a/lib/upgradelib.php
 +++ b/lib/upgradelib.php
 @@ -266,6 +266,8 @@ function upgrade_plugin_savepoint($result, $version, $type, $plugin, $allowabort

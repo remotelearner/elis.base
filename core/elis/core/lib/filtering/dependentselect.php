@@ -1,4 +1,4 @@
-<?php //$Id$
+<?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
@@ -18,7 +18,6 @@
  *
  * @author     Remote-Learner.net Inc
  * @author     Brent Boghosian <brent.boghosian@remote-learner.net>
- * @version    $Id$
  * @package    elis-core
  * @subpackage filtering
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
@@ -38,26 +37,29 @@ class generalized_filter_dependentselect extends generalized_filter_type {
     /**
      * options for the list values
      */
-    var $_options;
+    var $_options = array();
 
     var $_field;
 
-    var $_default;
+    var $_default = null;
 
-    var $_numeric;
+    var $_numeric = false;
 
-    var $_report_path;
+    var $_report_path = '';
 
-    var $_isrequired;
+    var $_filename = 'childoptions.php';
+
+    var $_isrequired = false;
 
     /**
      * Constructor
-     * @param string $name the name of the filter instance
-     * @param string $label the label of the filter instance
+     *
+     * @param string  $name     the name of the filter instance
+     * @param string  $label    the label of the filter instance
      * @param boolean $advanced advanced form element flag
-     * @param string $field user table filed name
-     * @param array $options select options
-     * @param mixed $default option
+     * @param string  $field    user table filed name
+     * @param array   $options  select options
+     * @param mixed   $default  option
      */
     function generalized_filter_dependentselect($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
         global $CFG;
@@ -66,15 +68,22 @@ class generalized_filter_dependentselect extends generalized_filter_type {
                                         !empty($options['help'])
                                         ? $options['help']
                                         : array('simpleselect', $label, 'elis_core'));
-        $this->_field   = $field;
+        $this->_field = $field;
 
-        $choices = $options['choices'];
+        $extrafields = array(
+            '_options'     => 'choices',
+            '_default'     => 'default',
+            '_numeric'     => 'numeric',
+            '_report_path' => 'report_path',
+            '_isrequired'  => 'isrequired',
+            '_filename'    => 'filename',
+        );
 
-        $this->_options = $choices;
-        $this->_default = $options['default'];
-        $this->_numeric = $options['numeric'];
-        $this->_report_path = $options['report_path'];
-        $this->_isrequired = !empty($options['isrequired']) ? $options['isrequired'] : false;
+        foreach ($extrafields as $var => $extra) {
+            if (array_key_exists($extra, $options)) {
+                $this->$var = $options[$extra];
+            }
+        }
     }
 
     /**
@@ -90,7 +99,10 @@ class generalized_filter_dependentselect extends generalized_filter_type {
 
         $options_array = $this->get_main_options();
 
-        $js = "dependentselect_updateoptions('{$this->_uniqueid}','{$this->_report_path}');";
+        $fullpath = $this->_report_path . $this->_filename;
+        $parent   = $this->_uniqueid .'_parent';
+
+        $js = "dependentselect_updateoptions('{$parent}','{$this->_uniqueid}','{$fullpath}');";
 
         $objs = array();
         $objs[] =& $mform->createElement('select', $this->_uniqueid.'_parent', null, $options_array,
@@ -108,8 +120,8 @@ class generalized_filter_dependentselect extends generalized_filter_type {
         }
 
         // Always refresh the child pulldown
-        $mform->addElement('html','<script>'.$js.'</script>');
-
+        $params = array($parent, $this->_uniqueid, $fullpath);
+        $PAGE->requires->js_init_code($js);
     }
 
     /**
@@ -157,7 +169,7 @@ class generalized_filter_dependentselect extends generalized_filter_type {
      * @return array List of options keyed on id
      */
     function get_main_options() {
-        return array('0' => 'Select...');
+        return array('0' => get_string('select_option', 'elis_core'));
     }
 
     /**
@@ -177,5 +189,11 @@ class generalized_filter_dependentselect extends generalized_filter_type {
         return "{$this->_label}: ". get_string('off'); // TBD: 'none'
     }
 
+    function get_default_values($filter_data) {
+        if (isset($this->_default)) {
+            return array($this->_uniqueid => $this->_default);
+        }
+        return parent::get_default_values($filter_data);
+    }
 }
 

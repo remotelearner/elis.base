@@ -1,5 +1,5 @@
 diff --git a/lib/accesslib.php b/lib/accesslib.php
-index 60710f9..e447cbf 100644
+index 4dcf606..bc47047 100644
 --- a/lib/accesslib.php
 +++ b/lib/accesslib.php
 @@ -317,6 +317,1037 @@ $ACCESSLIB_PRIVATE->preloadedcourses = array(); // Used in preload_course_contex
@@ -1521,13 +1521,13 @@ index 60710f9..e447cbf 100644
 -                           OR name $extra";
 -        break;
 -
--        case CONTEXT_COURSECAT: // course category context and bellow
+-        case CONTEXT_COURSECAT: // course category context and below
 -            $SQL = "SELECT *
 -                      FROM {capabilities}
 -                     WHERE contextlevel IN (".CONTEXT_COURSECAT.",".CONTEXT_COURSE.",".CONTEXT_MODULE.",".CONTEXT_BLOCK.")";
 -        break;
 -
--        case CONTEXT_COURSE: // course context and bellow
+-        case CONTEXT_COURSE: // course context and below
 -            $SQL = "SELECT *
 -                      FROM {capabilities}
 -                     WHERE contextlevel IN (".CONTEXT_COURSE.",".CONTEXT_MODULE.",".CONTEXT_BLOCK.")";

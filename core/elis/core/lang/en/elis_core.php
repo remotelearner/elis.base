@@ -33,6 +33,10 @@ $string['data_object_validation_unique'] = '{$a->tablename} record must have uni
 $string['date'] = 'Date filter';
 $string['date_help'] = '<h1>Date filter</h1>
 <p>This filter allows you to filter information from before and/or after selected dates.</p>';
+$string['display'] = 'Display';
+$string['displaytext'] = 'Display text';
+$string['displaytext_help'] = '<h1>Display text</h1>
+<p>This filter allows you to display custom text in the report header, there are usually predefined fields, but this report has neglected to define them.</p>';
 $string['done'] = 'done';
 $string['elis'] = 'ELIS';
 $string['elisversion'] = '<strong>ELIS Version:</strong> {$a}';
@@ -56,6 +60,8 @@ The filter has the following options:</p>
 <li>ends with - this option allows only cities that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only cities that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
+$string['fld_class'] = 'Class';
+$string['fld_classstatus'] = 'Class status';
 $string['fld_confirmed'] = 'Confirmed';
 $string['fld_confirmed_help'] = '<h1>Confirmed filter</h1>
 <p>This filter allows you to filter users\' confirmed status based on a drop down list of: any value, yes or no. This filter does not have any other options.</p>';
@@ -68,6 +74,7 @@ $string['fld_courserole_help'] = '<h1>Course role filter</h1>
 <p>This filter allows you to filter users based the role they have assigned in the course
 specified by its shortname from a specified course category (if the shortname textbox is empty,
 the category is "any category" and the role is "any role" then the filter is not active).</p>';
+$string['fld_curriculum'] = 'Curriculum';
 $string['fld_email'] = 'Email address';
 $string['fld_email_help'] = '<h1>Email address filter</h1>
 <p>This filter allows you to filter users\' Email address based on a free form text.
@@ -80,6 +87,7 @@ The filter has the following options:</p>
 <li>ends with - this option allows only Email addresses that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only Email addresses that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
+$string['fld_environment'] = 'Environment';
 $string['fld_firstaccess'] = 'First access';
 $string['fld_firstaccess_help'] = '<h1>First access filter</h1>
 <p>This filter allows you to filter users\' firstaccess time from before and/or after selected dates. Where firstaccess time is the date and time the user first accessed the system.</p>';
@@ -119,6 +127,7 @@ The filter has the following options:</p>
 <li>ends with - this option allows only ID numbers that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only ID numbers that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
+$string['fld_inactive'] = 'Inactive';
 $string['fld_lang'] = 'Preferred language';
 $string['fld_lang_help'] = '<h1>Language filter</h1>
 <p>This filter allows you to filter users\' preferred language based on a drop down list of available languages. This filter does not have any other options.</p>';
@@ -140,6 +149,8 @@ The filter has the following options:</p>
 <li>ends with - this option allows only lastnames that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only lastnames that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
+$string['fld_name'] = 'Name';
+$string['fld_startdate'] = 'Start date';
 $string['fld_systemrole'] = 'System role';
 $string['fld_systemrole_help'] = '<h1>Global role filter</h1>
 <p>This filter allows you to filter users based the global role they have assigned.</p>';
@@ -167,8 +178,9 @@ $string['nocourseselected'] = 'No course selected';
 $string['nofieldsselected'] = 'No fields selected';
 $string['nogradeitems'] = 'No grade items found';
 $string['noidnumber'] = 'No ID number';
-
+$string['or'] = ' or ';
 $string['pluginname'] = 'ELIS Core';
+$string['present'] = 'Present';
 $string['preup_ac_check'] = 'Checking for ELIS Alfresco configuration settings';
 $string['preup_ac_error'] = 'error migrating configuration settings';
 $string['preup_ac_found'] = 'found configuration settings';
@@ -214,6 +226,7 @@ The filter has the following options:</p>
 <li>is equal to - this option allows only information that is equal to the value selected from the list</li>
 <li>is not equal to - this option allows only information that is different from the value selected from the list</li>
 </ul>';
+$string['select_option'] = 'Select...';
 $string['set_nonexistent_member'] = 'Attempt to set nonexistent member variable {$a->classname}::${$a->name}';
 $string['simpleselect'] = 'Simple select filter';
 $string['simpleselect_help'] = '<h1>Simple select filter</h1>
