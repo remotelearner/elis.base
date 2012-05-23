@@ -31,6 +31,7 @@ $string['data_object_construct_invalid_source'] = 'Attempted to construct a data
 $string['data_object_validation_not_empty'] = '{$a->tablename} record cannot have empty {$a->field} field';
 $string['data_object_validation_unique'] = '{$a->tablename} record must have unique {$a->fields} fields';
 $string['date'] = 'Date filter';
+$string['date_format'] = '%d/%m/%Y';
 $string['date_help'] = '<h1>Date filter</h1>
 <p>This filter allows you to filter information from before and/or after selected dates.</p>';
 $string['display'] = 'Display';
@@ -62,12 +63,16 @@ The filter has the following options:</p>
 </ul>';
 $string['fld_class'] = 'Class';
 $string['fld_classstatus'] = 'Class status';
+$string['fld_code'] = 'Code';
+$string['fld_completion_grade'] = 'Completion grade';
 $string['fld_confirmed'] = 'Confirmed';
 $string['fld_confirmed_help'] = '<h1>Confirmed filter</h1>
 <p>This filter allows you to filter users\' confirmed status based on a drop down list of: any value, yes or no. This filter does not have any other options.</p>';
+$string['fld_cost'] = 'Cost';
 $string['fld_country'] = 'Country';
 $string['fld_country_help'] = '<h1>Country filter</h1>
 <p>This filter allows you to filter users\' country based on a drop down list of countries. This filter does not have any other options.</p>';
+$string['fld_course'] = 'Course';
 $string['fld_coursecat'] = 'Course category';
 $string['fld_courserole'] = 'Course role';
 $string['fld_courserole_help'] = '<h1>Course role filter</h1>
@@ -75,6 +80,8 @@ $string['fld_courserole_help'] = '<h1>Course role filter</h1>
 specified by its shortname from a specified course category (if the shortname textbox is empty,
 the category is "any category" and the role is "any role" then the filter is not active).</p>';
 $string['fld_curriculum'] = 'Curriculum';
+$string['fld_credits'] = 'Credits';
+$string['fld_description'] = 'Description';
 $string['fld_email'] = 'Email address';
 $string['fld_email_help'] = '<h1>Email address filter</h1>
 <p>This filter allows you to filter users\' Email address based on a free form text.
@@ -87,7 +94,9 @@ The filter has the following options:</p>
 <li>ends with - this option allows only Email addresses that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only Email addresses that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
+$string['fld_enddate'] = 'End date';
 $string['fld_environment'] = 'Environment';
+$string['fld_environmentid'] = 'Environment';
 $string['fld_firstaccess'] = 'First access';
 $string['fld_firstaccess_help'] = '<h1>First access filter</h1>
 <p>This filter allows you to filter users\' firstaccess time from before and/or after selected dates. Where firstaccess time is the date and time the user first accessed the system.</p>';
@@ -127,7 +136,10 @@ The filter has the following options:</p>
 <li>ends with - this option allows only ID numbers that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only ID numbers that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
-$string['fld_inactive'] = 'Inactive';
+$string['fld_inactive'] = 'Inactive filter';
+$string['fld_inactive_help'] = '<h1>Inactive filter</h1>
+<p>This filter allows you to filter users\' status as active, inactive or both.</p>';
+$string['fld_iscustom'] = 'Custom';
 $string['fld_lang'] = 'Preferred language';
 $string['fld_lang_help'] = '<h1>Language filter</h1>
 <p>This filter allows you to filter users\' preferred language based on a drop down list of available languages. This filter does not have any other options.</p>';
@@ -151,12 +163,20 @@ The filter has the following options:</p>
 </ul>';
 $string['fld_name'] = 'Name';
 $string['fld_startdate'] = 'Start date';
+$string['fld_length'] = 'Length';
+$string['fld_lengthdescription'] = 'Length description';
+$string['fld_priority'] = 'Priority';
+$string['fld_reqcredits'] = 'Required credits';
+$string['fld_startdate'] = 'Start date';
+$string['fld_syllabus'] = 'Syllabus';
 $string['fld_systemrole'] = 'System role';
 $string['fld_systemrole_help'] = '<h1>Global role filter</h1>
 <p>This filter allows you to filter users based the global role they have assigned.</p>';
+$string['fld_timecreated'] = 'Time created';
 $string['fld_timemodified'] = 'Last modified';
 $string['fld_timemodified_help'] = '<h1>Last modified filter</h1>
 <p>This filter allows you to filter on the last time the users\' profile was modified, from before and/or after selected dates. Where last modified is the date and time the users\' profile was last updated.</p>';
+$string['fld_timetocomplete'] = 'Time to complete';
 $string['fld_username'] = 'Username';
 $string['fld_username_help'] = '<h1>Username filter</h1>
 <p>This filter allows you to filter users\' username based on a free form text.
@@ -169,9 +189,12 @@ The filter has the following options:</p>
 <li>ends with - this option allows only usernames that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only usernames that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
+$string['fld_version'] = 'Version';
 
 $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
+
+$string['missing_datatype'] = 'Missing datatype';
 
 $string['noactivities'] = 'No activities found';
 $string['nocourseselected'] = 'No course selected';
@@ -245,6 +268,8 @@ The filter has the following options:</p>
 <li>ends with - this option allows only information that ends with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only information that is equal to an empty string (the text entered is ignored)</li>
 </ul>';
+
+$string['unknown_datatype'] = 'Unknown datatype';
 $string['workflow_cancelled'] = 'Cancelled';
 $string['workflow_invalidstep'] = 'Invalid step specified';
 $string['write_to_non_overlay_table'] = 'Attempted write to a non-overlay table: {$a}';

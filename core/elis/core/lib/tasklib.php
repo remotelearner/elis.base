@@ -203,7 +203,8 @@ function elis_tasks_cleanup($component, $cachedtasks) {
     global $DB;
     $deletecount = 0;
     foreach ($cachedtasks as $cachedtask) {
-        if ($DB->delete_records('elis_scheduled_tasks', array('id', $cachedtask['id']))) {
+        if ($DB->delete_records('elis_scheduled_tasks',
+                                array('id' => $cachedtask['id']))) {
             $deletecount++;
         }
     }

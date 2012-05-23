@@ -1,8 +1,8 @@
 diff --git a/lib/outputlib.php b/lib/outputlib.php
-index 304b744..97c3028 100644
+index 3bceb8a..6d3616e 100644
 --- a/lib/outputlib.php
 +++ b/lib/outputlib.php
-@@ -888,6 +888,11 @@ class theme_config {
+@@ -894,6 +894,11 @@ class theme_config {
              $css = $csspostprocess($css, $this);
          }
  

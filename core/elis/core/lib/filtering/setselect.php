@@ -87,7 +87,7 @@ class generalized_filter_setselect extends generalized_filter_type {
         $data = $mform->exportValues($this->_uniqueid);
         // ELIS-3474,ELIS-3475: since called from definition_after_data()
         // we MUST check if data has been set or default will override!
-        if ((!is_array($data) || $data[$this->_uniqueid] === '')
+        if ((!is_array($data) || $data[$this->_uniqueid] === '' || is_null($data[$this->_uniqueid]))
             && isset($this->_default)) {
             $value = $this->_default;
             if (is_array($value)) {

@@ -12,14 +12,14 @@
    </filter>
 
    <logging>
+     <!--
      <log type="coverage-html" target="./doc/coverage"
 charset="UTF-8"
           yui="true" highlight="true"
           lowUpperBound="35" highLowerBound="70"/>
-     <log type="coverage-xml"
-target="./log/cover-report.xml"/>
-     <log type="test-xml" target="./log/phpunit-results.xml"
-/>
+     <log type="coverage-xml" target="./log/cover-report.xml"/>
+     <log type="test-xml" target="./log/phpunit-results.xml" />
+     -->
    </logging>
 
 </phpunit>

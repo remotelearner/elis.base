@@ -16,7 +16,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="user_idx" UNIQUE="false" FIELDS="userid, courseid, hour" NEXT="course_idx"/>
+        <INDEX NAME="user_idx" UNIQUE="true" FIELDS="userid, courseid, hour" NEXT="course_idx"/>
         <INDEX NAME="course_idx" UNIQUE="false" FIELDS="courseid" PREVIOUS="user_idx" NEXT="hour_idx"/>
         <INDEX NAME="hour_idx" UNIQUE="false" FIELDS="hour" PREVIOUS="course_idx"/>
       </INDEXES>

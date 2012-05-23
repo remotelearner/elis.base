@@ -60,12 +60,16 @@ function user_activity_add_session($userid, $courseid, $session_start, $session_
         $first = true;
         while ($session_end > $start_hour + 3600) {
             $session_hour_duration = $start_hour + 3600 - $session_start;
-            if ($first && $rec = $DB->get_record(ETL_TABLE,
-                                         array('userid'   => $userid,
-                                               'courseid' => $courseid,
-                                               'hour'     => $start_hour))) {
+            if ($rec = $DB->get_record(ETL_TABLE,
+                                       array('userid'   => $userid,
+                                             'courseid' => $courseid,
+                                             'hour'     => $start_hour))) {
                 $rec->duration += $session_hour_duration;
-                $DB->update_record(ETL_TABLE, $rec);
+                if ($rec->duration <= 3600) {
+                    $DB->update_record(ETL_TABLE, $rec);
+                } else {
+                    mtrace("\nuser_activity_add_session(userid = {$userid}, courseid = {$courseid}, session_start = {$session_start}, session_end = {$session_end}): Warning: duration > 3600\n");
+                }
             } else {
                 $rec = new stdClass;
                 $rec->userid = $userid;
@@ -79,12 +83,16 @@ function user_activity_add_session($userid, $courseid, $session_start, $session_
             $first = false;
         }
         $remainder = $session_end - $session_start;
-        if ($first && $rec = $DB->get_record(ETL_TABLE,
-                                      array('userid' => $userid,
-                                            'courseid' => $courseid,
-                                            'hour' => $start_hour))) {
+        if ($rec = $DB->get_record(ETL_TABLE,
+                                   array('userid' => $userid,
+                                         'courseid' => $courseid,
+                                         'hour' => $start_hour))) {
             $rec->duration += $remainder;
-            $DB->update_record(ETL_TABLE, $rec);
+            if ($rec->duration <= 3600) {
+                $DB->update_record(ETL_TABLE, $rec);
+            } else {
+                mtrace("\nuser_activity_add_session(userid = {$userid}, courseid = {$courseid}, session_start = {$session_start}, session_end = {$session_end}): Warning: remainder duration > 3600\n");
+            }
         } else {
             $rec = new stdClass;
             $rec->userid = $userid;
