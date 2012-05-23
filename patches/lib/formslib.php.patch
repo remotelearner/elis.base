@@ -1,0 +1,27 @@
+diff --git a/lib/formslib.php b/lib/formslib.php
+index 61772ea..dbeeded 100644
+--- a/lib/formslib.php
++++ b/lib/formslib.php
+@@ -696,14 +696,14 @@ class moodleform {
+         $mform->setType("checkbox_controller$groupid", PARAM_INT);
+         $mform->setConstants(array("checkbox_controller$groupid" => $new_select_value));
+ 
+-        // Locate all checkboxes for this group and set their value, IF the optional param was given
+-        if (!is_null($select_value)) {
+-            foreach ($this->_form->_elements as $element) {
+-                if ($element->getAttribute('class') == "checkboxgroup$groupid") {
+-                    $mform->setConstants(array($element->getAttribute('name') => $select_value));
+-                }
+-            }
+-        }
++        // Locate all checkboxes for this group and set their value, IF the optional param was given (RL - removed as per MDL-30263)
++        //if (!is_null($select_value)) {
++        //    foreach ($this->_form->_elements as $element) {
++        //        if ($element->getAttribute('class') == "checkboxgroup$groupid") {
++        //            $mform->setConstants(array($element->getAttribute('name') => $select_value));
++        //        }
++        //    }
++        //}
+ 
+         $checkbox_controller_name = 'nosubmit_checkbox_controller' . $groupid;
+         $mform->registerNoSubmitButton($checkbox_controller_name);

@@ -1,5 +1,5 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index bde71c2..6a409ef 100644
+index 2d5e774..09ab40e 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
 @@ -1141,7 +1141,6 @@ function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0,
@@ -48,7 +48,7 @@ index bde71c2..6a409ef 100644
 @@ -5317,6 +5322,13 @@ function places_to_search_for_lang_strings() {
          'profilefield_' => array('user/profile/field'),
          '' => array('mod')
-     );
+         );
 +        $elis_plugins = get_list_of_plugins('elis');
 +        foreach ($elis_plugins as $plugin) {
 +            $places["elis:{$plugin}_"] = array('elis/{$plugin}/plugins');

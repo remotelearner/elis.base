@@ -57,7 +57,7 @@ index d1ce83b..0bdef27 100644
              exit;
          }
 @@ -674,6 +656,7 @@ class auth_plugin_ldap extends auth_plugin_base {
-             $sql = "SELECT u.id, u.username, u.email, u.auth 
+             $sql = "SELECT u.id, u.username, u.email, u.auth
                      FROM {$CFG->prefix}user u
                          LEFT JOIN $temptable e ON u.username = e.username
 +                              AND u.mnethostid = e.mnethostid

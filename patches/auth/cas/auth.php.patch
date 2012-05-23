@@ -50,7 +50,7 @@ index eff89db..9de071f 100644
 +        $table->addFieldInfo('mnethostid', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, null, null, null, null, null);
 +        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('username', 'mnethostid'));
 +
-                 echo "Creating temp table $temptable\n";
+         echo "Creating temp table $temptable\n";
 -                $bulk_insert_records = 1; // no support for multiple sets of values
 -                execute_sql('CREATE GLOBAL TEMPORARY TABLE '.$temptable.' (username VARCHAR(64), PRIMARY KEY (username)) ON COMMIT PRESERVE ROWS', false);
 -                break;
