@@ -1,8 +1,8 @@
 diff --git a/lib/javascript-static.js b/lib/javascript-static.js
-index 13547d4..5307fdf 100644
+index c90e106..11ed18f 100644
 --- a/lib/javascript-static.js
 +++ b/lib/javascript-static.js
-@@ -1256,6 +1256,7 @@ M.util.help_icon = {
+@@ -1262,6 +1262,7 @@ M.util.help_icon = {
      },
      display : function(event, args) {
          event.preventDefault();

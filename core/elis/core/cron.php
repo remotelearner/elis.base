@@ -31,6 +31,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/lib/setup.php');
 
+define('ELIS_TASKS_CRONSECS', 4 * 60); // TBD: 4 min max total runtime (save 1 min for other cron?)
+
 /**
  * Run scheduled tasks according to a cron spec.
  *
@@ -45,6 +47,8 @@ function elis_cron() {
     // get all tasks that are (over-)due
     $params = array('timenow' => $timenow);
     $tasks = $DB->get_recordset_select('elis_scheduled_tasks', 'nextruntime <= :timenow', $params, 'nextruntime ASC');
+    $numtasks = $DB->count_records_select('elis_scheduled_tasks', 'nextruntime <= :timenow', $params);
+    $remtime = ELIS_TASKS_CRONSECS;
 
     if (empty($tasks) || !$tasks->valid()) {
         return;
@@ -57,6 +61,7 @@ function elis_cron() {
         if ($task->enddate !== null && $task->enddate < $timenow) {
             mtrace('* Cancelling task: past end date');
             $DB->delete_records('elis_scheduled_tasks', array('id' => $task->id));
+            --$numtasks;
             continue;
         }
 
@@ -68,6 +73,7 @@ function elis_cron() {
         $nextrun = $DB->get_field('elis_scheduled_tasks', 'nextruntime', array('id' => $task->id));
         if ($nextrun > $timenow) {
             mtrace('* Skipped (someone else already ran it)');
+            --$numtasks;
             continue;
         }
 
@@ -94,13 +100,24 @@ function elis_cron() {
             $callfile = $CFG->dirroot.$task->callfile;
             if (!is_readable($callfile)) {
                 mtrace('* Skipped (file not found)');
+                --$numtasks;
                 continue;
             }
             require_once ($callfile);
         }
-        call_user_func(unserialize($task->callfunction), $task->taskname);
+
+        $starttask = time();
+        $denom = ($numtasks > 0) ? $numtasks-- : 1; // prevent div by 0
+        $runtime = floor((float)$remtime / (float)$denom);
+        call_user_func(unserialize($task->callfunction), $task->taskname, $runtime);
+        $remtime -= time() - $starttask;
 
         $difftime = microtime_diff($starttime, microtime());
         mtrace("* {$difftime} seconds");
+
+        // TBD: exit if over cron processing time
+        if ($remtime <= 0) {
+            break;
+        }
     }
 }

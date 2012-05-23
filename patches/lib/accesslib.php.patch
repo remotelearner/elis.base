@@ -1,5 +1,5 @@
 diff --git a/lib/accesslib.php b/lib/accesslib.php
-index 4dcf606..bc47047 100644
+index 1d9c255..8fe7280 100644
 --- a/lib/accesslib.php
 +++ b/lib/accesslib.php
 @@ -317,6 +317,1037 @@ $ACCESSLIB_PRIVATE->preloadedcourses = array(); // Used in preload_course_contex
@@ -1316,7 +1316,7 @@ index 4dcf606..bc47047 100644
      $filecaps = load_capability_def($component);
      $cachedcaps = get_cached_capabilities($component);
      if ($cachedcaps) {
-@@ -3530,18 +4486,7 @@ function capabilities_cleanup($component, $newcapdef = null) {
+@@ -3531,18 +4487,7 @@ function capabilities_cleanup($component, $newcapdef = null) {
   * @return string the name for this type of context.
   */
  function get_contextlevel_name($contextlevel) {
@@ -1336,7 +1336,7 @@ index 4dcf606..bc47047 100644
  }
  
  /**
-@@ -3555,83 +4500,13 @@ function get_contextlevel_name($contextlevel) {
+@@ -3556,83 +4501,13 @@ function get_contextlevel_name($contextlevel) {
   * @return string the human readable context name.
   */
  function print_context_name($context, $withprefix = true, $short = false) {
@@ -1380,7 +1380,7 @@ index 4dcf606..bc47047 100644
 +    if (context_level_base::context_level_exists($context)) {
 +        $context_level = context_level_base::get_context_level($context);
 +        return $context_level->print_context_name($context, $withprefix, $short);
-                     } else {
+     } else {
 -                        $name .= format_string($course->fullname);
 -                   }
 -                }
@@ -1415,15 +1415,15 @@ index 4dcf606..bc47047 100644
 -            break;
 -
 -        default:
-             print_error('unknowncontext');
-             return false;
+         print_error('unknowncontext');
+         return false;
      }
 -
 -    return $name;
  }
  
  /**
-@@ -3643,38 +4518,12 @@ function print_context_name($context, $withprefix = true, $short = false) {
+@@ -3644,38 +4519,12 @@ function print_context_name($context, $withprefix = true, $short = false) {
   * @return moodle_url
   */
  function get_context_url($context) {
@@ -1456,7 +1456,7 @@ index 4dcf606..bc47047 100644
 +        $rv = $context_level->get_context_url($context);
 +        if ($rv != null) {
 +            return $rv;
-             }
+         }
 -            break;
 -
 -        case CONTEXT_BLOCK:
@@ -1467,7 +1467,7 @@ index 4dcf606..bc47047 100644
      }
  
      return new moodle_url('/');
-@@ -3698,143 +4547,40 @@ function get_all_risks() {
+@@ -3699,143 +4548,40 @@ function get_all_risks() {
      );
  }
  
@@ -1642,7 +1642,7 @@ index 4dcf606..bc47047 100644
  }
  
  
-@@ -4031,101 +4777,13 @@ function get_sorted_contexts($select, $params = array()) {
+@@ -4032,101 +4778,13 @@ function get_sorted_contexts($select, $params = array()) {
   * @return array Array of child records
   */
  function get_child_contexts($context) {
@@ -1741,14 +1741,14 @@ index 4dcf606..bc47047 100644
 +        $context_level = context_level_base::get_context_level($context);
 +        return $context_level->get_child_contexts($context);
 +    } else {
-             print_error('unknowcontext', '', '', $context->contextlevel);
-             return false;
+         print_error('unknowcontext', '', '', $context->contextlevel);
+         return false;
      }
 -    return $array;
  }
  
  
-@@ -5704,165 +6362,21 @@ function rebuild_contexts(array $fixcontexts) {
+@@ -5705,165 +6363,21 @@ function rebuild_contexts(array $fixcontexts) {
   * @param bool $force force a complete rebuild of the path and depth fields, defaults to false
   */
  function build_context_path($force = false) {

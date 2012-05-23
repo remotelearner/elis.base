@@ -170,7 +170,6 @@ class generalized_filter_multifilter {
 
         // Import option fields
         foreach ($this->_optionals as $field => $option) {
-
             if (!empty($options[$option])) {
                 $this->$field = $options[$option];
             }
@@ -185,7 +184,6 @@ class generalized_filter_multifilter {
 
         // Record aliases
         foreach ($this->labels as $group => $labels) {
-
             foreach ($labels as $key => $val) {
                 $this->record_short_field_name($group .'-'. $key);
             }
@@ -195,12 +193,11 @@ class generalized_filter_multifilter {
         if (array_key_exists('tables', $options)) {
             foreach ($this->tables as $group => $tables) {
 
-                if (! array_key_exists($group, $options['tables'])) {
+                if (!array_key_exists($group, $options['tables'])) {
                     continue;
                 }
 
                 foreach ($tables as $key => $val) {
-
                     if (! empty($options['tables'][$group][$key])) {
                         // If an alias has peen specified, us that instead of default
                         $this->tables[$group][$key] = $options['tables'][$group][$key];
@@ -290,27 +287,27 @@ class generalized_filter_multifilter {
         // Array $xoptions to append to existing options['choices']
         $options = array();
 
-        if (!is_array($fields)) {
+        if (!($fields instanceof Iterator)) {
             $fields = array();
         }
 
         foreach ($fields as $field) {
             $field = new field($field);
-
-            $field_identifier = 'customfield-'.$field->id;
-
+            if (!isset($field->owners['manual'])) {
+                error_log("multifilter.php::get_custom_fields() - no field->owners['manual'] for {$field->name} ({$field_identifier})");
+                continue;
+            }
+            $field_identifier = 'customfield-'. $field->id;
             $this->_fields[$group][$field_identifier] = $field;
 
             $this->record_short_field_name($field_identifier);
             $this->labels[$group][$field_identifier] = $field->name;
             $options[$field_identifier] = $field->name;
 
-            if (!isset($field->owners['manual'])) {
-                continue;
-            }
             $owner = new field_owner($field->owners['manual']);
             $params = unserialize($owner->params);
 
+            //error_log("multifilter.php::get_custom_fields(): {$field_identifier} => {$params['control']} ({$this->datatypemap[$params['control']]})");
             $this->fieldtofiltermap[$group][$field_identifier] = $this->datatypemap[$params['control']];
 
              switch ($params['control']) {
@@ -346,7 +343,7 @@ class generalized_filter_multifilter {
 
 
                 default:
-                    error_log("multifilter.php:: datatype = {$field->datatype} not supported");
+                    error_log("multifilter.php:: control = {$params['control']}, datatype = {$field->data_type()} not supported");
                     break;
             }
         }
@@ -393,13 +390,14 @@ class generalized_filter_multifilter {
 
         // Generate the standard fields
         foreach ($groups as $group => $choices) {
+            $custom_fields = isset($this->_fields[$group]) ? $this->_fields[$group]: array();
             $this->_fields[$group] = array();
             foreach ($choices as $name => $alias) {
                 $label = $name;
 
-                if (! empty($alias)) {
+                if (!empty($alias)) {
                     $label = get_string($alias, $this->languagefile);
-                } else if (array_key_exists($name, $this->labels[$group])) {
+                } else if (isset($this->labels[$group]) && array_key_exists($name, $this->labels[$group])) {
                     $label = get_string($this->labels[$group][$name], $this->languagefile);
                 } else {
                     foreach ($this->sections as $section) {
@@ -414,6 +412,9 @@ class generalized_filter_multifilter {
 
             if (!empty($this->sections[$group]['custom'])) {
                 $this->_fields[$group] = array_merge($this->_fields[$group], $this->sections[$group]['custom']);
+            }
+            if (!empty($custom_fields)) {
+                $this->_fields[$group] = array_merge($this->_fields[$group], $custom_fields);
             }
         }
     }
@@ -433,6 +434,7 @@ class generalized_filter_multifilter {
         $options   = array('numeric' => 0);
         $section   = $this->sections[$group];
         $is_xfield = array_key_exists($name, $section['custom']);
+                    // || in_array($name, $section['custom']); // TBD
 
         if ($is_xfield) {
             if (array_key_exists($group, $this->_outerfield)) {
@@ -444,14 +446,17 @@ class generalized_filter_multifilter {
             $options['tables'] = $this->tables[$group];
 
             if (array_key_exists($name, $this->_fields[$group])) {
-                if (property_exists($this->_fields[$group][$name], 'id') &&
-                    property_exists($this->_fields[$group][$name], 'datatype')) {
+                if (isset($this->_fields[$group][$name]->id) &&
+                    method_exists($this->_fields[$group][$name], 'data_type')) {
                     $options['fieldid']  = $this->_fields[$group][$name]->id;
-                    $options['datatype'] = $this->_fields[$group][$name]->datatype;
+                    $options['datatype'] = $this->_fields[$group][$name]->data_type();
                 } else { // TBD !!!
-                    $options['fieldid']  = $name;
-                    $options['datatype'] = $this->fieldtofiltermap[$group][$name];
+                    $dashpos = strpos($name, '-');
+                    $options['fieldid']  = ($dashpos !== false) ? substr($name, $dashpos + 1) : $name;
+                    //$options['datatype'] = $this->fieldtofiltermap[$group][$name];
                 }
+            } else {
+                error_log("multifilter.php:: ERROR: no this->_fields['{$group}']['{$name}']");
             }
         } else {
             $options['dbfield'] = $name;
@@ -473,10 +478,10 @@ class generalized_filter_multifilter {
         }
 
         $options = $this->make_filter_options_custom($options, $group, $name);
-
         $filtertype = $this->fieldtofiltermap[$group][$name];
 
-        if ((! $this->allowempty) && array_key_exists($filtertype, $this->selects) && empty($options['choices'])) {
+        if ((!$this->allowempty) && array_key_exists($filtertype, $this->selects)
+            && empty($options['choices'])) {
             $this->err_dump($options, '$options');
             error_log("multifilter.php: empty options['choices'] - requested for field: $name");
             return false;
@@ -503,3 +508,4 @@ class generalized_filter_multifilter {
         return $options;
     }
 }
+

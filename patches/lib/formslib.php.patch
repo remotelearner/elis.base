@@ -1,8 +1,8 @@
 diff --git a/lib/formslib.php b/lib/formslib.php
-index 77f8430..b7258a9 100644
+index 526bf36..ca7f968 100644
 --- a/lib/formslib.php
 +++ b/lib/formslib.php
-@@ -1254,10 +1254,14 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
+@@ -1249,10 +1249,14 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
       * @access   public
       */
      function MoodleQuickForm($formName, $method, $action, $target='', $attributes=null){
@@ -19,7 +19,7 @@ index 77f8430..b7258a9 100644
          HTML_Common::HTML_Common($attributes);
          $target = empty($target) ? array() : array('target' => $target);
          $this->_formName = $formName;
-@@ -1627,6 +1631,9 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
+@@ -1622,6 +1626,9 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
                  if (PEAR::isError($value)) {
                      return $value;
                  }

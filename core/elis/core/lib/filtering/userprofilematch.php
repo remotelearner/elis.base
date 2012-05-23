@@ -439,5 +439,168 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
         return $options;
     }
 
-}
+    /**
+     * Get Filter Values
+     *
+     * Created this function to get the values of the filters that have been set.
+     *
+     * @param string $report_name Short name of report as required by php_report_filtering_get_active_filter_values
+     * @param object $filter      Filter object
+     * @param array  $fields      array of non-custom user profile fields selected in the report
+     * @return array
+     */
+     public function get_filter_values($report_name, $filter, $fields) {
+         global $CFG;
 
+        // Loop through the filter fields and process selected filters
+        if (!empty($filter->_fields)) {
+            $filter_values = array();
+            $count = 0;
+
+            $operator_array = $this->getOperators();
+            foreach ($filter->_fields as $field) {
+                $filter_name = null;
+                $operator_string = '';
+
+                // Check that we are not looking at a custom field
+                if (isset($fields['up'][$count])) {
+                    $filter_name = $fields['up'][$count];
+                }
+
+                // Check to see if this is a date and then retrieve and format appropriately
+                // Currently we are only formatting non_custom field dates
+                if ($filter_name && ($this->fieldtofiltermap['up'][$filter_name] === generalized_filter_userprofilematch::filtertypedate)) {
+                    // Get and format date
+                    $value = $this->get_date_filter_values($report_name, $filter, $field->_uniqueid);
+                } else {
+                    $value = php_report_filtering_get_active_filter_values(
+                           $report_name,
+                           $field->_uniqueid,
+                           $filter);
+                }
+                // Filter was selected, so format the label and the value to return to the report
+                if (!empty($value)) {
+                    if (isset($field->_options)) {
+                        if (isset($value[0])) {
+                            $option_value = $value[0]['value'];
+                            $filter_values[$field->_uniqueid]['value'] = $field->_options[$option_value];
+                        } else {
+                            $filter_values[$field->_uniqueid]['value'] = $field->_options[$value];
+                        }
+                    } else {
+                        $operator = php_report_filtering_get_active_filter_values(
+                           $report_name,
+                           $field->_uniqueid.'_op',
+                           $filter);
+                        if (is_array($operator)) {
+                            // Get string for operator
+                            $operator_int  = $operator[0]['value'];
+                            $operator_string = '('.$operator_array[$operator_int].')';
+                        } else {
+                            $operator_string = ':';
+                        }
+                        if (is_array($value[0])) {
+                            $option_value = $value[0]['value'];
+                            $filter_values[$field->_uniqueid]['value'] = $option_value;
+                        } else {
+                            $filter_values[$field->_uniqueid]['value'] = $value;
+                        }
+                    }
+                    if (empty($operator_string)) {
+                        $operator_string = ':';
+                    }
+                    // Just sent back an empty label
+                    $filter_values[$field->_uniqueid]['label'] = '';
+                    $filter_values[$field->_uniqueid]['value'] = $field->_label.' '.$operator_string.' '.$filter_values[$field->_uniqueid]['value'];
+                } else if (!isset($field->_options)) {
+                    // Check for the is empty drop-down
+                    $operator_string = '';
+                    $operator = php_report_filtering_get_active_filter_values(
+                                $report_name,
+                                $field->_uniqueid.'_op',
+                                $filter);
+                    if (is_array($operator)) {
+                        // Get string for operator
+                        $operator_int  = $operator[0]['value'];
+                        $operator_string = '('.$operator_array[$operator_int].')';
+                        // Just sent back an empty label
+                        $filter_values[$field->_uniqueid]['label'] = '';
+                        $filter_values[$field->_uniqueid]['value'] = $field->_label.' '.$operator_string;
+                    }
+                }
+                $count++;
+            }
+            return $filter_values;
+        }
+    }
+
+    /*
+     * Get Date Filter Values
+     * Retrieves start and end settings from active filter (if exists)
+     * and return: startdate and enddate
+     *
+     * @uses none
+     * @param none
+     * @return none
+     */
+     public function get_date_filter_values($report_shortname, $filter, $uniqueid) {
+
+        $start_enabled =  php_report_filtering_get_active_filter_values(
+                              $report_shortname,
+                              $uniqueid . '_sck',
+                              $filter);
+        $start = 0;
+        if (!empty($start_enabled) && is_array($start_enabled)
+            && !empty($start_enabled[0]['value'])) {
+            $start = php_report_filtering_get_active_filter_values(
+                         $report_shortname,
+                         $uniqueid . '_sdt',
+                         $filter);
+        }
+
+        $end_enabled = php_report_filtering_get_active_filter_values(
+                           $report_shortname,
+                           $uniqueid . '_eck',
+                           $filter);
+        $end = 0;
+        if (!empty($end_enabled) && is_array($end_enabled)
+            && !empty($end_enabled[0]['value'])) {
+            $end = php_report_filtering_get_active_filter_values(
+                       $report_shortname,
+                       $uniqueid . '_edt',
+                       $filter);
+        }
+
+        $startdate = (!empty($start) && is_array($start))
+                           ? $start[0]['value'] : 0;
+        $enddate = (!empty($end) && is_array($end))
+                         ? $end[0]['value'] : 0;
+        $sdate = userdate($startdate, get_string('date_format', $this->languagefile));
+        $edate = !empty($enddate)
+                 ? userdate($enddate, get_string('date_format', $this->languagefile))
+                 : get_string('present', $this->languagefile);
+
+        if (empty($startdate) && empty($enddate)) {
+            // Don't return a value if neither date is selected
+            return false;
+        } else {
+            $date_range_display = "{$sdate} - {$edate}";
+        }
+
+        return $date_range_display;
+    }
+
+    /**
+     * Returns an array of comparison operators
+     * @return array of comparison operators
+     */
+    function getOperators() {
+        return array(0 => get_string('contains', 'filters'),
+                     1 => get_string('doesnotcontain','filters'),
+                     2 => get_string('isequalto','filters'),
+                     3 => get_string('startswith','filters'),
+                     4 => get_string('endswith','filters'),
+                     5 => get_string('isempty','filters'));
+    }
+
+}
