@@ -164,7 +164,7 @@ class generalized_filter_equalityselect extends generalized_filter_type {
             return null;
         }
 
-        $value = addslashes($data['value']);
+        $value = $data['value'];
         // TBD: numeric obsolete with new parameters?
         //if (empty($data['numeric'])) {
         //    $value = "'{$value}'";

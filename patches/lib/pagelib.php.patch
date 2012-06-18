@@ -1,8 +1,8 @@
 diff --git a/lib/pagelib.php b/lib/pagelib.php
-index 58e51a2..b14401b 100644
+index 29f6c10..2a7a522 100644
 --- a/lib/pagelib.php
 +++ b/lib/pagelib.php
-@@ -1278,16 +1278,17 @@ class moodle_page {
+@@ -1280,16 +1280,17 @@ class moodle_page {
       * @return string the name of the theme that should be used on this page.
       */
      protected function resolve_theme() {
@@ -22,7 +22,7 @@ index 58e51a2..b14401b 100644
          $mnetpeertheme = '';
          if (isloggedin() and isset($CFG->mnet_localhost_id) and $USER->mnethostid != $CFG->mnet_localhost_id) {
              require_once($CFG->dirroot.'/mnet/peer.php');
-@@ -1333,6 +1334,75 @@ class moodle_page {
+@@ -1335,6 +1336,71 @@ class moodle_page {
                      }
                  break;
  
@@ -58,13 +58,10 @@ index 58e51a2..b14401b 100644
 +                    $highest_priority = 0;
 +
 +                    if ($usercluster_records = $DB->get_recordset_sql($sql, $params)) {
-+
 +                        //retrieve the cluster context level
-+                        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-+
-+                        if ($cluster_context_level) {
++                        if (defined('CONTEXT_ELIS_USERSET')) {
 +                            foreach($usercluster_records as $usercluster_record) {
-+                                $context_instance = get_context_instance($cluster_context_level, $usercluster_record->id);
++                                $context_instance = context_elis_userset::instance($usercluster_record->id);
 +
 +                                //get the userset object
 +                                $userset = new userset($usercluster_record->id);
@@ -87,7 +84,6 @@ index 58e51a2..b14401b 100644
 +                                }
 +                            }
 +                        }
-+
 +                    }
 +
 +                    if (!empty($highest_priority_theme)) {

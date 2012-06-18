@@ -47,35 +47,27 @@ class generalized_filter_selectany extends generalized_filter_selectall {
      * @param array $options select options
      */
     function generalized_filter_selectany($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
-        $new_options = array();
-        if (!empty($options)) {
-            foreach ($options as $id => $value) {
-                $new_options[$id] = $value;
-            }
+        $new_options = $options;
+        $new_options['choices'] = array();
+        if (empty($options['noany'])) {
+            $new_options['choices'][0] = empty($options['anyvalue'])
+                                         ? get_string('report_filter_all', 'elis_core')
+                                         : $options['anyvalue'];
+            $new_options['noany'] = true;
         }
-
-        if (empty($new_options['choices'])) {
-            $new_options['choices'] = array(0 => get_string('report_filter_all', 'elis_core'));
-        } else {
-            $new_options['choices'] = array(0 => get_string('report_filter_all', 'elis_core')) + $options['choices'];
+        if (!empty($options['choices'])) {
+            $new_options['choices'] += $options['choices'];
         }
 
         parent::__construct($uniqueid, $alias, $name, $label, $advanced, $field, $new_options);
     }
-
 
     /**
      * Adds controls specific to this filter in the form.
      * @param object $mform a MoodleForm object to setup
      */
     function setupForm(&$mform) {
-        if (!empty($this->_anyvalue)) {
-            $choices = array('' => $this->_anyvalue) + $this->_options;
-        } else {
-            // Change display for anyvalue
-            $choices = array('' => get_string('report_filter_anyvalue', 'elis_core')) + $this->_options;
-        }
-        $mform->addElement('select', $this->_uniqueid, $this->_label, $choices);
+        $mform->addElement('select', $this->_uniqueid, $this->_label, $this->_options);
         $mform->addHelpButton($this->_uniqueid, 'simpleselect', 'elis_core' /* , $this->_label */ ); // TBV
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid);
@@ -94,9 +86,10 @@ class generalized_filter_selectany extends generalized_filter_selectall {
         }
 
         $value = $data['value'];
-
         if (is_numeric($value) && $value == 0) { // TBD: is_numeric ?
             return array("{$full_fieldname} IS NOT NULL", array());
+        } else if ($value == 'null') {
+            return array("{$full_fieldname} IS NULL", array());
         }
 
         return parent::get_sql_filter($data);

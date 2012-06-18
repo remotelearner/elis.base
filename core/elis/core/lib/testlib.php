@@ -432,7 +432,8 @@ class overlay_database extends moodle_database {
     }
 
     public function sql_concat() {
-        return $this->basedb->sql_concat();
+        //pass along the arguments dynamically
+        return call_user_func_array(array($this->basedb, 'sql_concat'), func_get_args());
     }
 
     public function sql_concat_join($separator="' '", $elements=array()) {

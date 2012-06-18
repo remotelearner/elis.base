@@ -1,9 +1,9 @@
 diff --git a/admin/settings/plugins.php b/admin/settings/plugins.php
-index 0e86f80..3bd5b15 100644
+index 3227430..7bebea6 100644
 --- a/admin/settings/plugins.php
 +++ b/admin/settings/plugins.php
-@@ -474,6 +474,15 @@ foreach (get_plugin_list('report') as $plugin => $plugindir) {
-     $ADMIN->add('reports', new admin_externalpage('report'.$plugin, $reportname, $www_path, 'moodle/site:viewreports'));
+@@ -492,6 +492,16 @@ foreach (get_plugin_list('tool') as $plugin => $plugindir) {
+     }
  }
  
 +$ADMIN->add('root', new admin_category('elis', get_string('elis', 'elis_core')));
@@ -15,6 +15,7 @@ index 0e86f80..3bd5b15 100644
 +        include($settings_path);
 +    }
 +}
- 
++
  /// Add all local plugins - must be always last!
  if ($hassiteconfig) {
+     $ADMIN->add('modules', new admin_category('localplugins', get_string('localplugins')));

@@ -1,5 +1,5 @@
 diff --git a/theme/index.php b/theme/index.php
-index 927ad4a..4b52c13 100644
+index ce2a3d1..c72b744 100644
 --- a/theme/index.php
 +++ b/theme/index.php
 @@ -69,6 +69,7 @@ if ($reset and confirm_sesskey()) {

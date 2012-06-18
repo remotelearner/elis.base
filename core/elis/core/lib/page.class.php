@@ -69,7 +69,7 @@ abstract class elis_page extends moodle_page {
      * for calling $this->set_context().
      */
     protected function _get_page_context() {
-        return get_context_instance(CONTEXT_SYSTEM);
+        return context_system::instance();
     }
 
     /**
@@ -132,6 +132,12 @@ abstract class elis_page extends moodle_page {
 
     /**
      * Get required page parameters.
+     *
+     * Please note the $type parameter is now required and the value can not be array.
+     *
+     * @param string $parname the name of the page parameter we want
+     * @param string $type expected type of parameter
+     * @return mixed
      */
     public function required_param($name, $type=PARAM_CLEAN) {
         if ($this->params !== null) {
@@ -142,6 +148,37 @@ abstract class elis_page extends moodle_page {
             }
         } else {
             return required_param($name, $type);
+        }
+    }
+
+    /**
+     * Get required page parameters as an array
+     *
+     *  Note: arrays of arrays are not supported, only alphanumeric keys with _ and - are supported
+     *
+     * @param string $parname the name of the page parameter we want
+     * @param string $type expected type of parameter
+     * @return array
+     */
+    public function required_param_array($name, $type=PARAM_CLEAN) {
+        if ($this->params !== null) {
+            if (isset($this->params[$name])) {
+                $result = array();
+
+                foreach ($this->params[$name] as $key => $value) {
+                    if (!preg_match('/^[a-z0-9_-]+$/i', $key)) {
+                        debugging('Invalid key name in required_param_array() detected: '.$key.', parameter: '.$parname);
+                        continue;
+                    }
+                    $result[$key] = clean_param($value, $type);
+                }
+
+                return $result;
+            } else {
+                print_error('missingparam', '', '', $name);
+            }
+        } else {
+            return required_param_array($name, $type);
         }
     }
 
@@ -157,6 +194,62 @@ abstract class elis_page extends moodle_page {
             }
         } else {
             return optional_param($name, $default, $type);
+        }
+    }
+
+    /**
+     * Get optional array page parameters.
+     */
+    public function optional_param_array($name, $default, $type) {
+        if ($this->params !== null) {
+            if (isset($this->params[$name])) {
+                $result = array();
+
+                foreach ($this->params[$name] as $key => $value) {
+                    if (!preg_match('/^[a-z0-9_-]+$/i', $key)) {
+                        debugging('Invalid key name in page::optional_param_array() detected: '. $key .', parameter: '. $name);
+                        continue;
+                    }
+                    // Support nested array params!
+                    $result[$key] = is_array($value)
+                                    ? clean_param_array($value, $type)
+                                    : clean_param($value, $type);
+                }
+                return $result;
+            } else {
+                return $default;
+            }
+        } else {
+            // NOTE: cannot just call optional_param_array()
+            // because it doesn't support nested array params!
+            if (func_num_args() != 3 or empty($name) or empty($type)) {
+                throw new coding_exception('page::optional_param_array() requires $name, $default and $type to be specified (parameter: '. $name .')');
+            }
+
+            if (isset($_POST[$name])) {       // POST has precedence
+                $param = $_POST[$name];
+            } else if (isset($_GET[$name])) {
+                $param = $_GET[$name];
+            } else {
+                return $default;
+            }
+            if (!is_array($param)) {
+                debugging('page::optional_param_array() expects array parameters only: '.$parname);
+                return $default;
+            }
+
+            $result = array();
+            foreach ($param as $key => $value) {
+                if (!preg_match('/^[a-z0-9_-]+$/i', $key)) {
+                    debugging('Invalid key name in page::optional_param_array() detected: '. $key .', parameter: '. $name);
+                    continue;
+                }
+                // Support nested array params!
+                $result[$key] = is_array($value)
+                                ? clean_param_array($value, $type)
+                                : clean_param($value, $type);
+            }
+            return $result;
         }
     }
 

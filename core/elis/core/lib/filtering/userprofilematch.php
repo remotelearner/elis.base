@@ -327,6 +327,7 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
                         $this->_choices[$field->shortname] = array();
                         $this->_choices[$field->shortname]['startyear'] = $DB->get_field('user_info_field', 'param1', array('shortname' => $field->shortname));
                         $this->_choices[$field->shortname]['stopyear'] = $DB->get_field('user_info_field', 'param2', array('shortname' => $field->shortname));
+                        $this->_choices[$field->shortname]['inctime'] = $DB->get_field('user_info_field', 'param3', array('shortname' => $field->shortname));
                         break;
 
                     case 'menu':

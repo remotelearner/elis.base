@@ -23,3 +23,12 @@ li.workflow_step {
 li.workflow_step .sep {
     color: #AAA;
 }
+
+/*
+ Specific fix so that IE knows hidden fieldsets hidden by moving off
+ to the left are not wide enough to hit the viewing area
+ */
+fieldset.accesshide.custom_field_options_fieldset {
+  width: 100%;
+}
+

@@ -221,6 +221,14 @@ function cf_delete(index) {
     //cf_show_values();
 }
 
+function cf_reset() {
+    // ELIS-4622: clear custom fields on filter form reset
+    window.customfieldpickerinstance.values = [];
+    //cf_show_values();
+    window.customfieldpickerinstance.update_values();
+    window.customfieldpickerinstance.refresh_picker();
+}
+
 M.elis_core.init_custom_field_multiselect = function(Y, options) {
     var container = Y.one('#'+options.id+'_container');
 
@@ -469,6 +477,11 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	 */
 	render: function() {
 	    var pickerid = this.options.id + '_picker';
+        // Detect if the panel has already been added and remove it -- ELIS-5956
+        obj = document.getElementById(pickerid);
+        if (obj) {
+            obj.parentNode.removeChild(obj);
+        }
 	    var pickernode = Y.Node.create('<div class="custom-field-picker" id="'+pickerid+'"></div>');
 	    Y.one(document.body).appendChild(pickernode);
 	    var panel = new YAHOO.widget.Panel(pickerid, {

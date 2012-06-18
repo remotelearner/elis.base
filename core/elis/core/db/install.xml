@@ -33,7 +33,7 @@
         <INDEX NAME="nextruntime_idx" UNIQUE="false" FIELDS="nextruntime" PREVIOUS="plugin_idx"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="elis_workflow_instances" COMMENT="Data about in-progress workflows" PREVIOUS="elis_scheduled_tasks" NEXT="context_levels">
+    <TABLE NAME="elis_workflow_instances" COMMENT="Data about in-progress workflows" PREVIOUS="elis_scheduled_tasks" NEXT="elis_field">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="type"/>
         <FIELD NAME="type" TYPE="char" LENGTH="127" NOTNULL="true" SEQUENCE="false"  COMMENT="The type of workflow" PREVIOUS="id" NEXT="subtype"/>
@@ -49,21 +49,7 @@
         <INDEX NAME="usertype_idx" UNIQUE="false" FIELDS="userid, type, subtype" COMMENT="Index by user and type"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="context_levels" COMMENT="Custom context levels" PREVIOUS="elis_workflow_instances" NEXT="elis_field">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="id" NEXT="component"/>
-        <FIELD NAME="component" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="name"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="name" UNIQUE="false" FIELDS="name" NEXT="component"/>
-        <INDEX NAME="component" UNIQUE="false" FIELDS="component" PREVIOUS="name"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="elis_field" COMMENT="Custom field definitions" PREVIOUS="context_levels" NEXT="elis_field_categories">
+    <TABLE NAME="elis_field" COMMENT="Custom field definitions" PREVIOUS="elis_workflow_instances" NEXT="elis_field_categories">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="shortname"/>
         <FIELD NAME="shortname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="id" NEXT="name"/>

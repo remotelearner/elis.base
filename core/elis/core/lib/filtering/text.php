@@ -177,7 +177,7 @@ class generalized_filter_text extends generalized_filter_type {
             return null;
         }
 
-        $value = addslashes($data['value']);
+        $value = $data['value'];
 
         switch($data['operator']) {
             case generalized_filter_text::$OPERATOR_CONTAINS:

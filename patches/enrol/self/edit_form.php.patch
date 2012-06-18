@@ -1,0 +1,13 @@
+diff --git a/enrol/self/edit_form.php b/enrol/self/edit_form.php
+index 5919d69..324f8b7 100644
+--- a/enrol/self/edit_form.php
++++ b/enrol/self/edit_form.php
+@@ -57,7 +57,7 @@ class enrol_self_edit_form extends moodleform {
+         $mform->addElement('select', 'customint1', get_string('groupkey', 'enrol_self'), $options);
+         $mform->addHelpButton('customint1', 'groupkey', 'enrol_self');
+         $mform->setDefault('customint1', $plugin->get_config('groupkey'));
+-
++        $roles = get_assignable_roles($context);
+         if ($instance->id) {
+             $roles = $this->extend_assignable_roles($context, $instance->roleid);
+         } else {

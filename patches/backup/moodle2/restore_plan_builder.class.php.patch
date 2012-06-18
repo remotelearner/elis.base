@@ -1,8 +1,8 @@
 diff --git a/backup/moodle2/restore_plan_builder.class.php b/backup/moodle2/restore_plan_builder.class.php
-index 5232b5b..97085e2 100644
+index 22511ce..f8ebcef 100644
 --- a/backup/moodle2/restore_plan_builder.class.php
 +++ b/backup/moodle2/restore_plan_builder.class.php
-@@ -170,7 +170,7 @@ abstract class restore_plan_builder {
+@@ -174,7 +174,7 @@ abstract class restore_plan_builder {
      /**
       * Restore one 1-course backup
       */
