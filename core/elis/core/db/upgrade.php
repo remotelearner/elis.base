@@ -359,9 +359,13 @@ function xmldb_elis_core_upgrade($oldversion=0) {
             }
 
             // remove any old instances
-            $DB->delete_records('block_instance_old', array('blockid' => $eiblock->id));
+            if ($dbman->table_exists(new XMLDBTable('block_instance_old'))) {
+                $DB->delete_records('block_instance_old', array('blockid' => $eiblock->id));
+            }
             // remove any old pinned blocks
-            $DB->delete_records('block_pinned_old', array('blockid' => $eiblock->id));
+            if ($dbman->table_exists(new XMLDBTable('block_pinned_old'))) {
+                $DB->delete_records('block_pinned_old', array('blockid' => $eiblock->id));
+            }
             // remove block record
             $DB->delete_records('block', array('id' => $eiblock->id));
 
