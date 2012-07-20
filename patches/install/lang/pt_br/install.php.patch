@@ -1,8 +1,8 @@
 diff --git a/install/lang/pt_br/install.php b/install/lang/pt_br/install.php
-index 509b8e1..7b7179d 100644
+index 75418a9..f746d92 100644
 --- a/install/lang/pt_br/install.php
 +++ b/install/lang/pt_br/install.php
-@@ -51,16 +51,16 @@ $string['installation'] = 'Instalação';
+@@ -52,16 +52,16 @@ $string['installation'] = 'Instalação';
  $string['langdownloaderror'] = 'Infelizmente não foi possível fazer download do idioma "{$a}". O processo de instalação continuará em Inglês.';
  $string['memorylimithelp'] = '<p>O limite de memória do PHP configurado atualmente no seu servidor é de {$a}.</p>
  

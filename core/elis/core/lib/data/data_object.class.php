@@ -1035,20 +1035,25 @@ function generate_unique_identifier($table, $iterator, $basevalue, $params, $cla
     global $DB;
     //create a unique idnumber by appending a suffix
     $count = 0;
+    $oldbase = $basevalue;
+    $basevalue = preg_replace('/\.[0-9]+$/', '', $basevalue);
+    if ($oldbase != $basevalue) {
+        $count = intval(substr($oldbase, strrpos($oldbase, '.') + 1));
+    }
     do {
-        $suffix = $count ? '.'.$count : '';
+        $suffix = $count ? '.'. $count : '';
         ++$count;
-        $params[$iterator]=$basevalue.$suffix;
+        $params[$iterator] = $basevalue . $suffix;
         if (isset($classname)) {
             if (isset($classparams)) {
-                $classparams[$iterator]=$basevalue.$suffix;
+                $classparams[$iterator] = $basevalue . $suffix;
                 $class = new $classname($classparams);
             } else {
                 $class = new $classname($params);
             }
         }
-    } while ($DB->record_exists($table,$params));
-    return $basevalue.$suffix;
+    } while ($DB->record_exists($table, $params));
+    return $basevalue . $suffix;
 }
 
 /**

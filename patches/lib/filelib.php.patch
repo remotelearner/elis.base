@@ -1,5 +1,5 @@
 diff --git a/lib/filelib.php b/lib/filelib.php
-index ea169cc..95bef8e 100644
+index 2826f55..4eaf58e 100644
 --- a/lib/filelib.php
 +++ b/lib/filelib.php
 @@ -1776,6 +1776,21 @@ function send_file($path, $filename, $lifetime = 'default' , $filter=0, $pathiss

@@ -1,5 +1,5 @@
 diff --git a/install/lang/is/admin.php b/install/lang/is/admin.php
-index 09d32d6..a99e8b7 100644
+index 1b5f34a..9bae23d 100644
 --- a/install/lang/is/admin.php
 +++ b/install/lang/is/admin.php
 @@ -32,6 +32,7 @@ defined('MOODLE_INTERNAL') || die();

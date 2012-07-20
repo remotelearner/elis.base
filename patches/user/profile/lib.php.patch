@@ -1,5 +1,5 @@
 diff --git a/user/profile/lib.php b/user/profile/lib.php
-index 906f8ca..59d3f4a 100644
+index de9a711..ec0e6e3 100644
 --- a/user/profile/lib.php
 +++ b/user/profile/lib.php
 @@ -107,6 +107,8 @@ class profile_field_base {
@@ -8,13 +8,13 @@ index 906f8ca..59d3f4a 100644
  
 +        $field_data = $this->edit_save_data_preprocess($usernew->{$this->inputname}, $data);
 +        if ($field_data !== NULL) {
-         $usernew->{$this->inputname} = $this->edit_save_data_preprocess($usernew->{$this->inputname}, $data);
+ 	        $usernew->{$this->inputname} = $this->edit_save_data_preprocess($usernew->{$this->inputname}, $data);
  
-         $data->userid  = $usernew->id;
+ 	        $data->userid  = $usernew->id;
 @@ -120,6 +122,7 @@ class profile_field_base {
-             $DB->insert_record('user_info_data', $data);
+ 	            $DB->insert_record('user_info_data', $data);
+ 	        }
          }
-     }
 +    }
  
      /**

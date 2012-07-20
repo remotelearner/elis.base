@@ -142,24 +142,6 @@ class generalized_filter_checkboxes extends generalized_filter_type {
             $mform->addHelpButton($this->_uniqueid.'_grp', $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */); // TBV
         }
 
-        if (!empty($this->_options['choices'])) {
-            if ($usedefault) {
-                if (!empty($this->_options['checked'])) {
-                    foreach ($this->_options['checked'] as $checked) {
-                        $mform->setDefault($this->_uniqueid . $this->_formdelim
-                                           . $checked, 1);
-                    }
-                }
-            } else {
-                foreach ($this->_options['choices'] as $key => $value) {
-                    $elem = $this->_uniqueid . $this->_formdelim . $key;
-                    if (!empty($mform->_defaultValues[$elem])) {
-                        $mform->setDefault($elem, $mform->_defaultValues[$elem]);
-                    }
-                }
-            }
-        }
-
         if (!empty($this->_options['advanced'])) {
             //include group name, required for show/hide advanced button
             $mform->setAdvanced($this->_uniqueid.'_grp');
