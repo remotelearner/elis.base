@@ -89,7 +89,7 @@ class generalized_filter_userprofiletext extends generalized_filter_text {
         }
 
         $params = array($param_id => $this->_fieldid);
-        $value = addslashes($data['value']);
+        $value = $data['value'];
 
         switch($data['operator']) {
             case generalized_filter_text::$OPERATOR_CONTAINS:

@@ -1,16 +1,16 @@
 diff --git a/lang/en/plugin.php b/lang/en/plugin.php
-index b9c0a16..e2e2474 100644
+index 6b06211..5916c5d 100644
 --- a/lang/en/plugin.php
 +++ b/lang/en/plugin.php
-@@ -37,6 +37,7 @@ $string['plugindisable'] = 'Disable';
+@@ -40,6 +40,7 @@ $string['plugindisable'] = 'Disable';
  $string['plugindisabled'] = 'Disabled';
  $string['pluginenable'] = 'Enable';
  $string['pluginenabled'] = 'Enabled';
 +$string['release'] = 'Release';
+ $string['requiredby'] = 'Required by: {$a}';
+ $string['requires'] = 'Requires';
  $string['rootdir'] = 'Directory';
- $string['settings'] = 'Settings';
- $string['somehighlighted'] = 'Number of plugins requiring attention during this upgrade: {$a}';
-@@ -60,6 +61,8 @@ $string['type_coursereport'] = 'Course report';
+@@ -66,6 +67,8 @@ $string['type_coursereport'] = 'Course report';
  $string['type_coursereport_plural'] = 'Course reports';
  $string['type_editor'] = 'Editor';
  $string['type_editor_plural'] = 'Editors';

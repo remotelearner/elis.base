@@ -87,7 +87,7 @@ class generalized_filter_userprofileselect extends generalized_filter_simplesele
         }
 
         $value = $data['value'];
-        $value = addslashes($value);
+        //$value = addslashes($value);
 
         $sql = "{$this->_tables['user']}.id IN
                 (SELECT userid FROM {user_info_data}

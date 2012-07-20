@@ -49,6 +49,7 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
         'bool' => 'int',
         'char' => 'char',
         'int'  => 'int',
+        'datetime'  => 'int',
         'num'  => 'num',
         'text' => 'text',
     );

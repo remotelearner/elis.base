@@ -241,7 +241,8 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      */
     private function _load_context() {
         if (!isset($this->_context) && isset($this->id)) {
-            $this->_context = get_context_instance($this->get_field_context_level(), $this->id);
+            $ctxclass = context_elis_helper::get_class_for_level($this->get_field_context_level());
+            $this->_context = $ctxclass::instance($this->id);
         }
     }
 

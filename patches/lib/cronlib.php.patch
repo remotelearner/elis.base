@@ -1,10 +1,10 @@
 diff --git a/lib/cronlib.php b/lib/cronlib.php
-index 457902d..77bb8d8 100644
+index ec86c67..468ccfa 100644
 --- a/lib/cronlib.php
 +++ b/lib/cronlib.php
-@@ -454,6 +454,11 @@ function cron_run() {
-     cron_execute_plugin_type('plagiarism', 'plagiarism plugins');
-     cron_execute_plugin_type('theme', 'themes');
+@@ -406,6 +406,11 @@ function cron_run() {
+     cron_execute_plugin_type('tool', 'admin tools');
+ 
  
 +    // run the ELIS cron jobs
 +    mtrace("Running ELIS cron tasks...");

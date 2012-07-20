@@ -1,8 +1,8 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index 14570a6..59d458f 100644
+index 38bf0fe..0034092 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
-@@ -1954,7 +1954,7 @@ function get_user_timezone($tz = 99) {
+@@ -2195,7 +2195,7 @@ function get_user_timezone($tz = 99) {
  
      $tz = 99;
  
@@ -11,7 +11,7 @@ index 14570a6..59d458f 100644
          $tz = $next['value'];
      }
  
-@@ -5856,6 +5856,8 @@ class core_string_manager implements string_manager {
+@@ -6258,6 +6258,8 @@ class core_string_manager implements string_manager {
              if ($plugintype === 'mod') {
                  // bloody mod hack
                  $file = $pluginname;
@@ -20,15 +20,15 @@ index 14570a6..59d458f 100644
              } else {
                  $file = $plugintype . '_' . $pluginname;
              }
-@@ -7205,6 +7207,7 @@ function get_plugin_types($fullpaths=true) {
+@@ -7624,6 +7626,7 @@ function get_plugin_types($fullpaths=true) {
                        'qbehaviour'    => 'question/behaviour',
                        'qformat'       => 'question/format',
                        'plagiarism'    => 'plagiarism',
 +                      'elis'          => 'elis',
-                       'theme'         => 'theme'); // this is a bit hacky, themes may be in $CFG->themedir too
- 
-         $mods = get_plugin_list('mod');
-@@ -7218,6 +7221,28 @@ function get_plugin_types($fullpaths=true) {
+                       'tool'          => $CFG->admin.'/tool',
+                       'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
+         );
+@@ -7639,6 +7642,28 @@ function get_plugin_types($fullpaths=true) {
              }
          }
  
@@ -57,7 +57,7 @@ index 14570a6..59d458f 100644
          // local is always last!
          $info['local'] = 'local';
  
-@@ -7257,6 +7282,14 @@ function get_plugin_list($plugintype) {
+@@ -7678,6 +7703,14 @@ function get_plugin_list($plugintype) {
          // mod is an exception because we have to call this function from get_plugin_types()
          $fulldirs[] = $CFG->dirroot.'/mod';
  

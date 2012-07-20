@@ -1,5 +1,5 @@
 diff --git a/lib/javascript.php b/lib/javascript.php
-index fe7f14f..edc9451 100644
+index 5996531..5ef3230 100644
 --- a/lib/javascript.php
 +++ b/lib/javascript.php
 @@ -66,6 +66,14 @@ if (!$jsfiles) {

@@ -48,16 +48,21 @@ class generalized_filter_selectall extends generalized_filter_simpleselect {
                 $new_options[$id] = $value;
             }
         }
-        
-        if (empty($new_options['choices'])) {
-            $new_options['choices'] = array(0 => get_string('report_filter_all', 'elis_core'));
-        } else {
-            $new_options['choices'] = array(0 => get_string('report_filter_all', 'elis_core')) + $options['choices'];
+
+        $new_options['choices'] = array();
+        if (empty($options['noany']) && !isset($options['choices'][''])) {
+            $new_options['choices'][''] = empty($options['anyvalue'])
+                                          ? get_string('report_filter_all', 'elis_core')
+                                          : $options['anyvalue'];
+            $new_options['noany'] = true;
+        }
+        if (!empty($options['choices'])) {
+            $new_options['choices'] += $options['choices'];
         }
 
         parent::__construct($uniqueid, $alias, $name, $label, $advanced, $field, $new_options);
     }
-    
+
     /**
      * Returns the condition to be used with SQL where
      * @param array $data filter settings

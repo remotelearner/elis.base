@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,24 @@
  * @subpackage filtering
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  */
 
-require_once($CFG->dirroot.'/user/filters/lib.php');
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
 
 /**
  * Generalized Filter Display Text
  *
  * @author Tyler Bannister <tyler.bannister@remote-learner.net>
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @author Brent Boghosian <brent.boghosian@remote-learner.net>
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  */
 class generalized_filter_display_text extends generalized_filter_type {
+    var $_columns = '40';
+    var $_rows    = '5';
+
     /**
      * Constructor
      * @param string $name the name of the filter instance
@@ -45,7 +51,14 @@ class generalized_filter_display_text extends generalized_filter_type {
                     !empty($options['help'])
                     ? $options['help']
                     : array('displaytext', $label, 'elis_core'));
+        if (!empty($options['columns'])) {
+            $this->_columns = $options['columns'];
+        }
+        if (!empty($options['rows'])) {
+            $this->_rows = $options['rows'];
+        }
     }
+
     /**
      * Returns the condition to be used with SQL where
      *
@@ -78,8 +91,11 @@ class generalized_filter_display_text extends generalized_filter_type {
      * @param object $mform a MoodleForm object to setup
      */
     function setupForm(&$mform) {
-        $mform->addElement('textarea', $this->_uniqueid, $this->_label, array('cols' => '40', 'rows' => '5'));
-        $mform->addHelpButton($this->_uniqueid, $this->_filterhelp[0], $this->_filterhelp[2]);
+        $mform->addElement('textarea', $this->_uniqueid, $this->_label,
+                            array('cols' => $this->_columns,
+                                  'rows' => $this->_rows));
+        $mform->addHelpButton($this->_uniqueid, $this->_filterhelp[0],
+                  $this->_filterhelp[2] /* , $this->_filterhelp[1] */ ); // TBV
     }
 
     /**
@@ -88,7 +104,7 @@ class generalized_filter_display_text extends generalized_filter_type {
      * @param array $data Report parameters?
      */
     function get_report_parameters($data) {
-        //obsolete
+        //TBD!?!
     }
 
     /**
@@ -107,3 +123,4 @@ class generalized_filter_display_text extends generalized_filter_type {
         return false;
     }
 }
+

@@ -60,6 +60,11 @@ class generalized_filter_date extends generalized_filter_type {
     var $_stopyear = 0;
 
     /**
+     * Option to include time hh:mm fields
+     */
+    var $_inctime = false;
+
+    /**
      * Constructor
      * @param string $alias aliacs for the table being filtered on
      * @param string $name the name of the filter instance
@@ -88,6 +93,11 @@ class generalized_filter_date extends generalized_filter_type {
         if (isset($options['choices']['stopyear'])) {
             $this->_stopyear = $options['choices']['stopyear'];
         }
+        if (isset($options['inctime'])) {
+            $this->_inctime = $options['inctime'];
+        } else if (isset($options['choices']['inctime'])) {
+            $this->_inctime = $options['choices']['inctime'];
+        }
     }
 
     /**
@@ -107,11 +117,12 @@ class generalized_filter_date extends generalized_filter_type {
         if (!empty($this->_stopyear)) {
             $options['stopyear'] = $this->_stopyear;
         }
+        $date_elem = $this->_inctime ? 'date_time_selector' : 'date_selector';
         $objs[] =& $mform->createElement('checkbox', $this->_uniqueid.'_sck', null, get_string('isafter', 'filters'));
-        $objs[] =& $mform->createElement('date_selector', $this->_uniqueid.'_sdt', null, $options);
+        $objs[] =& $mform->createElement($date_elem, $this->_uniqueid.'_sdt', null, $options);
         $objs[] =& $mform->createElement('static', $this->_uniqueid.'_break', null, '<br/>');
         $objs[] =& $mform->createElement('checkbox', $this->_uniqueid.'_eck', null, get_string('isbefore', 'filters'));
-        $objs[] =& $mform->createElement('date_selector', $this->_uniqueid.'_edt', null, $options);
+        $objs[] =& $mform->createElement($date_elem, $this->_uniqueid.'_edt', null, $options);
 
         if ($this->_never_included) {
             $objs[] = & $mform->createElement('advcheckbox', $this->_uniqueid.'_never', null, get_string('includenever', 'filters'));
@@ -123,12 +134,19 @@ class generalized_filter_date extends generalized_filter_type {
             $mform->setAdvanced($this->_uniqueid.'_grp');
         }
 
-        $mform->disabledIf($this->_uniqueid.'_sdt[day]', $this->_uniqueid.'_sck', '0');
-        $mform->disabledIf($this->_uniqueid.'_sdt[month]', $this->_uniqueid.'_sck', '0');
-        $mform->disabledIf($this->_uniqueid.'_sdt[year]', $this->_uniqueid.'_sck', '0');
-        $mform->disabledIf($this->_uniqueid.'_edt[day]', $this->_uniqueid.'_eck', '0');
-        $mform->disabledIf($this->_uniqueid.'_edt[month]', $this->_uniqueid.'_eck', '0');
-        $mform->disabledIf($this->_uniqueid.'_edt[year]', $this->_uniqueid.'_eck', '0');
+        $mform->disabledIf($this->_uniqueid.'_sdt[day]', $this->_uniqueid.'_sck', 'notchecked');
+        $mform->disabledIf($this->_uniqueid.'_sdt[month]', $this->_uniqueid.'_sck', 'notchecked');
+        $mform->disabledIf($this->_uniqueid.'_sdt[year]', $this->_uniqueid.'_sck', 'notchecked');
+        $mform->disabledIf($this->_uniqueid.'_edt[day]', $this->_uniqueid.'_eck', 'notchecked');
+        $mform->disabledIf($this->_uniqueid.'_edt[month]', $this->_uniqueid.'_eck', 'notchecked');
+        $mform->disabledIf($this->_uniqueid.'_edt[year]', $this->_uniqueid.'_eck', 'notchecked');
+
+        if ($this->_inctime) {
+            $mform->disabledIf($this->_uniqueid.'_sdt[hour]', $this->_uniqueid.'_sck', 'notchecked');
+            $mform->disabledIf($this->_uniqueid.'_sdt[minute]', $this->_uniqueid.'_sck', 'notchecked');
+            $mform->disabledIf($this->_uniqueid.'_edt[hour]', $this->_uniqueid.'_eck', 'notchecked');
+            $mform->disabledIf($this->_uniqueid.'_edt[minute]', $this->_uniqueid.'_eck', 'notchecked');
+        }
 
         if ($this->_never_included) {
             $mform->disabledIf($this->_uniqueid.'_never', $this->_uniqueid.'_eck', '0');

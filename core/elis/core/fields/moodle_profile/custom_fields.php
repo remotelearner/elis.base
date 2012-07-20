@@ -50,14 +50,13 @@ function sync_profile_field_to_moodle($field) {
         // no Moodle field to sync with
         return true;
     }
-    $level = context_level_base::get_custom_context_level('user', 'elis_program');
 
     $dest = 'user_info_data';
     $src = $field->data_table();
     $mfieldid = $DB->get_field('user_info_field', 'id', array('shortname'=>$field->shortname));
 
     $joins = 'JOIN {'.user::TABLE.'} cu ON usr.idnumber = cu.idnumber
-              JOIN {context} ctx ON ctx.instanceid = cu.id AND ctx.contextlevel = '.$level.'
+              JOIN {context} ctx ON ctx.instanceid = cu.id AND ctx.contextlevel = '.CONTEXT_ELIS_USER.'
               JOIN {'.$src.'} src ON src.contextid = ctx.id AND src.fieldid = '.$field->id;
 
     // insert field values that don't already exist
@@ -82,7 +81,6 @@ function sync_profile_field_to_moodle($field) {
 function sync_profile_field_from_moodle($field) {
     global $DB;
 
-    $level = context_level_base::get_custom_context_level('user', 'elis_program');
     if (!isset($field->owners['moodle_profile'])
         || $field->owners['moodle_profile']->exclude == pm_moodle_profile::sync_to_moodle) {
         // not owned by the Moodle plugin, or set to sync to Moodle
@@ -98,7 +96,7 @@ function sync_profile_field_from_moodle($field) {
     $mfieldid = $DB->get_field('user_info_field', 'id', array('shortname'=>$field->shortname));
 
     $joins = 'JOIN {'.user::TABLE.'} cu ON usr.idnumber = cu.idnumber
-              JOIN {context} ctx ON ctx.instanceid = cu.id AND ctx.contextlevel = '.$level.'
+              JOIN {context} ctx ON ctx.instanceid = cu.id AND ctx.contextlevel = '.CONTEXT_ELIS_USER.'
               JOIN {'.$src.'} src ON src.userid = usr.id AND src.fieldid = '.$mfieldid;
 
     // insert field values that don't already exist

@@ -1,5 +1,5 @@
 diff --git a/lib/outputlib.php b/lib/outputlib.php
-index 3bceb8a..6d3616e 100644
+index 285085e..3b26828 100644
 --- a/lib/outputlib.php
 +++ b/lib/outputlib.php
 @@ -894,6 +894,11 @@ class theme_config {

@@ -51,6 +51,7 @@ class generalized_filter_custom_field_text extends generalized_filter_text {
         'bool' => 'int',
         'char' => 'char',
         'int'  => 'int',
+        'datetime'  => 'int',
         'num'  => 'num',
         'text' => 'text'
     );
@@ -138,6 +139,19 @@ class generalized_filter_custom_field_text extends generalized_filter_text {
     }
 
     /**
+     * Returns an array of comparison operators
+     * @return array of comparison operators
+     */
+    function getOperators() {
+        $ops = parent::getOperators();
+        if ($this->_datatype == 'text') {
+            // remove 'is equal to' for long text areas with HTML tags!
+            unset($ops[generalized_filter_text::$OPERATOR_IS_EQUAL_TO]);
+        }
+        return $ops;
+    }
+
+    /**
      * Returns the condition to be used with SQL where
      * @uses $CFG
      * @uses $DB
@@ -191,7 +205,7 @@ class generalized_filter_custom_field_text extends generalized_filter_text {
                 $default_exists_select =  "fieldid = :{$param_fid}
                                            AND contextid IS NULL
                                            AND {$sql_like}";
-                $default_exists = record_exists_select($data_table, $default_exists_select, $params);
+                $default_exists = $DB->record_exists_select($data_table, $default_exists_select, $params);
 
                 //no default value or one matching the necessary criteria means null records are ok
                 $using_default = !$some_default_exists || $default_exists;
@@ -204,7 +218,7 @@ class generalized_filter_custom_field_text extends generalized_filter_text {
                 //determine if the default value matches the necessary criteria
                 $select = "fieldid = :{$param_fid}
                            AND contextid IS NULL
-                           AND {$sqk_like}";
+                           AND {$sql_like}";
                 $using_default = $DB->record_exists_select($data_table, $select, $params);
                 break;
 
@@ -256,7 +270,8 @@ class generalized_filter_custom_field_text extends generalized_filter_text {
             $join_type = 'LEFT';
         }
         $cnt = 0;
-        $sql_like = str_replace('data ', 'd.data ', $sql_like, $cnt); // TBV
+        $sql_like = str_replace('data', 'd.data', $sql_like, $cnt); // TBV
+        //error_log("custom_field_text.php: sql_like => '{$sql_like}' ({$params[$param_like]})");
         if ($cnt != 1) {
             error_log("custom_field_text.php: Error fixing data in '{$sql_like}'");
             return null; // TBD: rather than SQL error?

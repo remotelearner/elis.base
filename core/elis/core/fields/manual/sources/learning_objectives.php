@@ -36,20 +36,22 @@ class manual_options_learning_objectives extends manual_options_base_class {
             $dataobject = $data['obj'];
             if (property_exists($dataobject, 'name')) {
                 $course = new course($dataobject);
-            } else if (property_exists($dataobject, 'idnumber')) {
+            } else if (property_exists($dataobject, 'courseid')) {
                 $course = new course($dataobject->courseid);
             } else {
                 return array();
             }
             $compelems = $course->get_completion_elements();
-            $compelems = $compelems ? $compelems : array();
-            $result = array('' => '');
-            foreach ($compelems as $compelem) {
-                $result[$compelem->idnumber] = "{$compelem->name} ({$compelem->idnumber})";
-            }
-            return $result;
         } else {
-            return array();
+            // just get ALL completion elements (LOs)
+            global $DB;
+            $compelems = $DB->get_records('crlm_course_completion', null, '', 'id, name, idnumber');
         }
+        $compelems = $compelems ? $compelems : array();
+        $result = array('' => get_string('anyvalue', 'filters'));
+        foreach ($compelems as $compelem) {
+            $result[$compelem->idnumber] = "{$compelem->name} ({$compelem->idnumber})";
+        }
+        return $result;
     }
 }

@@ -58,6 +58,7 @@ class field extends elis_data_object {
     const MENU = 'menu';
     const TEXT = 'text';
     const TEXTAREA = 'textarea';
+    const DATETIME = 'datetime';
 
     public function __construct($src=false, $field_map=null, array $associations=array(),
                                 $from_db=false, array $extradatafields=array(),
@@ -194,9 +195,9 @@ class field extends elis_data_object {
             return array();
         }
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
-        if ($contextlevel == context_level_base::get_custom_context_level('user', 'elis_program')) {
+        if ($contextlevel == CONTEXT_ELIS_USER) {
             // need to include extra fields for PM users
             $sql = 'SELECT field.*, category.name AS categoryname, mfield.id AS mfieldid, owner.exclude AS syncwithmoodle
                       FROM {'.self::TABLE.'} field
@@ -230,7 +231,7 @@ class field extends elis_data_object {
             return false;
         }
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
         $select = 'id IN (SELECT fctx.fieldid
                             FROM {'.field_contextlevel::TABLE."} fctx
@@ -246,6 +247,7 @@ class field extends elis_data_object {
         switch ($this->datatype) {
             case 'int':
             case 'bool':
+            case 'datetime':
                 return 'int';
                 break;
             case 'num':
@@ -275,6 +277,7 @@ class field extends elis_data_object {
      */
     public function cast_to_type($val) {
         switch ($this->datatype) {
+            case 'datetime':
             case 'int':
                 return(is_int($val) ? $val : intval($val));
             case 'num':
@@ -336,7 +339,7 @@ class field extends elis_data_object {
      */
     public static function ensure_field_exists_for_context_level(field $field, $contextlevel, field_category $category) {
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = elis_context_helper::get_level_from_name($contextlevel);
         }
 
         // see if we need to create a new field
@@ -394,9 +397,10 @@ class field extends elis_data_object {
                                      'contextid IS NULL AND fieldid = ?',
                                      array($this->id));
     }
+
 }
 
-class elis_field_filter extends data_filter {
+class elis_field_filter extends field_filter {
     /**
      * @param field $field the elis field to check
      * @param string $idfield the name of the field that stores the object's ID
@@ -431,14 +435,16 @@ class elis_field_filter extends data_filter {
         }
         $sql = "SELECT ctx.id
                   FROM {context} ctx
-             LEFT JOIN {{$field->data_table()}} fdata ON fdata.contextid = ctx.id AND fdata.fieldid = {$field->id}
-             LEFT JOIN {{$field->data_table()}} fdefault ON fdefault.contextid IS NULL AND fdefault.fieldid = {$field->id}
+             LEFT JOIN {{$this->field->data_table()}} fdata ON fdata.contextid = ctx.id AND fdata.fieldid = {$this->field->id}
+             LEFT JOIN {{$this->field->data_table()}} fdefault ON fdefault.contextid IS NULL AND fdefault.fieldid = {$this->field->id}
                  WHERE ctx.contextlevel = {$paramname}";
         $params = array($paramindex => $this->contextlevel);
 
         if (isset($field_filter['where'])) {
-            $sql .= " AND {$fieldfilter['where']}";
-            $params = array_merge($params, $fieldfilter['where_paremeters']);
+            $sql .= " AND {$field_filter['where']}";
+            if (!empty($field_filter['where_parameters']) && is_array($field_filter['where_parameters'])) {
+                $params = array_merge($params, $field_filter['where_parameters']);
+            }
         }
 
         if ($tablename) {
@@ -481,7 +487,7 @@ class field_owner extends elis_data_object {
         if (strncmp($name, 'param_', 6) == 0) {
             $paramname = substr($name, 6);
             $params = unserialize($this->params);
-            return $params[$paramname];
+            return isset($params[$paramname]) ? $params[$paramname] : null;
         }
 
         return parent::__get($name);
@@ -556,6 +562,44 @@ class field_owner extends elis_data_object {
         $owner->params = serialize($params);
         $owner->save();
     }
+
+    /**
+     * Get the menu options for field.
+     * Only valid for 'menu' datatypes
+     *
+     * @param  object $data   optional data for menu options source class
+     * @return array          the menu options for the field (empty if N/A)
+     */
+    public function get_menu_options($data = array()) {
+        global $DB;
+        $menu_options = array();
+        $params = unserialize($this->params);
+        if (!empty($params['control']) && $params['control'] == field::MENU) {
+            if (!empty($params['options_source'])) {
+                $menu_options_src = $params['options_source'];
+                require_once elis::plugin_file('elisfields_manual','sources.php');
+                $basedir = elis::plugin_file('elisfields_manual','sources');
+                $src_file = $basedir .'/'. $menu_options_src .'.php';
+                if (file_exists($src_file)) {
+                    require_once($src_file);
+                    $classname = "manual_options_{$menu_options_src}";
+                    $plugin = new $classname();
+                    $menu_options = $plugin->get_options($data);
+                } else {
+                    error_log("field_owner::get_menu_options() - ERROR: no source file {$src_file} for fieldid = {$this->fieldid}");
+                }
+            } else if (!empty($params['options'])) {
+                $options = explode("\n", $params['options']);
+                if (!empty($options)) {
+                    $menu_options = array_combine($options, $options);
+                }
+            } else {
+                error_log("field_owner::get_menu_options() - no menu options found for fieldid = {$this->fieldid}");
+            }
+        }
+        return $menu_options;
+    }
+
 }
 
 /**
@@ -579,7 +623,7 @@ class field_category extends elis_data_object {
             return array();
         }
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
         return self::find(new join_filter('id',
                                           field_category_contextlevel::TABLE, 'categoryid',
@@ -806,14 +850,16 @@ abstract class field_data extends elis_data_object {
      */
     public function set_for_context_from_datarecord($contextlevel, $record) {
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
             if (!$contextlevel) {
                 // context levels not set up -- we must be in initial installation,
                 // so no fields set up
                 return true;
             }
         }
-        $context = get_context_instance($contextlevel, $record->id);
+
+        $ctxclass = context_elis_helper::get_class_for_level($contextlevel);
+        $context = $ctxclass::instance($record->id);
         $fields = field::get_for_context_level($contextlevel);
         $fields = $fields ? $fields : array();
         foreach ($fields as $field) {

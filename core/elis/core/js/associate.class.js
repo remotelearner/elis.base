@@ -132,26 +132,36 @@ function associate_link_handler(basepage, divid) {
             }
         }
 
-        lastrequest = target.getAttribute("href");
+        var request = target.getAttribute("href");
+        var linktarget = target.getAttribute("target");
+        var linkclick = target.getAttribute("onclick");
 
         //if we have anything other than an anchor tag, set to null
-        if (lastrequest && target.tagName.toLowerCase() != 'a') {
-            lastrequest = null;
+        if (request && target.tagName.toLowerCase() != 'a') {
+            request = null;
         }
 
-        if (!lastrequest) {
+        if (!request) {
             if (parenttarget.getAttribute("href")) {
-                lastrequest = parenttarget.getAttribute("href");
+                request = parenttarget.getAttribute("href");
+                linktarget = parenttarget.getAttribute("target");
+                linkclick = parenttarget.getAttribute("onclick");
             } else {
                 return;
             }
         }
 
-        //if an onclick is being used, let it handle this event
-        var last_character = lastrequest.substr(lastrequest.length - 1, 1);
+        //if an onclick is being used, let it handle this event ...
+        //unless it's our own start_throbber() function
+        if (linktarget || (linkclick && linkclick.indexOf('start_throbber') == -1)) {
+            return;
+        }
+        var last_character = request.substr(request.length - 1, 1);
         if (last_character === "#") {
             return;
         }
+
+        lastrequest = request;
 
         YAHOO.util.Connect.asyncRequest("GET", lastrequest + "&mode=bare", set_content_callback, null);
         YAHOO.util.Event.preventDefault(ev);
@@ -241,9 +251,9 @@ function associate_link_handler(basepage, divid) {
         if(document.getElementById("numotherpages") != null) {
             document.getElementById("numonotherpages").innerHTML = (selection.length - numselected);
             if (selection.length != numselected) {
-	            document.getElementById("selectedonotherpages").style.display = 'inline';
+	            document.getElementById("selectedonotherpages").style.display = 'display: inline';
             } else {
-	            document.getElementById("selectedonotherpages").style.display = 'none';
+	            document.getElementById("selectedonotherpages").style.display = 'display: none';
             }
         }
     }

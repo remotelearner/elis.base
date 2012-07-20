@@ -185,7 +185,7 @@ class generalized_filter_profileselect extends generalized_filter_type {
         }
 
         $value = $data['value'];
-        $value = addslashes($value);
+        //$value = addslashes($value);
 
         $sql = "{$full_fieldname} IN
                 (SELECT inner_data.userid

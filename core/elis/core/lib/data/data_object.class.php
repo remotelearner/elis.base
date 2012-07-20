@@ -582,7 +582,6 @@ class elis_data_object {
         } else {
             $trace = debug_backtrace();
             $classname = get_class($this);
-            echo '<br>looking for class:'.$classname;
             trigger_error(
                 "Undefined property via __get(): $classname::\${$name} in {$trace[1]['file']} on line {$trace[1]['line']}",
                 E_USER_NOTICE);
@@ -1019,6 +1018,37 @@ function validate_associated_record_exists(elis_data_object $record, $associatio
     //using magic
     $object = $record->$association;
     $object->load();
+}
+
+/**
+ * Helper function for generating a unique identifier
+ *
+ * @param string $table The table being checked for unique records
+ * @param string $iterator The iterating field name
+ * @param string $basevalue The starting value to check for uniqueness
+ * @param array $params An array of parameters for the uniqueness check
+ * @param string $classname An optional object name
+ * @param object $class An optional object
+ * @param array $classparams An optional array of parameters for the new object
+ */
+function generate_unique_identifier($table, $iterator, $basevalue, $params, $classname = NULL, &$class = NULL, $classparams = NULL) {
+    global $DB;
+    //create a unique idnumber by appending a suffix
+    $count = 0;
+    do {
+        $suffix = $count ? '.'.$count : '';
+        ++$count;
+        $params[$iterator]=$basevalue.$suffix;
+        if (isset($classname)) {
+            if (isset($classparams)) {
+                $classparams[$iterator]=$basevalue.$suffix;
+                $class = new $classname($classparams);
+            } else {
+                $class = new $classname($params);
+            }
+        }
+    } while ($DB->record_exists($table,$params));
+    return $basevalue.$suffix;
 }
 
 /**

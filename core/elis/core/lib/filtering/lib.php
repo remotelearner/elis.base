@@ -321,6 +321,14 @@ abstract class generalized_filter_type {
         //return our data mapping
         return $default_values;
     }
+
+    /**
+     * Hook for providing any required javascript to reset the filter
+     * @return string  any required js code to reset filter.
+     */
+    function reset_js() {
+        return ''; // default none
+    }
 }
 
 class generalized_filter_entry {
