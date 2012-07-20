@@ -404,47 +404,50 @@ function xmldb_elis_core_upgrade($oldversion=0) {
     if ($result && $oldversion < 2012032100) {
         // ELIS-4089 -- Attempt to detect if somehow this site had the 'context_levels' table populated out-of-order
 
-        $ctxmap = array(); // An array of 'correct_context_id' => 'invalid_context_id' to be used for cleanup purposes
-
-        if (($ctxlvls = $DB->get_records('context_levels'))) {
-            foreach ($ctxlvls as $ctxlvl) {
-                $level = context_elis_helper::get_level_from_name($ctxlvl->name);
-
-                // Check if this is an invalid level
-                if ($level != $ctxlvl->id + 1000) {
-                    $ctxmap[$level] = $ctxlvl->id + 1000;
-                }
-            }
-        }
-
-        // Do we have bad contexts that we need to remap and is the ELIS PM code present?
-        if (!empty($ctxmap) && file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+        // Is the ELIS PM code present? -- ELIS-6717
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
             require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 
-            // Initial pass, change all context levels to avoid collitions when resetting to "correct" values
-            foreach ($ctxmap as $level_good => $level_bad) {
-                $tmp_level = $level_bad + 1000;
-                if ($DB->record_exists('context', array('contextlevel' => $tmp_level))) {
-                    throw new coding_exception('Context level '.$tmp_level.' exists but really should not');
+            $ctxmap = array(); // An array of 'correct_context_id' => 'invalid_context_id' to be used for cleanup purposes
+
+            if (($ctxlvls = $DB->get_records('context_levels'))) {
+                foreach ($ctxlvls as $ctxlvl) {
+                    $level = context_elis_helper::get_level_from_name($ctxlvl->name);
+
+                    // Check if this is an invalid level
+                    if ($level != $ctxlvl->id + 1000) {
+                        $ctxmap[$level] = $ctxlvl->id + 1000;
+                    }
                 }
-
-                $sql = "UPDATE {context}
-                        SET contextlevel = ?
-                        WHERE contextlevel = ?";
-
-                $DB->execute($sql, array($tmp_level, $level_bad));
             }
 
-            reset($ctxmap);
+            // Do we have bad contexts that we need to remap
+            if (!empty($ctxmap)) {
+                // Initial pass, change all context levels to avoid collitions when resetting to "correct" values
+                foreach ($ctxmap as $level_good => $level_bad) {
+                    $tmp_level = $level_bad + 1000;
+                    if ($DB->record_exists('context', array('contextlevel' => $tmp_level))) {
+                        throw new coding_exception('Context level '.$tmp_level.' exists but really should not');
+                    }
 
-            // Second pass, reset the temp context levels to the good values now
-            foreach ($ctxmap as $level_good => $level_bad) {
-                $tmp_level = $level_bad + 1000;
-                $sql = "UPDATE {context}
-                        SET contextlevel = ?
-                        WHERE contextlevel = ?";
+                    $sql = "UPDATE {context}
+                            SET contextlevel = ?
+                            WHERE contextlevel = ?";
 
-                $DB->execute($sql, array($level_good, $tmp_level));
+                    $DB->execute($sql, array($tmp_level, $level_bad));
+                }
+
+                reset($ctxmap);
+
+                // Second pass, reset the temp context levels to the good values now
+                foreach ($ctxmap as $level_good => $level_bad) {
+                    $tmp_level = $level_bad + 1000;
+                    $sql = "UPDATE {context}
+                            SET contextlevel = ?
+                            WHERE contextlevel = ?";
+
+                    $DB->execute($sql, array($level_good, $tmp_level));
+                }
             }
         }
 

@@ -1,9 +1,9 @@
 diff --git a/install/lang/hu/install.php b/install/lang/hu/install.php
-index 1261f4f..5f1c750 100644
+index 39fdf50..1974f9b 100644
 --- a/install/lang/hu/install.php
 +++ b/install/lang/hu/install.php
 @@ -73,10 +73,10 @@ $string['phpversionhelp'] = 'A Moodle használatához legalább a PHP 4.3.0 vagy
- verzió {$a}. Frissítse a PHP-verziót, vagy térjen át újabb PHP-verziót 
+ verzió {$a}. Frissítse a PHP-verziót, vagy térjen át újabb PHP-verziót
  működtető gazdagépre! (5.0.x esetén visszatérhet a 4.4.x verzióhoz is)';
  $string['welcomep10'] = '{$a->installername} ({$a->installerversion})';
 -$string['welcomep20'] = 'Azért látja ezt az oldalt, mert sikeresen telepítette és futtatja az {$a->packname} {$a->packversion} csomagot számítógépén. Gratulálunk!';

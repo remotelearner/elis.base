@@ -1,5 +1,5 @@
 diff --git a/install/lang/ko/install.php b/install/lang/ko/install.php
-index d3526b8..407d5a8 100644
+index 399fbc6..9f29d09 100644
 --- a/install/lang/ko/install.php
 +++ b/install/lang/ko/install.php
 @@ -59,9 +59,10 @@ $string['memorylimithelp'] = '<p>현재 서버의 PHP 메모리 사용량은 {$a

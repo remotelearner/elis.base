@@ -1,0 +1,20 @@
+diff --git a/lib/setup.php b/lib/setup.php
+index 2f0f1e4..3928f56 100644
+--- a/lib/setup.php
++++ b/lib/setup.php
+@@ -211,6 +211,15 @@ if (!defined('AJAX_SCRIPT')) {
+     define('AJAX_SCRIPT', false);
+ }
+ 
++// Begin Remote-Learner edit
++// detect NanoGong plugin
++if (!defined('NANOGONG')) {
++    if (file_exists($CFG->libdir.'/editor/tinymce/tiny_mce/3.4.9/plugins/nanogong/nanogong.php')) {
++        define('NANOGONG', '3.4.9');
++    }
++}
++// End Remote-Learner edit
++
+ // File permissions on created directories in the $CFG->dataroot
+ if (empty($CFG->directorypermissions)) {
+     $CFG->directorypermissions = 02777;      // Must be octal (that's why it's here)

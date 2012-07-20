@@ -1,5 +1,5 @@
 diff --git a/install/lang/ja/install.php b/install/lang/ja/install.php
-index d0d888a..82c5f2a 100644
+index dce0b84..d5cf017 100644
 --- a/install/lang/ja/install.php
 +++ b/install/lang/ja/install.php
 @@ -66,7 +66,8 @@ $string['pathserrcreatedataroot'] = 'データディレクトリ ({$a->dataroot}

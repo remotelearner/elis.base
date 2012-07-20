@@ -43,7 +43,7 @@ index 16f710a..796f29d 100644
 +            },
 +        };
 +        this.report.Y.io(M.gradereport_grader.api, cfg);
-             }
+     }
 -        }),complete:false,outcome:null});
 -    }
 -    // If feedback is editable and has changed add to the IO queue for it
@@ -67,7 +67,7 @@ index 16f710a..796f29d 100644
 +            },
 +        };
 +        this.report.Y.io(M.gradereport_grader.api, cfg);
-             }
+     }
 -        }),complete:false,outcome:null});
 -    }
 -    // Process the IO queue
