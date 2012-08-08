@@ -240,20 +240,39 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
  * Specialization method to determine additional values to set on the form
  * as defined in the form definition method based on custom field information
  *
- * @param   object  $form   The custom field form as defined in the form definition method
- * @param   object  $field  The field object we are currently editing
- * @return  array           The values to set on the form
+ * @param  object $form        The custom field form as defined in the form definition method
+ * @param  object $fieldordata The field object or field_data we are currently editing
+ * @return array               The values to set on the form
  */
-function manual_field_get_form_data($form, $field) {
+function manual_field_get_form_data($form, $fieldordata) {
+    // ELIS-6699 -- we might be passed a field data object here so we need to load the field itself in that case
+    if (isset($fieldordata->fieldid)) {
+        $field = new field($fieldordata->fieldid);
+    } else {
+        $field = $fieldordata;
+    }
+
     if (!isset($field->owners['manual'])) {
         return array('manual_field_enabled' => false);
     }
     $manual = new field_owner($field->owners['manual']);
     $result = array('manual_field_enabled' => true);
-    $parameters = array('required', 'edit_capability', 'view_capability',
-                        'control', 'options_source', 'options', 'columns',
-                        'rows', 'maxlength', 'help_file', 'startyear',
-                        'stopyear', 'inctime');
+    $parameters = array(
+        'required',
+        'edit_capability',
+        'view_capability',
+        'control',
+        'options_source',
+        'options',
+        'columns',
+        'rows',
+        'maxlength',
+        'help_file',
+        'startyear',
+        'stopyear',
+        'inctime'
+    );
+
     foreach ($parameters as $param) {
         $paramname = "param_$param";
         if (isset($manual->$paramname)) {
