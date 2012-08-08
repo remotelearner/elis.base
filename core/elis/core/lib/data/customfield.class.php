@@ -735,8 +735,10 @@ abstract class field_data extends elis_data_object {
      *
      * @param object $context the context to get the field data from
      * @param mixed $field the field shortname, or a field object
+     * @param boolean $include_default whether to include the default value in
+     *                                 the result set (only applies if no actual data exists)
      */
-    public static function get_for_context_and_field($context, $field) {
+    public static function get_for_context_and_field($context, $field, $include_default = true) {
         if (is_string($field)) {
             $find = field::find(array(new field_filter('shortname', $field),
                                       new join_filter('id',
@@ -760,8 +762,16 @@ abstract class field_data extends elis_data_object {
                 return $fielddatatype::find($filter);
             }
         }
-        return $fielddatatype::find(array(new field_filter('contextid', null),
-                                          new field_filter('fieldid', $field->id)));
+
+        //no "actual" data found
+        if ($include_default) {
+            //return the default value
+            return $fielddatatype::find(array(new field_filter('contextid', null),
+                                              new field_filter('fieldid', $field->id)));
+        } else {
+            //return an empty recordset
+            return $fielddatatype::find(new select_filter('0 = 1'));
+        }
     }
 
     /**
@@ -785,8 +795,8 @@ abstract class field_data extends elis_data_object {
         $data_table = $field->data_table();
         // FIXME: check exclude, unique, etc
         if ($field->multivalued) {
-            // find what data already exists
-            $records = self::get_for_context_and_field($context, $field);
+            // find what data already exists (excluding default value)
+            $records = self::get_for_context_and_field($context, $field, false);
             $records = $records ? $records : array();
             $todelete = array();
             $existing = array();
