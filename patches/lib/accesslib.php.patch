@@ -1,5 +1,5 @@
 diff --git a/lib/accesslib.php b/lib/accesslib.php
-index 084c4d5..91ceb1b 100644
+index 090aabd..21a8f55 100644
 --- a/lib/accesslib.php
 +++ b/lib/accesslib.php
 @@ -737,6 +737,22 @@ function get_user_access_sitewide($userid) {
@@ -69,7 +69,7 @@ index 084c4d5..91ceb1b 100644
      }
  
      // fixed capability order is necessary for rdef dedupe
-@@ -4832,6 +4864,19 @@ abstract class context extends stdClass implements IteratorAggregate {
+@@ -4888,6 +4920,19 @@ abstract class context extends stdClass implements IteratorAggregate {
          }
  
          if ($record = $DB->get_record('context', array('id'=>$id), '*', $strictness)) {
