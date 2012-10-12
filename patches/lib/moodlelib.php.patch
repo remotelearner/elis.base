@@ -1,0 +1,78 @@
+diff --git a/lib/moodlelib.php b/lib/moodlelib.php
+index 167a653..14844c6 100644
+--- a/lib/moodlelib.php
++++ b/lib/moodlelib.php
+@@ -6521,6 +6521,8 @@ class core_string_manager implements string_manager {
+             if ($plugintype === 'mod') {
+                 // bloody mod hack
+                 $file = $pluginname;
++            } elseif (strncmp($plugintype, 'elis:', 5) === 0) {
++                $file = $pluginname;
+             } else {
+                 $file = $plugintype . '_' . $pluginname;
+             }
+@@ -7933,6 +7935,7 @@ function get_plugin_types($fullpaths=true) {
+                       'plagiarism'    => 'plagiarism',
+                       'tool'          => $CFG->admin.'/tool',
+                       'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
++                      'elis'          => 'elis',  // ELIS-5770 -- include ELIS plugins
+         );
+ 
+         $mods = get_plugin_list('mod');
+@@ -7946,6 +7949,30 @@ function get_plugin_types($fullpaths=true) {
+             }
+         }
+ 
++        // ELIS-2455 -- Needed for Integration Point sub-plugins
++        $blocks = get_plugin_list('block');
++        foreach ($blocks as $block => $blockdir) {
++            if (file_exists("$blockdir/db/subplugins.php")) {
++                $subplugins = array();
++                include("$blockdir/db/subplugins.php");
++                foreach ($subplugins as $subtype=>$dir) {
++                    $info[$subtype] = $dir;
++                }
++            }
++        }
++
++        // ELIS-5770 -- Needed for ELIS sub-plugins
++        $elisplugs = get_plugin_list('elis');
++        foreach ($elisplugs as $elisplug => $plugdir) {
++            if (file_exists($plugdir.'/db/subplugins.php')) {
++                $subplugins = array();
++                include($plugdir.'/db/subplugins.php');
++                foreach ($subplugins as $subtype => $dir) {
++                    $info[$subtype] = $dir;
++                }
++            }
++        }
++
+         // local is always last!
+         $info['local'] = 'local';
+ 
+@@ -7985,6 +8012,12 @@ function get_plugin_list($plugintype) {
+         // mod is an exception because we have to call this function from get_plugin_types()
+         $fulldirs[] = $CFG->dirroot.'/mod';
+ 
++
++    } else if ($plugintype === 'block') {
++        // ELIS-2455 -  Needed for Integration Point sub-plugins
++        // block is similarly an exception because we have to call this function from get_plugin_types()
++        $fulldirs[] = $CFG->dirroot.'/blocks';
++
+     } else if ($plugintype === 'theme') {
+         $fulldirs[] = $CFG->dirroot.'/theme';
+         // themes are special because they may be stored also in separate directory
+@@ -7992,6 +8025,12 @@ function get_plugin_list($plugintype) {
+             $fulldirs[] = $CFG->themedir;
+         }
+ 
++    } else if ($plugintype === 'elis') {
++        // ELIS-5770 -  Ensure that we setup for ELIS plugins to be loaded correctly
++        // elis is an exception because we have to call this function from get_plugin_types()
++        $fulldirs[] = $CFG->dirroot.'/elis';
++
++
+     } else {
+         $types = get_plugin_types(true);
+         if (!array_key_exists($plugintype, $types)) {

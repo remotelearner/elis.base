@@ -1,0 +1,36 @@
+diff --git a/user/profile/field/menu/field.class.php b/user/profile/field/menu/field.class.php
+index 36b711a..4780582 100644
+--- a/user/profile/field/menu/field.class.php
++++ b/user/profile/field/menu/field.class.php
+@@ -20,12 +20,18 @@ class profile_field_menu extends profile_field_base {
+             $this->options[''] = get_string('choose').'...';
+         }
+         foreach($options as $key => $option) {
+-            $this->options[$key] = format_string($option);//multilang formatting
++            //$this->options[$key] = format_string($option);//multilang formatting
++            $option = format_string($option); // multilang formatting
++            $this->options[$option] = $option;
++            // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
++
+         }
+ 
+         /// Set the data key
+         if ($this->data !== NULL) {
+-            $this->datakey = (int)array_search($this->data, $this->options);
++            //$this->datakey = (int)array_search($this->data, $this->options);
++            $this->datakey = array_search($this->data, $this->options);
++            // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
+         }
+     }
+ 
+@@ -59,7 +65,9 @@ class profile_field_menu extends profile_field_base {
+      * @param   stdClass $datarecord The object that will be used to save the record
+      */
+     function edit_save_data_preprocess($data, $datarecord) {
+-        return isset($this->options[$data]) ? $this->options[$data] : NULL;
++        //return isset($this->options[$data]) ? $this->options[$data] : NULL;
++        return isset($this->options[$data]) ? $data : NULL;
++        // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
+     }
+ 
+     /**

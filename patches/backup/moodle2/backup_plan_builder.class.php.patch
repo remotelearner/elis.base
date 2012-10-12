@@ -1,0 +1,15 @@
+diff --git a/backup/moodle2/backup_plan_builder.class.php b/backup/moodle2/backup_plan_builder.class.php
+index d7a1f0a..6186feb 100644
+--- a/backup/moodle2/backup_plan_builder.class.php
++++ b/backup/moodle2/backup_plan_builder.class.php
+@@ -171,7 +171,9 @@ abstract class backup_plan_builder {
+     /**
+      * Build one 1-course backup
+      */
+-    static protected function build_course_plan($controller, $id) {
++    // HOSSUP-254 - changed from protected to public
++    // TODO: Find a better solution than this to allow ELIS content rollover to work.
++    static public function build_course_plan($controller, $id) {
+ 
+         $plan = $controller->get_plan();
+ 

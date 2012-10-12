@@ -1,0 +1,34 @@
+ul.workflow_progress {
+    text-align: center;
+    white-space: normal;
+}
+
+ul.workflow_progress li {
+    display: inline;
+    white-space: nowrap;
+}
+
+li.workflow_step_current {
+    font-weight: bold;
+}
+
+li.workflow_step_incomplete {
+    color: gray;
+}
+
+li.workflow_step {
+    white-space: nowrap;
+}
+
+li.workflow_step .sep {
+    color: #AAA;
+}
+
+/*
+ Specific fix so that IE knows hidden fieldsets hidden by moving off
+ to the left are not wide enough to hit the viewing area
+ */
+fieldset.accesshide.custom_field_options_fieldset {
+  width: 100%;
+}
+

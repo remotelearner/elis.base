@@ -1,0 +1,31 @@
+diff --git a/lib/form/dateselector.php b/lib/form/dateselector.php
+index 52c0201..eff90c9 100644
+--- a/lib/form/dateselector.php
++++ b/lib/form/dateselector.php
+@@ -193,6 +193,7 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
+     }
+ 
+     /**
++     * RL edit
+      * Accepts a renderer
+      *
+      * @param HTML_QuickForm_Renderer $renderer An HTML_QuickForm_Renderer object
+@@ -201,7 +202,18 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
+      */
+     function accept(&$renderer, $required = false, $error = null)
+     {
++        //only display a disable static element or don't display the optional check box if this element is frozen
++         // 3 is the index where the checkbox is located
++        if($this->isFrozen() && $this->_options['optional'] && !$this->_elements[3]->getChecked()){
++            $this->_elements = array();
++            $this->_elements[] =& MoodleQuickForm::createElement('static', 'disabled', '', get_string('disabled', 'filters'));
++        } else if($this->isFrozen() && isset($this->_elements[3])) {
++            // Remove the frozen checkbox when frozen
++            unset($this->_elements[3]);
++        }
++
+         $renderer->renderElement($this, $required, $error);
++        //RL edit end
+     }
+ 
+     /**

@@ -1,0 +1,25 @@
+diff --git a/lib/pluginlib.php b/lib/pluginlib.php
+index b224d6d..9fae50c 100644
+--- a/lib/pluginlib.php
++++ b/lib/pluginlib.php
+@@ -147,7 +147,9 @@ class plugin_manager {
+ 
+         if ($disablecache or is_null($this->subpluginsinfo)) {
+             $this->subpluginsinfo = array();
+-            $mods = get_plugin_list('mod');
++            $parentplugins = array('mod', 'block', 'elis');
++            foreach ($parentplugins as $parent) {
++                $mods = get_plugin_list($parent);
+                 foreach ($mods as $mod => $moddir) {
+                     $modsubplugins = array();
+                     if (file_exists($moddir . '/db/subplugins.php')) {
+@@ -158,7 +160,8 @@ class plugin_manager {
+                             $subplugin->typerootdir = $subplugintyperootdir;
+                             $modsubplugins[$subplugintype] = $subplugin;
+                         }
+-                $this->subpluginsinfo['mod_' . $mod] = $modsubplugins;
++                        $this->subpluginsinfo[$parent . '_' . $mod] = $modsubplugins;
++                    }
+                 }
+             }
+         }
