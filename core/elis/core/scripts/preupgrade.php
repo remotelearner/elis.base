@@ -52,7 +52,7 @@ $sql = "SELECT contextid, lowerboundary, letter, COUNT('x') count
 if ($rec = $DB->record_exists_sql($sql, array())) {
     mtrace(' --- '.get_string('preup_dupfound', 'elis_core'));
 
-    $table = new xmldb_table('grade_letters_temp');
+    $table = new XMLDBTable('grade_letters_temp');
     $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
     $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
     $table->add_field('lowerboundary', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
@@ -86,7 +86,7 @@ if ($rec = $DB->record_exists_sql($sql, array())) {
 
     if ($status) {
         try {
-            $dbman->drop_table(new xmldb_table('grade_letters'));
+            $dbman->drop_table(new XMLDBTable('grade_letters'));
             $dbman->rename_table($table, 'grade_letters');
 
             mtrace(' --- '.get_string('preup_gl_success', 'elis_core'));
@@ -115,7 +115,7 @@ $sql = "SELECT userid, name, value, COUNT('x') count
         ORDER BY count DESC";
 
 if ($rec = $DB->record_exists_sql($sql, array())) {
-    $table = new xmldb_table('user_preferences');
+    $table = new XMLDBTable('user_preferences');
     $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
     $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
     $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, null, null, null);
@@ -148,7 +148,7 @@ if ($rec = $DB->record_exists_sql($sql, array())) {
 
     if ($status) {
         try {
-            $dbman->drop_table(new xmldb_table('user_preferences'));
+            $dbman->drop_table(new XMLDBTable('user_preferences'));
             $dbman->rename_table($table, 'user_preferences');
 
             mtrace(' --- '.get_string('preup_up_success', 'elis_core'));
