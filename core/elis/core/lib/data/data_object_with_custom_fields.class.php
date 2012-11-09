@@ -84,11 +84,6 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      */
     public function save() {
         parent::save();
-
-        //ELIS-6114 - this seems to fix issues related to the default value of a
-        //multi-valued custom field not being saved
-        $this->to_object();
-
         $this->_load_context();
         $contextlevel = $this->_context->contextlevel;
         // only save the custom field data that has been changed

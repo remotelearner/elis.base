@@ -1,8 +1,8 @@
 diff --git a/lang/en/plugin.php b/lang/en/plugin.php
-index 3bba405..8523730 100644
+index 6b06211..5916c5d 100644
 --- a/lang/en/plugin.php
 +++ b/lang/en/plugin.php
-@@ -48,6 +48,7 @@ $string['plugindisable'] = 'Disable';
+@@ -40,6 +40,7 @@ $string['plugindisable'] = 'Disable';
  $string['plugindisabled'] = 'Disabled';
  $string['pluginenable'] = 'Enable';
  $string['pluginenabled'] = 'Enabled';
@@ -10,7 +10,7 @@ index 3bba405..8523730 100644
  $string['requiredby'] = 'Required by: {$a}';
  $string['requires'] = 'Requires';
  $string['rootdir'] = 'Directory';
-@@ -75,6 +76,8 @@ $string['type_coursereport'] = 'Course report';
+@@ -66,6 +67,8 @@ $string['type_coursereport'] = 'Course report';
  $string['type_coursereport_plural'] = 'Course reports';
  $string['type_editor'] = 'Editor';
  $string['type_editor_plural'] = 'Editors';

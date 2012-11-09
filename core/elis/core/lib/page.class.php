@@ -333,7 +333,7 @@ abstract class elis_page extends moodle_page {
     /**
      * Print the page header.
      */
-    public function print_header($_) {
+    public function print_header() {
         global $OUTPUT;
         echo $OUTPUT->header();
     }
@@ -353,7 +353,7 @@ abstract class elis_page extends moodle_page {
         if ($action === null) {
             $action = $this->optional_param('action', 'default', PARAM_ACTION);
         }
-        $this->print_header(null);
+        $this->print_header();
         call_user_func(array($this, 'display_' . $action));
         $this->print_footer();
     }

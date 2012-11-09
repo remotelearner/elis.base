@@ -24,149 +24,85 @@
  *
  */
 
-require_once(elis::lib('filtering/lib.php'));
+require_once(elis::lib('filtering/autocomplete_base.php'));
 
-/**
- * Generic filter based on a list of values.
- */
-class generalized_filter_autocomplete extends generalized_filter_type {
-    /**
-     * options for the list values
-     */
-    public $_options;
-    public $_field;
-    public $_fields;
-    public $_table;
-    public $_parent_report;
-    public $_label_template;
-    public $_selection_enabled = true;
-    public $_default_id='';
-    public $_default_label='';
+class generalized_filter_autocomplete extends generalized_filter_autocomplete_base {
 
-    /**
-     * Constructor
-     * @param string $name the name of the filter instance
-     * @param string $label the label of the filter instance
-     * @param boolean $advanced advanced form element flag
-     * @param string $field user table filed name
-     * @param array $options select options
-     */
-    public function __construct($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
-        parent::generalized_filter_type($uniqueid, $alias, $name, $label, $advanced,
-                    !empty($options['help'])
-                    ? $options['help']
-                    : array('simpleselect', $label, 'filters'));
-        $this->_field    = $field;
-        $this->_table  = $options['table'];
-        $this->_fields  = $options['fields'];
-        $this->_parent_report  = $options['report'];
-        $this->_selection_enabled = (!empty($options['selection_enabled']) && $options['selection_enabled'] === true) ? true : false;
-        $this->_restriction_sql = (!empty($options['restriction_sql'])) ? $options['restriction_sql'] : '';
-        $this->_default_id = (!empty($options['defaults']['id'])) ? $options['defaults']['id'] : '';
-        $this->_default_label = (!empty($options['defaults']['label'])) ? $options['defaults']['label'] : '';
-        if (isset($options['label_template'])) {
-            $this->_label_template = $options['label_template'];
+    public function load_options($options) {
+
+        //required options
+        if (empty($options['table'])) {
+            error('No table specified when constructing autocomplete filter');
+        }
+        $this->_table = $options['table'];
+
+        if (empty($options['search_fields']) || !is_array($options['search_fields'])) {
+            error('No valid search_fields option received when constructing autocomplete filter');
+        }
+        $this->_fields = $options['search_fields'];
+
+
+        //optional options
+        if (!empty($options['results_fields'])) {
+            $this->results_fields = $options['results_fields'];
         } else {
-            $this->_label_template = (!empty($this->_fields[0]))
-                                        ? $options['label_template']
-                                        : '';
+            $this->results_fields = array_combine($options['search_fields'],$options['search_fields']);
         }
+    }
+
+
+    /**
+     * Gets the labels for each column of the results table.
+     * @return  array  An array of strings with values in the same order as $this->get_results_fields();
+     */
+    public function get_results_headers() {
+        return array_values($this->results_fields);
     }
 
     /**
-     * Adds controls specific to this filter in the form.
-     * @param object $mform a MoodleForm object to setup
+     * Gets the fields for each column of the results table.
+     * @return  array  An array of strings corresponding to members of a SQL result row with values
+     *                  in the same order as $this->get_results_headers();
      */
-    public function setupForm(&$mform) {
-        global $CFG;
-
-        $report = $this->_parent_report;
-        $filter = $this->_uniqueid;
-        $popup_url = $CFG->wwwroot.'/elis/core/lib/form/autocomplete.php';
-        $popup_url .= '?report='.$report.'&filter='.$filter;
-        $popup_link = '<span id="id_'.$this->_uniqueid.'_label"></span> ';
-        if ($this->_selection_enabled === true) {
-            $popup_link .= '<a onclick="show_panel(\''.$popup_url.'\');" href="#">Select...</a>';
-        }
-
-        $mform->addElement('static', 'selector', $this->_label,$popup_link);
-        $mform->addElement('html','<div style="display:none;">');
-        $mform->addElement('text', $this->_uniqueid.'_labelsave', '');
-        $mform->addElement('text', $this->_uniqueid, '');
-        if (!empty($this->_default_label)) {
-            $mform->setDefault($this->_uniqueid.'_labelsave',$this->_default_label);
-        }
-        if (!empty($this->_default_id)) {
-            $mform->setDefault($this->_uniqueid,$this->_default_id);
-        }
-        $mform->addElement('html','</div>');
-        if (!empty($this->_filterhelp)) {
-            $mform->addHelpButton('selector', $this->_filterhelp[0], $this->_filterhelp[2]);
-        }
-
-        $mform->addElement('html','
-                <script>
-                function show_panel( url ) {
-                    var x = window.open(url, \'newWindow\', \'height=700,width=650,resizable=yes,scrollbars=yes,screenX=50,screenY=50\');
-                }
-                labelsave = document.getElementById(\'id_'.$this->_uniqueid.'_labelsave\');
-                labeldisp = document.getElementById(\'id_'.$this->_uniqueid.'_label\');
-                if (labelsave != null && labeldisp != null) {
-                    labeldisp.innerHTML = labelsave.value;
-                }
-                </script>');
+    public function get_results_fields() {
+        return array_keys($this->results_fields);
     }
 
     /**
-     * Retrieves data from the form data
-     * @param object $formdata data submited with the form
-     * @return mixed array filter data or false when filter not set
+     * Gets the autocomplete search SQL for the autocomplete UI
+     * Note that this is the SQL used to select a value, not the SQL used in the report SQL
+     * @global  $CFG
+     * @param   string  $q  The query string
+     * @return  string      The SQL query
      */
-    public function check_data($formdata) {
-        $field = $this->_uniqueid;
+    public function get_search_results($q) {
+        global $CFG, $USER, $DB;
 
-        if (array_key_exists($field, $formdata) and $formdata->$field !== '') {
-            return array('value'=>(string)$formdata->$field);
+        $q = explode(' ',$q);
+        $search = array();
+        foreach ($q as $q_word) {
+            $this_word = array();
+            foreach ($this->_fields as $i => $field) {
+                $this_word[] = $field.' LIKE "%'.$q_word.'%"';
+            }
+            $search[] = $this_word;
         }
 
-        return false;
-    }
-
-    public function get_report_parameters($data) {
-        return array('value' => $data['value'],
-                     'numeric' => $this->_numeric);
-    }
-
-    /**
-     * Returns a human friendly description of the filter used as label.
-     * @param array $data filter settings
-     * @return string active filter label
-     */
-    public function get_label($data) {
-        $value = $data['value'];
-
-        $a = new object();
-        $a->label    = $this->_label;
-        $a->value    = '"'.s($this->_options[$value]).'"';
-        $a->operator = get_string('isequalto','filters');
-
-        return get_string('selectlabel', 'filters', $a);
-    }
-
-    /**
-     * Returns the condition to be used with SQL where
-     * @param array $data filter settings
-     * @return string the filtering condition or null if the filter is disabled
-     */
-    public function get_sql_filter($data) {
-        $full_fieldname = $this->get_full_fieldname();
-        if (empty($full_fieldname)) { // for manual filter use
-            return null;
+        foreach ($search as $i => $sqls) {
+            $search[$i] = implode(' OR ',$sqls);
         }
 
-        $value = addslashes($data['value']);
+        if (!empty($this->_restriction_sql)) {
+            $search[] = $this->_restriction_sql;
+        }
 
-        return array("{$full_fieldname} = :p_autocompleteuserid", array('p_autocompleteuserid' => $value));
+        $wherestr = '('.implode(') AND (',$search).')';
+
+        $sql = 'SELECT id,'.implode(',',$this->_fields)
+                .' FROM '.$CFG->prefix.$this->_table
+                .' WHERE '.$wherestr
+                .' LIMIT 0,100';
+        return $DB->get_records_sql($sql);
     }
-
 }
+

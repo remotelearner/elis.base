@@ -1,16 +1,16 @@
 diff --git a/lib/setup.php b/lib/setup.php
-index 74f6520..e884b07 100644
+index 2f0f1e4..3928f56 100644
 --- a/lib/setup.php
 +++ b/lib/setup.php
-@@ -210,6 +210,15 @@ if (!defined('AJAX_SCRIPT')) {
+@@ -211,6 +211,15 @@ if (!defined('AJAX_SCRIPT')) {
      define('AJAX_SCRIPT', false);
  }
  
 +// Begin Remote-Learner edit
 +// detect NanoGong plugin
 +if (!defined('NANOGONG')) {
-+    if (file_exists($CFG->libdir.'/editor/tinymce/tiny_mce/3.5.1.1/plugins/nanogong/nanogong.php')) {
-+        define('NANOGONG', '3.5.1.1');
++    if (file_exists($CFG->libdir.'/editor/tinymce/tiny_mce/3.4.9/plugins/nanogong/nanogong.php')) {
++        define('NANOGONG', '3.4.9');
 +    }
 +}
 +// End Remote-Learner edit
