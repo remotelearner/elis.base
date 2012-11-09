@@ -458,5 +458,22 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2012032100, 'elis', 'core');
     }
 
+    if ($result && $oldversion < 2012032101) {
+        // clear out duplicate default values from elis_field_data tables
+        $tables = array('elis_field_data_char',
+                        'elis_field_data_int',
+                        'elis_field_data_num',
+                        'elis_field_data_text');
+        foreach ($tables as $data_table) {
+            $table = new xmldb_table($data_table);
+            $dbman->rename_table($table, 'old_'. $data_table);
+            $dbman->install_one_table_from_xmldb_file("{$CFG->dirroot}/elis/core/db/install.xml", $data_table);
+            $DB->execute("INSERT INTO {{$data_table}} (contextid, fieldid, data) SELECT DISTINCT contextid, fieldid, data FROM {old_{$data_table}}");
+            $table = new xmldb_table('old_'. $data_table);
+            $dbman->drop_table($table);
+        }
+        upgrade_plugin_savepoint(true, 2012032101, 'elis', 'core');
+    }
+
     return $result;
 }

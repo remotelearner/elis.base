@@ -191,6 +191,14 @@ class overlay_database extends moodle_database {
         return 'test';
     }
 
+    public function get_dbengine() {
+        return $this->basedb->get_dbengine();
+    }
+
+    public function get_dbcollation() {
+        return $this->basedb->get_dbcollation();
+    }
+
     public function get_name() {
         return get_string('overlaydbname', 'elis_core', $this->basedb->get_name());
     }

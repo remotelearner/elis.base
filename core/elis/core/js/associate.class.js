@@ -153,11 +153,11 @@ function associate_link_handler(basepage, divid) {
 
         //if an onclick is being used, let it handle this event ...
         //unless it's our own start_throbber() function
-        if (linktarget || (linkclick && linkclick.indexOf('start_throbber') == -1)) {
+        if (linktarget || (linkclick && linkclick.toString().indexOf('start_throbber') == -1)) {
             return;
         }
         var last_character = request.substr(request.length - 1, 1);
-        if (last_character === "#") {
+        if (last_character == "#") {
             return;
         }
 
