@@ -1,5 +1,5 @@
 diff --git a/admin/renderer.php b/admin/renderer.php
-index 93b22c6..d99092d 100644
+index 93b22c6..0fdb237 100644
 --- a/admin/renderer.php
 +++ b/admin/renderer.php
 @@ -648,12 +648,14 @@ class core_admin_renderer extends plugin_renderer_base {
@@ -18,7 +18,7 @@ index 93b22c6..d99092d 100644
          );
  
          foreach ($plugininfo as $type => $plugins) {
-@@ -704,6 +706,14 @@ class core_admin_renderer extends plugin_renderer_base {
+@@ -704,6 +706,24 @@ class core_admin_renderer extends plugin_renderer_base {
  
                  $version = new html_table_cell($plugin->versiondb);
  
@@ -27,13 +27,23 @@ index 93b22c6..d99092d 100644
 +                if (file_exists($versionfile)) {
 +                    include($versionfile);
 +                }
-+                $release = new html_table_cell(!empty($plugin->release)
-+                                               ? $plugin->release : ''); // TBD
++
++                // ELIS-7214 -- Activity modules use a $module object in their version.php file so check that for a release
++                //              property as well.
++                if (isset($plugin->release)) {
++                    $rel = $plugin->release;
++                } else if (isset($module->release)) {
++                    $rel = $module->release;
++                } else {
++                    $rel = '';
++                }
++
++                $release = new html_table_cell($rel);
 +
                  $isenabled = $plugin->is_enabled();
                  if (is_null($isenabled)) {
                      $availability = new html_table_cell('');
-@@ -738,7 +748,8 @@ class core_admin_renderer extends plugin_renderer_base {
+@@ -738,7 +758,8 @@ class core_admin_renderer extends plugin_renderer_base {
                  }
  
                  $row->cells = array(

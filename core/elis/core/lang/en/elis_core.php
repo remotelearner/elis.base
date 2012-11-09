@@ -190,6 +190,23 @@ The filter has the following options:</p>
 </ul>';
 $string['fld_version'] = 'Version';
 
+//Autocomplete Filter
+$string['filt_autoc_noresults'] = 'No Results';
+$string['filt_autoc_results'] = 'Results';
+$string['filt_autoc_search'] = 'Search';
+$string['filt_autoc_searching'] = 'Searching for \"[[q]]\" in 500ms...';
+$string['filt_autoc_select'] = 'Select...';
+$string['filt_autoc_settings_saved'] = 'Settings Saved!';
+$string['filt_autoc_typetosearch'] = 'Type to Search';
+$string['filt_autoc_no_fields_enabled'] = 'No fields enabled!';
+$string['filt_autoc_wcf_config_search'] = 'Search';
+$string['filt_autoc_wcf_config_display'] = 'Display';
+$string['filt_autoc_wcf_config_field'] = 'Field';
+$string['filt_autoc_wcf_config_restrict'] = 'Restrict';
+$string['filt_autoc_wcf_config_title'] = 'Autocomplete Configuration';
+$string['filt_autoc_wcf_config_formtitle'] = 'User Fields to Search and Display';
+$string['filt_autoc_wcf_config_desc'] = 'Notes: <ul><li>Any fields which are set to be searched will also be displayed.</li><li><b><i>Restrict</i></b> will restrict searching to users with the same value for this field as the user who is searching</li></ul>';
+
 $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
 

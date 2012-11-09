@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(elis::lib('data/data_object.class.php'));
 require_once(elis::lib('data/data_filter.class.php'));
+require_once($CFG->dirroot . '/elis/core/accesslib.php');
 
 /**
  * Custom fields.
@@ -205,13 +206,13 @@ class field extends elis_data_object {
                  LEFT JOIN {'.field_category::TABLE.'} category ON field.categoryid = category.id
                  LEFT JOIN {'.field_owner::TABLE.'} owner ON field.id = owner.fieldid AND owner.plugin = \'moodle_profile\'
                       JOIN {'.field_contextlevel::TABLE."} ctx ON ctx.fieldid = field.id AND ctx.contextlevel = {$contextlevel}
-                  ORDER BY category.sortorder, field.sortorder";
+                  ORDER BY category.sortorder, category.name, field.sortorder";
         } else {
             $sql = 'SELECT field.*, category.name AS categoryname
                       FROM {'.self::TABLE.'} field
                  LEFT JOIN {'.field_category::TABLE.'} category ON field.categoryid = category.id
                       JOIN {'.field_contextlevel::TABLE."} ctx ON ctx.fieldid = field.id AND ctx.contextlevel = {$contextlevel}
-                  ORDER BY category.sortorder, field.sortorder";
+                  ORDER BY category.sortorder, category.name, field.sortorder";
         }
         return new data_collection($DB->get_recordset_sql($sql), 'field', null, array(), true,
                                    array('categoryname', 'mfieldid', 'syncwithmoodle'));
@@ -339,7 +340,7 @@ class field extends elis_data_object {
      */
     public static function ensure_field_exists_for_context_level(field $field, $contextlevel, field_category $category) {
         if (!is_numeric($contextlevel)) {
-            $contextlevel = elis_context_helper::get_level_from_name($contextlevel);
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
 
         // see if we need to create a new field
@@ -796,7 +797,7 @@ abstract class field_data extends elis_data_object {
         // FIXME: check exclude, unique, etc
         if ($field->multivalued) {
             // find what data already exists (excluding default value)
-            $records = self::get_for_context_and_field($context, $field, false);
+            $records = self::get_for_context_and_field($context, $field, ($context == NULL));
             $records = $records ? $records : array();
             $todelete = array();
             $existing = array();

@@ -27,12 +27,15 @@
 require_once(dirname(__FILE__).'/../test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/elis/core/accesslib.php');
 require_once(elis::lib('testlib.php'));
 require_once(elis::lib('data/customfield.class.php'));
 
 //NOTE: needed because this is used in customfield.class.php :-(
 //(not actually setting anything on the PM user context)
-define('CONTEXT_ELIS_USER',    1005);
+if (!defined('CONTEXT_ELIS_USER')) {
+    define('CONTEXT_ELIS_USER',    1005);
+}
 
 /**
  * Class for testing the storage and retrieval of custom field data
@@ -52,7 +55,8 @@ class customFieldDataAccessTest extends elis_database_test {
             field_category::TABLE              => 'elis_core',
             field_category_contextlevel::TABLE => 'elis_core',
             field_contextlevel::TABLE          => 'elis_core',
-            field_data_char::TABLE             => 'elis_core'
+            field_data_char::TABLE             => 'elis_core',
+            field_owner::TABLE                 => 'elis_core'
         );
     }
 
@@ -61,7 +65,7 @@ class customFieldDataAccessTest extends elis_database_test {
      *
      * @return object The custom field created
      */
-    protected function init_custom_field() {
+    protected function init_custom_field($cl = null) {
         //set up our custom field
         $field = new field(array(
             'name'        => 'testcustomfieldname',
@@ -69,8 +73,10 @@ class customFieldDataAccessTest extends elis_database_test {
             'multivalued' => 1
         ));
         $field_category = new field_category(array('name' => 'testcategoryname'));
-        $field = field::ensure_field_exists_for_context_level($field, self::contextlevel, $field_category);
+        $field = field::ensure_field_exists_for_context_level($field,
+                          $cl ? $cl : self::contextlevel, $field_category);
 
+       /*
         //set up the default data
         $default_params = array(
             'fieldid'   => $field->id,
@@ -79,6 +85,8 @@ class customFieldDataAccessTest extends elis_database_test {
         );
         $default_data = new field_data_char($default_params);
         $default_data->save();
+       */
+        field_data::set_for_context_and_field(NULL, $field, array('value1'));
 
         return $field;
     }
@@ -98,7 +106,7 @@ class customFieldDataAccessTest extends elis_database_test {
 
     /**
      * Validate that the field_data "set_for_context_and_field" method explicitly
-     * sets all customfield data even if contains the field's default value 
+     * sets all customfield data even if contains the field's default value
      */
     public function testSetForContextAndFieldAddsSelectedDefaultForMultivalueField() {
         global $DB;
@@ -135,7 +143,7 @@ class customFieldDataAccessTest extends elis_database_test {
                 'data'      => $datum
             );
             $exists = $DB->record_exists(field_data_char::TABLE, $params);
-            $this->assertTrue($exists); 
+            $this->assertTrue($exists);
         }
     }
 
@@ -167,7 +175,7 @@ class customFieldDataAccessTest extends elis_database_test {
     }
 
     /**
-     * Validate that, by default, the field_data "get_for_context_and_field" 
+     * Validate that, by default, the field_data "get_for_context_and_field"
      * method includes a custom field's default data when no data exists
      * for the appropriate context
      */
@@ -185,7 +193,7 @@ class customFieldDataAccessTest extends elis_database_test {
         //validate number of data records (one for specific context)
         $count = 0;
         $record = NULL;
-        foreach ($data as $datum) { 
+        foreach ($data as $datum) {
             $count++;
             $record = $datum;
         }
@@ -196,7 +204,7 @@ class customFieldDataAccessTest extends elis_database_test {
     }
 
     /**
-     * Validate that, when needed, the field_data "get_for_context_and_field" 
+     * Validate that, when needed, the field_data "get_for_context_and_field"
      * method excludes a custom field's default data when no data exists
      * for the appropriate context
      */
@@ -254,7 +262,7 @@ class customFieldDataAccessTest extends elis_database_test {
         //validate number of data records (one for specific context)
         $count = 0;
         $record = NULL;
-        foreach ($data as $datum) { 
+        foreach ($data as $datum) {
             $count++;
             $record = $datum;
         }
@@ -262,5 +270,16 @@ class customFieldDataAccessTest extends elis_database_test {
 
         $this->assertEquals($field->id, $record->fieldid);
         $this->assertEquals('value3', $record->data);
+    }
+
+    /**
+     * Test context names
+     * ensure_field_exists_for_context_level() correctly supports context names
+     *
+     */
+    public function testContextNames() {
+        $field = $this->init_custom_field('user');
+        $this->assertTrue(!empty($field));
+        $field->delete();
     }
 }

@@ -10,13 +10,13 @@ index b5ace5c..0b6b8ba 100644
 +            $parentplugins = array('mod', 'block', 'elis');
 +            foreach ($parentplugins as $parent) {
 +                $mods = get_plugin_list($parent);
-                 foreach ($mods as $mod => $moddir) {
-                     $modsubplugins = array();
-                     if (file_exists($moddir . '/db/subplugins.php')) {
+             foreach ($mods as $mod => $moddir) {
+                 $modsubplugins = array();
+                 if (file_exists($moddir . '/db/subplugins.php')) {
 @@ -148,7 +150,8 @@ class plugin_manager {
-                             $subplugin->typerootdir = $subplugintyperootdir;
-                             $modsubplugins[$subplugintype] = $subplugin;
-                         }
+                         $subplugin->typerootdir = $subplugintyperootdir;
+                         $modsubplugins[$subplugintype] = $subplugin;
+                     }
 -                $this->subpluginsinfo['mod_' . $mod] = $modsubplugins;
 +                        $this->subpluginsinfo[$parent . '_' . $mod] = $modsubplugins;
 +                    }
