@@ -1,0 +1,73 @@
+diff --git a/lib/moodlelib.php b/lib/moodlelib.php
+index 3abb77d..c019453 100644
+--- a/lib/moodlelib.php
++++ b/lib/moodlelib.php
+@@ -5065,6 +5065,7 @@ function get_mailer($action='get') {
+                 $mailer->SMTPDebug = true;
+             }
+             $mailer->Host          = $CFG->smtphosts;        // specify main and backup servers
++            $mailer->SMTPSecure    = $CFG->smtpsecure;       // specify secure connection protocol
+             $mailer->SMTPKeepAlive = $prevkeepalive;         // use previous keepalive
+ 
+             if ($CFG->smtpuser) {                            // Use SMTP authentication
+@@ -6372,6 +6373,8 @@ class core_string_manager implements string_manager {
+             if ($plugintype === 'mod') {
+                 // bloody mod hack
+                 $file = $pluginname;
++            } elseif (strncmp($plugintype, 'elis:', 5) === 0) {
++                $file = $pluginname;
+             } else {
+                 $file = $plugintype . '_' . $pluginname;
+             }
+@@ -7738,6 +7741,7 @@ function get_plugin_types($fullpaths=true) {
+                       'qbehaviour'    => 'question/behaviour',
+                       'qformat'       => 'question/format',
+                       'plagiarism'    => 'plagiarism',
++                      'elis'          => 'elis',
+                       'tool'          => $CFG->admin.'/tool',
+                       'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
+         );
+@@ -7753,6 +7757,28 @@ function get_plugin_types($fullpaths=true) {
+             }
+         }
+ 
++        $blocks = get_plugin_list('block');
++        foreach ($blocks as $block => $blockdir) {
++            if (file_exists("$blockdir/db/subplugins.php")) {
++                $subplugins = array();
++                include("$blockdir/db/subplugins.php");
++                foreach ($subplugins as $subtype=>$dir) {
++                    $info[$subtype] = $dir;
++                }
++            }
++        }
++
++        $plugins = get_plugin_list('elis');
++        foreach ($plugins as $plugin => $plugindir) {
++            if (file_exists("$plugindir/db/subplugins.php")) {
++                $subplugins = array();
++                include("$plugindir/db/subplugins.php");
++                foreach ($subplugins as $subtype=>$dir) {
++                    $info[$subtype] = $dir;
++                }
++            }
++        }
++
+         // local is always last!
+         $info['local'] = 'local';
+ 
+@@ -7792,6 +7818,14 @@ function get_plugin_list($plugintype) {
+         // mod is an exception because we have to call this function from get_plugin_types()
+         $fulldirs[] = $CFG->dirroot.'/mod';
+ 
++    } else if ($plugintype === 'block') {
++        // block is similarly an exception because we have to call this function from get_plugin_types()
++        $fulldirs[] = $CFG->dirroot.'/blocks';
++
++    } else if ($plugintype === 'elis') {
++        // elis is an exception because we have to call this function from get_plugin_types()
++        $fulldirs[] = $CFG->dirroot.'/elis';
++
+     } else if ($plugintype === 'theme') {
+         $fulldirs[] = $CFG->dirroot.'/theme';
+         // themes are special because they may be stored also in separate directory

@@ -1,0 +1,12 @@
+diff --git a/lib/javascript-static.js b/lib/javascript-static.js
+index f9b06ac..9dd360c 100644
+--- a/lib/javascript-static.js
++++ b/lib/javascript-static.js
+@@ -1305,6 +1305,7 @@ M.util.help_icon = {
+     },
+     display : function(event, args) {
+         event.preventDefault();
++        event.stopPropagation();
+         if (M.util.help_icon.instance === null) {
+             var Y = M.util.help_icon.Y;
+             Y.use('overlay', 'io-base', 'event-mouseenter', 'node', 'event-key', 'escape', function(Y) {

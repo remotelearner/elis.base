@@ -1,0 +1,50 @@
+diff --git a/message/lib.php b/message/lib.php
+index 478bad8..c953e21 100644
+--- a/message/lib.php
++++ b/message/lib.php
+@@ -775,6 +775,21 @@ function conversationsort($a, $b)
+ }
+ 
+ /**
++ * Sort function used to order messages in ascending order by time created
++ *
++ * @param object $a A message object
++ * @param object $b A message object
++ * @return integer
++ */
++function messagesort($a, $b)
++{
++    if ($a->timecreated == $b->timecreated) {
++        return 0;
++    }
++    return ($a->timecreated < $b->timecreated) ? -1 : 1;
++}
++
++/**
+  * Get the users recent event notifications
+  *
+  * @param object $user the current user
+@@ -1811,7 +1826,7 @@ function message_get_history($user1, $user2, $limitnum=0, $viewingnewmessages=fa
+                                                     array($user1->id, $user2->id, $user2->id, $user1->id, $user1->id),
+                                                     "timecreated $sort", '*', 0, $limitnum)) {
+         foreach ($messages_read as $message) {
+-            $messages[$message->timecreated] = $message;
++            $messages[] = $message;
+         }
+     }
+     if ($messages_new =  $DB->get_records_select('message', "((useridto = ? AND useridfrom = ?) OR
+@@ -1819,12 +1834,12 @@ function message_get_history($user1, $user2, $limitnum=0, $viewingnewmessages=fa
+                                                     array($user1->id, $user2->id, $user2->id, $user1->id, $user1->id),
+                                                     "timecreated $sort", '*', 0, $limitnum)) {
+         foreach ($messages_new as $message) {
+-            $messages[$message->timecreated] = $message;
++            $messages[] = $message;
+         }
+     }
+ 
+     //if we only want the last $limitnum messages
+-    ksort($messages);
++    usort($messages, 'messagesort');
+     $messagecount = count($messages);
+     if ($limitnum>0 && $messagecount>$limitnum) {
+         $messages = array_slice($messages, $messagecount-$limitnum, $limitnum, true);
