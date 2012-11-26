@@ -74,7 +74,7 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
         $this->_field = $field;
 
         if (!isset($options['report'])) {
-            error('No "report" option received when constructing autocomplete filter!');
+            print_error('autocomplete_noreport', 'elis_core');
         }
         $this->_parent_report = $options['report'];
         $this->parent_report_instance = php_report::get_default_instance($options['report']);

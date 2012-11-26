@@ -324,13 +324,13 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_NAMED, $db);
+            $sql_clauses = $filter->get_sql(true, "{{$tablename}}", SQL_PARAMS_NAMED, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_NAMED, $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, "{{$tablename}}", SQL_PARAMS_NAMED, $db);
         }
         if (isset($sql_clauses['join'])) {
-            $sql = "SELECT d.*
-                      FROM {{$tablename}} d
+            $sql = "SELECT {{$tablename}}.*
+                      FROM {{$tablename}}
                            {$sql_clauses['join']}";
             $parameters = $sql_clauses['join_parameters'];
             if (isset($sql_clauses['where'])) {
@@ -381,13 +381,13 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_NAMED, $db);
+            $sql_clauses = $filter->get_sql(true, "{{$tablename}}", SQL_PARAMS_NAMED, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_NAMED, $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, "{{$tablename}}", SQL_PARAMS_NAMED, $db);
         }
         if (isset($sql_clauses['join'])) {
-            $sql = "SELECT COUNT(DISTINCT d.id)
-                      FROM {{$tablename}} d
+            $sql = "SELECT COUNT(DISTINCT {{$tablename}}.id)
+                      FROM {{$tablename}}
                            {$sql_clauses['join']}";
             $parameters = $sql_clauses['join_parameters'];
             if (isset($sql_clauses['where'])) {
@@ -432,13 +432,13 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_QM, $db);
+            $sql_clauses = $filter->get_sql(true, "{{$tablename}}", SQL_PARAMS_QM, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_QM, $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, "{{$tablename}}", SQL_PARAMS_QM, $db);
         }
         if (isset($sql_clauses['join'])) {
             $sql = "SELECT 'x'
-                      FROM {{$tablename}} d
+                      FROM {{$tablename}}
                            {$sql_clauses['join']}";
             $parameters = $sql_clauses['join_parameters'];
             if (isset($sql_clauses['where'])) {

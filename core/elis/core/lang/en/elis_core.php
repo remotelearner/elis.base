@@ -27,6 +27,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['allitemsselected'] = 'All items selected';
+$string['autocomplete_nofields'] = 'No valid search_fields option received when constructing autocomplete filter';
+$string['autocomplete_noreport'] = 'No "report" option received when constructing autocomplete filter!';
+$string['autocomplete_notable'] = 'No table specified when constructing autocomplete filter';
 $string['data_object_construct_invalid_source'] = 'Attempted to construct a data_object from an invalid source';
 $string['data_object_validation_not_empty'] = '{$a->tablename} record cannot have empty {$a->field} field';
 $string['data_object_validation_unique'] = '{$a->tablename} record must have unique {$a->fields} fields';

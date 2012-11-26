@@ -32,12 +32,12 @@ class generalized_filter_autocomplete extends generalized_filter_autocomplete_ba
 
         //required options
         if (empty($options['table'])) {
-            error('No table specified when constructing autocomplete filter');
+            print_error('autocomplete_notable', 'elis_core');
         }
         $this->_table = $options['table'];
 
         if (empty($options['search_fields']) || !is_array($options['search_fields'])) {
-            error('No valid search_fields option received when constructing autocomplete filter');
+            print_error('autocomplete_nofields', 'elis_core');
         }
         $this->_fields = $options['search_fields'];
 

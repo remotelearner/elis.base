@@ -56,7 +56,7 @@ foreach ($filters as $i => $filter) {
         break;
     }
 }
-if (empty($found_filter) || strpos($found_filter->type,'autocomplete_') !== 0) {
+if (empty($found_filter) || strpos($found_filter->type,'autocomplete') !== 0) {
     echo 'Error2';
     die();
 }
@@ -145,6 +145,7 @@ if ($mode === 'search') {
             <style>
                 tr:hover{background-color:#efe;}
                 .mform {width:95%;}
+                .mform .fitem {width:auto;}
                 .saved {color:#0a0;}
             </style>
         </head>
