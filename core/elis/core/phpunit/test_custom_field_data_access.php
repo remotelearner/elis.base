@@ -63,6 +63,8 @@ class customFieldDataAccessTest extends elis_database_test {
     /**
      * Initialize our custom field data, and persist in the database
      *
+     * @param  mixed  $cl optional contextlevel to use,
+                          default null for self::contextlevel
      * @return object The custom field created
      */
     protected function init_custom_field($cl = null) {
@@ -273,11 +275,11 @@ class customFieldDataAccessTest extends elis_database_test {
     }
 
     /**
-     * Test context names
+     * Validate fix for ELIS-7545
      * ensure_field_exists_for_context_level() correctly supports context names
      *
      */
-    public function testContextNames() {
+    public function testELIS7545() {
         $field = $this->init_custom_field('user');
         $this->assertTrue(!empty($field));
         $field->delete();

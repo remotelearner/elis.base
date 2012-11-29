@@ -83,6 +83,12 @@ function xmldb_eliscoreplugins_user_activity_upgrade($oldversion) {
         upgrade_plugin_savepoint($result, 2012021400, 'eliscoreplugins','user_activity');
     }
 
+    if ($result && $oldversion < 2012110200) {
+        $sql = "UPDATE {etl_user_module_activity} SET duration = 3600 WHERE duration > 3600";
+        $DB->execute($sql);
+        upgrade_plugin_savepoint($result, 2012110200, 'eliscoreplugins','user_activity');
+    }
+
     return $result;
 }
 

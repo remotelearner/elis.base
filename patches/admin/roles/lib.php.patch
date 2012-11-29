@@ -1,5 +1,5 @@
 diff --git a/admin/roles/lib.php b/admin/roles/lib.php
-index d2dbaba..01eac0a 100644
+index c201d35..f997298 100644
 --- a/admin/roles/lib.php
 +++ b/admin/roles/lib.php
 @@ -550,6 +550,10 @@ class define_role_table_advanced extends capability_table_with_risks {

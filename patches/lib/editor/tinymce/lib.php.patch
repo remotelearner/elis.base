@@ -1,8 +1,8 @@
 diff --git a/lib/editor/tinymce/lib.php b/lib/editor/tinymce/lib.php
-index c9ed133..3a6c4e9 100644
+index 9e53fc7..544c744 100644
 --- a/lib/editor/tinymce/lib.php
 +++ b/lib/editor/tinymce/lib.php
-@@ -183,6 +183,14 @@ class tinymce_texteditor extends texteditor {
+@@ -191,6 +191,14 @@ class tinymce_texteditor extends texteditor {
          if (!empty($options['required'])) {
              $params['init_instance_callback'] = 'M.editor_tinymce.onblur_event';
          }

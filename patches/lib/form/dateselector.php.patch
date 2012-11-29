@@ -1,30 +1,17 @@
 diff --git a/lib/form/dateselector.php b/lib/form/dateselector.php
-index 38d035d..49814a1 100644
+index 52c0201..eff90c9 100644
 --- a/lib/form/dateselector.php
 +++ b/lib/form/dateselector.php
-@@ -149,7 +149,7 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
-                     $value = time();
-                 }
-                 if (!is_array($value)) {
--                    $currentdate = usergetdate($value);
-+                    $currentdate = usergetdate($value, $this->_options['timezone']);
-                     $value = array(
-                         'day' => $currentdate['mday'],
-                         'month' => $currentdate['mon'],
-@@ -192,9 +192,30 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
-     // }}}
-     // {{{ accept()
+@@ -193,6 +193,7 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
+     }
  
-+    /**
-+    * RL edit
-+    * Accepts a renderer
-+    *
-+    * @param object     An HTML_QuickForm_Renderer object
-+    * @param bool       Whether a group is required
-+    * @param string     An error message associated with a group
-+    * @access public
-+    * @return void
-+    */
+     /**
++     * RL edit
+      * Accepts a renderer
+      *
+      * @param HTML_QuickForm_Renderer $renderer An HTML_QuickForm_Renderer object
+@@ -201,7 +202,18 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
+      */
      function accept(&$renderer, $required = false, $error = null)
      {
 +        //only display a disable static element or don't display the optional check box if this element is frozen
@@ -41,4 +28,4 @@ index 38d035d..49814a1 100644
 +        //RL edit end
      }
  
-     // }}}
+     /**

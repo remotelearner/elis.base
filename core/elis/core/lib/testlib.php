@@ -513,8 +513,8 @@ class overlay_database extends moodle_database {
         return $this->basedb->commit_transaction();
     }
 
-    public function rollback_delegated_transaction(moodle_transaction $transaction) {
-        return $this->basedb->rollback_delegated_transaction($transaction);
+    public function rollback_delegated_transaction(moodle_transaction $transaction, Exception $e) {
+        return $this->basedb->rollback_delegated_transaction($transaction, $e);
     }
 
     protected function rollback_transaction() {
@@ -530,8 +530,8 @@ class overlay_database extends moodle_database {
         return $this->basedb->session_lock_supported();
     }
 
-    public function get_session_lock($rowid) {
-        return $this->basedb->get_session_lock($rowid);
+    public function get_session_lock($rowid, $timeout) {
+        return $this->basedb->get_session_lock($rowid, $timeout);
     }
 
     public function release_session_lock($rowid) {
@@ -613,7 +613,9 @@ abstract class elis_database_test extends PHPUnit_Framework_TestCase {
     /**
      * Return the list of tables that should be overlayed.
      */
-    abstract static protected function get_overlay_tables();
+    static protected function get_overlay_tables() {
+        return array();
+    }
 
     /**
      * Return the list of tables that should be ignored for writes.

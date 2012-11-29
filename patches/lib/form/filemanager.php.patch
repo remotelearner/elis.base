@@ -1,0 +1,33 @@
+diff --git a/lib/form/filemanager.php b/lib/form/filemanager.php
+index f6d968d..c1444c0 100644
+--- a/lib/form/filemanager.php
++++ b/lib/form/filemanager.php
+@@ -227,7 +227,27 @@ class MoodleQuickForm_filemanager extends HTML_QuickForm_element {
+         $subdirs     = $this->_options['subdirs'];
+         $maxbytes    = $this->_options['maxbytes'];
+         $draftitemid = $this->getValue();
+-        $accepted_types = $this->_options['accepted_types'];
++
++        //ELIS-7712: check if accepted_types is a group!!!
++        $intypes     = (array) $this->_options['accepted_types'];
++        $accepted_types = array();
++        $mimearray = & get_mimetypes_array();
++        foreach ($intypes as $intype) {
++            if (strpos($intype, '.') === 0) {
++                $intype = substr($intype, 1);
++            }
++            if ($intype == '*') {
++                $accepted_types = array('*');
++                break;
++            }
++            foreach ($mimearray as $mimetype => $mimeinfo) {
++                if (!empty($mimeinfo['type']) &&
++                    (($intype == $mimetype) || ($intype == $mimeinfo['type']) ||
++                     (!empty($mimeinfo['groups']) && in_array($intype, $mimeinfo['groups'])))) {
++                    $accepted_types[] = '.'. $mimetype;
++                }
++            }
++        }
+ 
+         if (empty($draftitemid)) {
+             // no existing area info provided - let's use fresh new draft area

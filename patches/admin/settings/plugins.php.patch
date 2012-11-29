@@ -1,5 +1,5 @@
 diff --git a/admin/settings/plugins.php b/admin/settings/plugins.php
-index 3227430..7bebea6 100644
+index 638aa40..f31faa7 100644
 --- a/admin/settings/plugins.php
 +++ b/admin/settings/plugins.php
 @@ -492,6 +492,16 @@ foreach (get_plugin_list('tool') as $plugin => $plugindir) {
@@ -18,4 +18,4 @@ index 3227430..7bebea6 100644
 +
  /// Add all local plugins - must be always last!
  if ($hassiteconfig) {
-     $ADMIN->add('modules', new admin_category('localplugins', get_string('localplugins')));
+     $ADMIN->add('modules', new admin_category('localplugins', new lang_string('localplugins')));

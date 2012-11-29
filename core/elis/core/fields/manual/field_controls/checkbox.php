@@ -10,35 +10,24 @@ require_once elis::plugin_file('elisfields_manual', 'custom_fields.php');
  * @param  moodleform or HTML_QuickForm  $form       The form to add the appropriate element to
  * @param  field                         $field      The definition of the field defining the controls
  * @param  boolean                       $as_filter  Whether to display a "choose" message
- * @param  string                        $contextname Optional context name/entity
  */
-function checkbox_control_display($form, $mform, $customdata, $field, $as_filter = false, $contextname = 'system') {
+function checkbox_control_display($form, $mform, $customdata, $field, $as_filter=false) {
     if (!($form instanceof moodleform)) {
         $mform = $form;
         $form->_customdata = null;
     }
-    $manual = new field_owner($field->owners['manual']);
-    $manual_params = unserialize($manual->params);
-    if (!empty($manual_params['options_source']) || !empty($manual_params['options'])) {
+
+    if ($field->datatype == 'bool' || $field->datatype == 'int' || $field->datatype == 'num') {
+        $checkbox = $mform->addElement('advcheckbox', "field_{$field->shortname}", $field->name);
+        manual_field_add_help_button($mform, "field_{$field->shortname}", $field);
+    } else {
         if ($as_filter || $field->multivalued) {
 //            require_once(CURMAN_DIRLOCATION.'/plugins/manual/field_controls/menu.php');
             require_once elis::plugin_file('elisfields_manual', 'field_controls/menu.php');
             return menu_control_display($form, $mform, $customdata, $field, $as_filter);
         }
-        $options = explode("\n", $manual_params['options']);
-        $source = $manual_params['options_source'];
-        if (!empty($source)) {
-            $srcfile = elis::plugin_file('elisfields_manual', "sources/{$source}.php");
-            if (file_exists($srcfile)) {
-                require_once elis::plugin_file('elisfields_manual','sources.php');
-                require_once($srcfile);
-                $classname = "manual_options_{$source}";
-                $plugin = new $classname();
-                if ($plugin && $plugin->is_applicable($contextname)) {
-                    $options = $plugin->get_options($customdata);
-                }
-            }
-        }
+        $manual = new field_owner($field->owners['manual']);
+        $options = explode("\n", $manual->param_options);
         $controls = array();
         foreach ($options as $option) {
             $option = trim($option);
@@ -51,10 +40,7 @@ function checkbox_control_display($form, $mform, $customdata, $field, $as_filter
             }
         }
         $mform->addGroup($controls, "field_{$field->shortname}", $field->name, '<br />', false);
-    } else {
-        $checkbox = $mform->addElement('advcheckbox', "field_{$field->shortname}", $field->name);
     }
-    manual_field_add_help_button($mform, "field_{$field->shortname}", $field);
 }
 
 function checkbox_control_set_value($form, $data, $field) {

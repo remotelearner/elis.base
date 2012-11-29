@@ -458,7 +458,7 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2012032100, 'elis', 'core');
     }
 
-    if ($result && $oldversion < 2012032101) {
+    if ($result && $oldversion < 2012091900) {
         // clear out duplicate default values from elis_field_data tables
         $tables = array('elis_field_data_char',
                         'elis_field_data_int',
@@ -472,7 +472,6 @@ function xmldb_elis_core_upgrade($oldversion=0) {
             $table = new xmldb_table('old_'. $data_table);
             $dbman->drop_table($table);
         }
-        upgrade_plugin_savepoint(true, 2012032101, 'elis', 'core');
     }
 
     return $result;

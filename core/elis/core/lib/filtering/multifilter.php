@@ -316,7 +316,8 @@ class generalized_filter_multifilter {
                     $this->_choices[$field_identifier] =
                             array('startyear' => $params['startyear'],
                                   'stopyear'  => $params['stopyear'],
-                                  'inctime'   => $params['inctime']);
+                                  'inctime'   => isset($params['inctime'])
+                                                 ? $params['inctime'] : false);
                     break;
 
                 case 'checkbox':

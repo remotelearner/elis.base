@@ -24,6 +24,10 @@
  *
  */
 
+if (!defined('CLI_SCRIPT')) {
+    define('CLI_SCRIPT', true);
+}
+
 if (!defined('PHPUNIT_SCRIPT')) {
     define('PHPUNIT_SCRIPT', true);
 }

@@ -1,8 +1,8 @@
 diff --git a/user/profile/field/menu/field.class.php b/user/profile/field/menu/field.class.php
-index 6755b64..21342c6 100644
+index 36b711a..4780582 100644
 --- a/user/profile/field/menu/field.class.php
 +++ b/user/profile/field/menu/field.class.php
-@@ -20,12 +20,17 @@ class profile_field_menu extends profile_field_base {
+@@ -20,12 +20,18 @@ class profile_field_menu extends profile_field_base {
              $this->options[''] = get_string('choose').'...';
          }
          foreach($options as $key => $option) {
@@ -10,7 +10,8 @@ index 6755b64..21342c6 100644
 +            //$this->options[$key] = format_string($option);//multilang formatting
 +            $option = format_string($option); // multilang formatting
 +            $this->options[$option] = $option;
-+            // BJB110906: ELIS-3099, MDL-16764
++            // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
++
          }
  
          /// Set the data key
@@ -18,23 +19,18 @@ index 6755b64..21342c6 100644
 -            $this->datakey = (int)array_search($this->data, $this->options);
 +            //$this->datakey = (int)array_search($this->data, $this->options);
 +            $this->datakey = array_search($this->data, $this->options);
-+            // BJB110906: ELIS-3099, MDL-16764
++            // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
          }
      }
  
-@@ -58,7 +63,9 @@ class profile_field_menu extends profile_field_base {
-      * @param   integer   the key returned from the select input in the form
+@@ -59,7 +65,9 @@ class profile_field_menu extends profile_field_base {
+      * @param   stdClass $datarecord The object that will be used to save the record
       */
-     function edit_save_data_preprocess($key) {
--        return isset($this->options[$key]) ? $this->options[$key] : NULL;
-+        //return isset($this->options[$key]) ? $this->options[$key] : NULL;
-+        return isset($this->options[$key]) ? $key : NULL;
-+        // BJB110906: ELIS-3099, MDL-16764
+     function edit_save_data_preprocess($data, $datarecord) {
+-        return isset($this->options[$data]) ? $this->options[$data] : NULL;
++        //return isset($this->options[$data]) ? $this->options[$data] : NULL;
++        return isset($this->options[$data]) ? $data : NULL;
++        // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
      }
  
      /**
-@@ -86,4 +93,3 @@ class profile_field_menu extends profile_field_base {
-     }
- }
- 
--

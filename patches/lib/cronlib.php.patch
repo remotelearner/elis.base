@@ -1,8 +1,8 @@
 diff --git a/lib/cronlib.php b/lib/cronlib.php
-index 3c6c0d3..124eac3 100644
+index 6562052..3d5421f 100644
 --- a/lib/cronlib.php
 +++ b/lib/cronlib.php
-@@ -412,6 +412,11 @@ function cron_run() {
+@@ -418,6 +418,11 @@ function cron_run() {
      cron_execute_plugin_type('tool', 'admin tools');
  
  

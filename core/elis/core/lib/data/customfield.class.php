@@ -191,7 +191,7 @@ class field extends elis_data_object {
      * or the name of the context level from the ELIS Program Manager
      */
     public static function get_for_context_level($contextlevel) {
-        global $DB;
+        global $CFG, $DB;
         if (!$contextlevel) {
             return array();
         }
@@ -227,7 +227,7 @@ class field extends elis_data_object {
      * @param string $name the shortname of the field
      */
     public static function get_for_context_level_with_name($contextlevel, $name) {
-        global $DB;
+        global $CFG, $DB;
         if (!$contextlevel) {
             return false;
         }
@@ -796,8 +796,9 @@ abstract class field_data extends elis_data_object {
         $data_table = $field->data_table();
         // FIXME: check exclude, unique, etc
         if ($field->multivalued) {
-            // find what data already exists (excluding default value)
-            $records = self::get_for_context_and_field($context, $field, ($context == NULL));
+            // find what data already exists (excluding default value if we have a context, including if we don't)
+            $include_default = (is_null($contextid)) ? true : false;
+            $records = self::get_for_context_and_field($context, $field, $include_default);
             $records = $records ? $records : array();
             $todelete = array();
             $existing = array();

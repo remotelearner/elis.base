@@ -99,6 +99,7 @@ class context_elis extends context {
     }
 }
 
+
 /**
  * Implement some of the methods from the Moodle 'context_helper' class that are specific to the properties defined
  * within this class.

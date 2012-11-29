@@ -10,9 +10,8 @@ require_once elis::plugin_file('elisfields_manual', 'custom_fields.php');
  * @param  moodleform or HTML_QuickForm  $form       The form to add the appropriate element to
  * @param  field                         $field      The definition of the field defining the controls
  * @param  boolean                       $as_filter  Whether to display a "choose" message
- * @param  string                        $contextname Optional context name/entity
  */
-function menu_control_display($form, $mform, $customdata, $field, $as_filter = false, $contextname= 'system') {
+function menu_control_display($form, $mform, $customdata, $field, $as_filter=false) {
     if (!($form instanceof moodleform)) {
         $mform = $form;
         $form->_customdata = null;
@@ -27,23 +26,18 @@ function menu_control_display($form, $mform, $customdata, $field, $as_filter = f
                 $options = array('' => get_string("choose"));
             }
             foreach($tmpoptions as $key => $option) {
-                $option = trim($option, "\n\r");
-                $option = format_string($option);
-                $options[$option] = $option;//multilang formatting
+                $option = trim($option);
+                $options[$option] = format_string($option);//multilang formatting
             }
         } else {
-            $options = array();
             $source = $manual->param_options_source;
-            $srcfile = elis::plugin_file('elisfields_manual', "sources/{$source}.php");
-            if (file_exists($srcfile)) {
-                require_once elis::plugin_file('elisfields_manual', 'sources.php');
-                require_once($srcfile) ;
-                $classname = "manual_options_{$source}";
-                $plugin = new $classname();
-                if ($plugin && $plugin->is_applicable($contextname)) {
-                    $options = $plugin->get_options($customdata);
-                }
-            }
+
+            require_once elis::plugin_file('elisfields_manual', 'sources.php');
+            require_once elis::plugin_file('elisfields_manual', "sources/$source.php");
+            $classname = "manual_options_$source";
+            $plugin = new $classname();
+
+            $options = $plugin->get_options($customdata);
         }
     } else {
         if ($as_filter) {

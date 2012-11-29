@@ -1,34 +1,34 @@
 diff --git a/admin/renderer.php b/admin/renderer.php
-index 93b22c6..0fdb237 100644
+index 56c9056..2d68add 100644
 --- a/admin/renderer.php
 +++ b/admin/renderer.php
-@@ -648,12 +648,14 @@ class core_admin_renderer extends plugin_renderer_base {
-             get_string('systemname', 'core_plugin'),
+@@ -913,12 +913,13 @@ class core_admin_renderer extends plugin_renderer_base {
+             get_string('displayname', 'core_plugin'),
              get_string('source', 'core_plugin'),
              get_string('version', 'core_plugin'),
 +            get_string('release', 'core_plugin'), // ELIS_2.0.0
              get_string('availability', 'core_plugin'),
-             get_string('settings', 'core_plugin'),
-             get_string('uninstall','core_plugin'),
+             get_string('actions', 'core_plugin'),
+             get_string('notes','core_plugin'),
          );
          $table->colclasses = array(
--            'displayname', 'systemname', 'source', 'version', 'availability', 'settings', 'uninstall',
-+            'displayname', 'systemname', 'source', 'version', 'release', // ELIS_2.0.0
-+            'availability', 'settings', 'uninstall',
+-            'pluginname', 'source', 'version', 'availability', 'actions', 'notes'
++            'pluginname', 'source', 'version', 'release', 'availability', 'actions', 'notes' // ELIS 2.x
          );
  
          foreach ($plugininfo as $type => $plugins) {
-@@ -704,6 +706,24 @@ class core_admin_renderer extends plugin_renderer_base {
+@@ -968,6 +969,25 @@ class core_admin_renderer extends plugin_renderer_base {
  
                  $version = new html_table_cell($plugin->versiondb);
  
 +                // ELIS_2.0.0 Release
 +                $versionfile = $plugin->rootdir .'/version.php';
++                $module = new stdClass; // ELIS-7928: was getting previous value
 +                if (file_exists($versionfile)) {
 +                    include($versionfile);
 +                }
 +
-+                // ELIS-7214 -- Activity modules use a $module object in their version.php file so check that for a release
++                // ELIS-7045 -- Activity modules use a $module object in their version.php file so check that for a release
 +                //              property as well.
 +                if (isset($plugin->release)) {
 +                    $rel = $plugin->release;
@@ -43,13 +43,12 @@ index 93b22c6..0fdb237 100644
                  $isenabled = $plugin->is_enabled();
                  if (is_null($isenabled)) {
                      $availability = new html_table_cell('');
-@@ -738,7 +758,8 @@ class core_admin_renderer extends plugin_renderer_base {
-                 }
+@@ -1013,7 +1033,7 @@ class core_admin_renderer extends plugin_renderer_base {
+                 $notes = new html_table_cell($requiredby.$updateinfo);
  
                  $row->cells = array(
--                    $displayname, $systemname, $source, $version, $availability, $settings, $uninstall
-+                    $displayname, $systemname, $source, $version, $release, // ELIS_2.0.0
-+                    $availability, $settings, $uninstall
+-                    $pluginname, $source, $version, $availability, $actions, $notes
++                    $pluginname, $source, $version, $release, $availability, $actions, $notes
                  );
                  $table->data[] = $row;
              }

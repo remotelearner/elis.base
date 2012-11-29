@@ -56,18 +56,19 @@ function user_activity_add_session($userid, $courseid, $session_start, $session_
             mtrace("** adding {$length} second session for user {$userid} in course {$courseid}");
         }
         // split the session into hours
-        $start_hour = floor($session_start/3600)*3600;
+        $start_hour = floor($session_start/HOURSECS)*HOURSECS;
         $first = true;
-        while ($session_end > $start_hour + 3600) {
-            $session_hour_duration = $start_hour + 3600 - $session_start;
-            if ($rec = $DB->get_record(ETL_TABLE,
-                                       array('userid'   => $userid,
-                                             'courseid' => $courseid,
-                                             'hour'     => $start_hour))) {
+        while ($session_end > $start_hour + HOURSECS) {
+            $session_hour_duration = $start_hour + HOURSECS - $session_start;
+            $params = array('userid'   => $userid,
+                            'courseid' => $courseid,
+                            'hour'     => $start_hour
+                      );
+            if ($rec = $DB->get_record(ETL_TABLE, $params)) {
                 $rec->duration += $session_hour_duration;
-                if ($rec->duration <= 3600) {
+                if ($rec->duration <= HOURSECS) {
                     $DB->update_record(ETL_TABLE, $rec);
-                } else {
+                } else if ($CFG->debug >= DEBUG_DEVELOPER) {
                     mtrace("\nuser_activity_add_session(userid = {$userid}, courseid = {$courseid}, session_start = {$session_start}, session_end = {$session_end}): Warning: duration > 3600\n");
                 }
             } else {
@@ -78,19 +79,20 @@ function user_activity_add_session($userid, $courseid, $session_start, $session_
                 $rec->duration = $session_hour_duration;
                 $DB->insert_record(ETL_TABLE, $rec);
             }
-            $start_hour += 3600;
+            $start_hour += HOURSECS;
             $session_start = $start_hour;
             $first = false;
         }
         $remainder = $session_end - $session_start;
-        if ($rec = $DB->get_record(ETL_TABLE,
-                                   array('userid' => $userid,
-                                         'courseid' => $courseid,
-                                         'hour' => $start_hour))) {
+        $params = array('userid'   => $userid,
+                        'courseid' => $courseid,
+                        'hour'     => $start_hour
+                  );
+        if ($rec = $DB->get_record(ETL_TABLE, $params)) {
             $rec->duration += $remainder;
-            if ($rec->duration <= 3600) {
+            if ($rec->duration <= HOURSECS) {
                 $DB->update_record(ETL_TABLE, $rec);
-            } else {
+            } else if ($CFG->debug >= DEBUG_DEVELOPER) {
                 mtrace("\nuser_activity_add_session(userid = {$userid}, courseid = {$courseid}, session_start = {$session_start}, session_end = {$session_end}): Warning: remainder duration > 3600\n");
             }
         } else {
@@ -123,18 +125,19 @@ function user_module_activity_add_session($userid, $courseid, $cmid, $session_st
             mtrace("** adding {$length} second session for user {$userid} in course {$courseid}, module {$cmid}");
         }
         // split the session into hours
-        $start_hour = floor($session_start/3600)*3600;
+        $start_hour = floor($session_start/HOURSECS)*HOURSECS;
         $first = true;
-        while ($session_end > $start_hour + 3600) {
-            $session_hour_duration = $start_hour + 3600 - $session_start;
-            if ($rec = $DB->get_record(ETL_MOD_TABLE,
-                                       array('userid' => $userid,
-                                             'cmid'   => $cmid,
-                                             'hour'   => $start_hour))) {
+        while ($session_end > $start_hour + HOURSECS) {
+            $session_hour_duration = $start_hour + HOURSECS - $session_start;
+            $params = array('userid' => $userid,
+                            'cmid'   => $cmid,
+                            'hour'   => $start_hour
+                      );
+            if ($rec = $DB->get_record(ETL_MOD_TABLE, $params)) {
                 $rec->duration += $session_hour_duration;
-                if ($rec->duration <= 3600) {
+                if ($rec->duration <= HOURSECS) {
                     $DB->update_record(ETL_MOD_TABLE, $rec);
-                } else {
+                } else if ($CFG->debug >= DEBUG_DEVELOPER) {
                     mtrace("\nuser_module_activity_add_session(userid = {$userid}, courseid = {$courseid}, cmid = {$cmid}, session_start = {$session_start}, session_end = {$session_end}): Warning: duration > 3600\n");
                 }
             } else {
@@ -146,19 +149,20 @@ function user_module_activity_add_session($userid, $courseid, $cmid, $session_st
                 $rec->duration = $session_hour_duration;
                 $DB->insert_record(ETL_MOD_TABLE, $rec);
             }
-            $start_hour += 3600;
+            $start_hour += HOURSECS;
             $session_start = $start_hour;
             $first = false;
         }
         $remainder = $session_end - $session_start;
-        if ($rec = $DB->get_record(ETL_MOD_TABLE,
-                                   array('userid' => $userid,
-                                         'cmid'   => $cmid,
-                                         'hour'   => $start_hour))) {
+        $params = array('userid' => $userid,
+                        'cmid'   => $cmid,
+                        'hour'   => $start_hour
+                  );
+        if ($rec = $DB->get_record(ETL_MOD_TABLE, $params)) {
             $rec->duration += $remainder;
-            if ($rec->duration <= 3600) {
+            if ($rec->duration <= HOURSECS) {
                 $DB->update_record(ETL_MOD_TABLE, $rec);
-            } else {
+            } else if ($CFG->debug >= DEBUG_DEVELOPER) {
                 mtrace("\nuser_module_activity_add_session(userid = {$userid}, courseid = {$courseid}, cmid = {$cmid}, session_start = {$session_start}, session_end = {$session_end}): Warning: duration > 3600\n");
             }
         } else {
