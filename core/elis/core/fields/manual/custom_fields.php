@@ -69,6 +69,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
         $attrs['manual_field_control']['onchange'] = '';
     }
     $attrs['manual_field_control']['onchange'] .= 'switchFieldOptions();';
+    $attrs['manual_field_inctime']['group'] = 1;
 
     $form->addElement('html', '<script type="text/javascript">
         function switchFieldOptions() {
@@ -231,7 +232,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
     $form->setDefault('manual_field_startyear', 1970);
     $form->addElement('select', 'manual_field_stopyear', get_string('options_stopyear', 'elisfields_manual'), $year_opts, $attrs['manual_field_stopyear']);
     $form->setDefault('manual_field_stopyear', 2038);
-    $form->addElement('checkbox', 'manual_field_inctime', get_string('options_inctime', 'elisfields_manual'), '', $attrs['manual_field_inctime']); // TBD
+    $form->addElement('advcheckbox', 'manual_field_inctime', get_string('options_inctime', 'elisfields_manual'), '', $attrs['manual_field_inctime']); // TBD
     $form->setDefault('manual_field_inctime', false);
     $form->addElement('html', '</fieldset>');
 }
@@ -547,33 +548,34 @@ function manual_field_validation($data, $field, $contextid) {
             }
         }
         if (is_null($errstr) && $field->forceunique) {
+            $curcontext = -1;
+            $vals = null;
+
             $where = "contextid != {$contextid} AND fieldid = {$field->id}";
-            if ($recs = $DB->get_records_select($field->data_table(), $where,
-                                 null, '', 'id, contextid, data')) {
-                $curcontext = -1;
-                $vals = null;
-                foreach ($recs AS $rec) {
-                    if ($curcontext != $rec->contextid) {
-                        if (!empty($vals)) {
-                            sort($vals);
-                            if ($vals == $fielddata) {
-                                $errstr = get_string('valuealreadyused');
-                                // TBD^^^ "[These/This combination of] values already uesd!"
-                                $vals = null;
-                                break;
-                            }
+            $recs = $DB->get_recordset_select($field->data_table(), $where, null, '', 'id, contextid, data');
+            foreach ($recs AS $rec) {
+                if ($curcontext != $rec->contextid) {
+                    if (!empty($vals)) {
+                        sort($vals);
+                        if ($vals == $fielddata) {
+                            $errstr = get_string('valuealreadyused');
+                            // TBD^^^ "[These/This combination of] values already uesd!"
+                            $vals = null;
+                            break;
                         }
-                        $curcontext = $rec->contextid;
-                        $vals = array();
                     }
-                    $vals[] = $rec->data;
+                    $curcontext = $rec->contextid;
+                    $vals = array();
                 }
-                if (!empty($vals)) {
-                    sort($vals);
-                    if ($vals == $fielddata) {
-                        $errstr = get_string('valuealreadyused');
-                        // TBD^^^ "[These/This combination of] values already uesd!"
-                    }
+                $vals[] = $rec->data;
+            }
+            unset($recs);
+
+            if (!empty($vals)) {
+                sort($vals);
+                if ($vals == $fielddata) {
+                    $errstr = get_string('valuealreadyused');
+                    // TBD^^^ "[These/This combination of] values already uesd!"
                 }
             }
         }

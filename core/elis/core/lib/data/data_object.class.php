@@ -324,13 +324,13 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_NAMED, $db);
+            $sql_clauses = $filter->get_sql(true, "{{$tablename}}", SQL_PARAMS_NAMED, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_NAMED, $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, "{{$tablename}}", SQL_PARAMS_NAMED, $db);
         }
         if (isset($sql_clauses['join'])) {
-            $sql = "SELECT d.*
-                      FROM {{$tablename}} d
+            $sql = "SELECT {{$tablename}}.*
+                      FROM {{$tablename}}
                            {$sql_clauses['join']}";
             $parameters = $sql_clauses['join_parameters'];
             if (isset($sql_clauses['where'])) {
@@ -381,13 +381,13 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_NAMED, $db);
+            $sql_clauses = $filter->get_sql(true, "{{$tablename}}", SQL_PARAMS_NAMED, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_NAMED, $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, "{{$tablename}}", SQL_PARAMS_NAMED, $db);
         }
         if (isset($sql_clauses['join'])) {
-            $sql = "SELECT COUNT(DISTINCT d.id)
-                      FROM {{$tablename}} d
+            $sql = "SELECT COUNT(DISTINCT {{$tablename}}.id)
+                      FROM {{$tablename}}
                            {$sql_clauses['join']}";
             $parameters = $sql_clauses['join_parameters'];
             if (isset($sql_clauses['where'])) {
@@ -432,13 +432,13 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_QM, $db);
+            $sql_clauses = $filter->get_sql(true, "{{$tablename}}", SQL_PARAMS_QM, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_QM, $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, "{{$tablename}}", SQL_PARAMS_QM, $db);
         }
         if (isset($sql_clauses['join'])) {
             $sql = "SELECT 'x'
-                      FROM {{$tablename}} d
+                      FROM {{$tablename}}
                            {$sql_clauses['join']}";
             $parameters = $sql_clauses['join_parameters'];
             if (isset($sql_clauses['where'])) {
@@ -832,18 +832,20 @@ class elis_data_object {
         }
 
         // Get all database fields to make sure all are in data_object
-        $recs = $this->_db->get_records($this::TABLE, null, '', '*', 0, 1);
-        if ($rec = current($recs)) {
-            foreach ($rec as $key => $value) {
-                if (!in_array($key, $dbfields)) {
-                    error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$key} (\$_dbfield_{$key})");
-                    $ret = false;
+        $recs = $this->_db->get_recordset($this::TABLE, null, '', '*', 0, 1);
+        if ($recs->valid()) {
+            foreach ($recs as $rec) {
+                foreach ($rec as $key => $value) {
+                    if (!in_array($key, $dbfields)) {
+                        error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$key} (\$_dbfield_{$key})");
+                        $ret = false;
+                    }
                 }
             }
         } else {
             if ($this->_db->get_dbfamily() == 'mysql') {
                 $sql = 'SHOW COLUMNS FROM {'. $this::TABLE .'}';
-                $recs = $this->_db->get_records_sql($sql);
+                $recs = $this->_db->get_recordset_sql($sql);
                 foreach ($recs as $rec) {
                     if (!in_array($rec->field, $dbfields)) {
                         error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$rec->field} (\$_dbfield_{$rec->field})");
@@ -854,6 +856,7 @@ class elis_data_object {
                 error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): WARNING '". $this::TABLE ."' table empty, could not test dbfields complete.");
             }
         }
+        unset($recs);
         return $ret;
     }
 

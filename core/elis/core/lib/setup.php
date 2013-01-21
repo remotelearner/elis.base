@@ -107,12 +107,12 @@ class elis_config {
                 }
             }
 
-            $configrecs = $DB->get_records('config_plugins', array('plugin' => $name));
-
+            $configrecs = $DB->get_recordset('config_plugins', array('plugin' => $name));
             foreach ($configrecs as $rec) {
                 $key = $rec->name;
                 $config->$key = $rec->value;
             }
+            unset($configrecs);
 
             $this->configs[$name] = $config;
         }

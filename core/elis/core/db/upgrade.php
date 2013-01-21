@@ -410,7 +410,8 @@ function xmldb_elis_core_upgrade($oldversion=0) {
 
             $ctxmap = array(); // An array of 'correct_context_id' => 'invalid_context_id' to be used for cleanup purposes
 
-            if (($ctxlvls = $DB->get_records('context_levels'))) {
+            $ctxlvls = $DB->get_recordset('context_levels');
+            if ($ctxlvls->valid()) {
                 foreach ($ctxlvls as $ctxlvl) {
                     $level = context_elis_helper::get_level_from_name($ctxlvl->name);
 
@@ -420,6 +421,7 @@ function xmldb_elis_core_upgrade($oldversion=0) {
                     }
                 }
             }
+            unset($ctxlvls);
 
             // Do we have bad contexts that we need to remap
             if (!empty($ctxmap)) {

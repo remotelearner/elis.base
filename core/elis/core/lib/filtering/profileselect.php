@@ -69,13 +69,14 @@ class generalized_filter_profileselect extends generalized_filter_type {
         $choices = array();
 
         if ($profile_field_record_id = $DB->get_field('user_info_field', 'id', array('shortname' => $options['profilefieldname']))) {
-            if ($profile_options = $DB->get_records_sql("SELECT DISTINCT data
-                                                   FROM {user_info_data}
-                                                   WHERE fieldid = ?", array($profile_field_record_id))) {
-                foreach ($profile_options as $profile_option) {
-                    $choices[$profile_option->data] = $profile_option->data;
-                }
+            $profile_options = $DB->get_recordset_sql(
+                    "SELECT DISTINCT data FROM {user_info_data} WHERE fieldid = ?",
+                    array($profile_field_record_id)
+            );
+            foreach ($profile_options as $profile_option) {
+                $choices[$profile_option->data] = $profile_option->data;
             }
+            unset($profile_options);
         }
 
         $this->_options = $choices;

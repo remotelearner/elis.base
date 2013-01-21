@@ -101,6 +101,9 @@ class generalized_filter_simpleselect extends generalized_filter_type {
 
             // Have to do this manually because php function renumber numeric indexes.
             foreach ($this->_options as $key => $value) {
+                // ELIS-7048 -- Menu select options are including a carriage return at the end of the $key property, causing
+                //              the filter to not return any data on form submission. =(
+                $key = trim($key, "\n\r");
                 $choices[$key] = $value;
             }
         }
@@ -133,6 +136,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
 
         if (array_key_exists($field, $formdata)) {
             $value = $formdata->$field;
+
             if ($this->_multiple && is_array($value)) {
                 foreach ($value as $val) {
                     if ($val === '') {
@@ -209,9 +213,9 @@ class generalized_filter_simpleselect extends generalized_filter_type {
                 $values[$name] = $val; // TBD: addslashes($val);
             }
 
-            return array("{$full_fieldname} IN ( :". implode(', :', array_keys($values)) .')',
-                         $values);
+            return array("{$full_fieldname} IN ( :". implode(', :', array_keys($values)) .')', $values);
         }
+
         return array("{$full_fieldname} = :{$param_name}",
                      array($param_name => $value));
     }

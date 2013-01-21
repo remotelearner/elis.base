@@ -259,9 +259,7 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
         $this->fieldtofiltermap['up']['fullname'] = self::filtertypetext;
 
         if (!empty($options['extra'])) {
-            $extrafields = $DB->get_records('user_info_field', null,
-                               'sortorder ASC', 'id, shortname, name, datatype');
-            $extrafields = $extrafields ? $extrafields : array();
+            $extrafields = $DB->get_recordset('user_info_field', null, 'sortorder ASC', 'id, shortname, name, datatype');
             $this->get_custom_fields('up', $extrafields);
         }
 
@@ -396,11 +394,12 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
                 //$this->err_dump($myoptions['choices'],'options for confir
                 break;
             case 'crsrole':
-                $roles = $DB->get_records('role', array(), '', 'id,name');
+                $roles = $DB->get_recordset('role', array(), '', 'id,name');
                 $options['choices'] = array();
                 foreach ($roles as $role) {
                     $options['choices'][$role->id] = $role->name;
                 }
+                unset($roles);
                 $options['numeric'] = 1;
                 $options['talias'] = $this->tables[$group]['role_assignments'];
                 $options['dbfield'] = 'roleid';

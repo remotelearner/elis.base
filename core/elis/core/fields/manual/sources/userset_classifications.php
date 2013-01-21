@@ -31,14 +31,13 @@ class manual_options_userset_classifications extends manual_options_base_class {
         global $DB;
 
         require_once elispm::file('plugins/userset_classification/usersetclassification.class.php');
-        $recs = $DB->get_records(usersetclassification::TABLE, null, 'name ASC', 'shortname, name');
-        if (!$recs) {
-            return array();
-        }
         $result = array();
+        $recs = $DB->get_recordset(usersetclassification::TABLE, null, 'name ASC', 'shortname, name');
         foreach ($recs as $rec) {
             $result[$rec->shortname] = $rec->name;
         }
+        unset($recs);
+
         return $result;
     }
 

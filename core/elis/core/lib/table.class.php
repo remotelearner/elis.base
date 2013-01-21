@@ -182,6 +182,9 @@ class display_table {
 
             $table->data[] = $row;
         }
+        if ($this->items instanceof Iterator) {
+            $this->items->close();
+        }
         $this->table = $table;
     }
 

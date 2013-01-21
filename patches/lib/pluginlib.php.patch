@@ -1,8 +1,8 @@
 diff --git a/lib/pluginlib.php b/lib/pluginlib.php
-index 5c8417e..18c2af9 100644
+index 1bc425a..f2a7ae4 100644
 --- a/lib/pluginlib.php
 +++ b/lib/pluginlib.php
-@@ -147,7 +147,9 @@ class plugin_manager {
+@@ -157,7 +157,9 @@ class plugin_manager {
  
          if ($disablecache or is_null($this->subpluginsinfo)) {
              $this->subpluginsinfo = array();
@@ -10,13 +10,13 @@ index 5c8417e..18c2af9 100644
 +            $parentplugins = array('mod', 'block', 'elis');
 +            foreach ($parentplugins as $parent) {
 +                $mods = get_plugin_list($parent);
-                 foreach ($mods as $mod => $moddir) {
-                     $modsubplugins = array();
-                     if (file_exists($moddir . '/db/subplugins.php')) {
-@@ -158,7 +160,8 @@ class plugin_manager {
-                             $subplugin->typerootdir = $subplugintyperootdir;
-                             $modsubplugins[$subplugintype] = $subplugin;
-                         }
+             foreach ($mods as $mod => $moddir) {
+                 $modsubplugins = array();
+                 if (file_exists($moddir . '/db/subplugins.php')) {
+@@ -168,7 +170,8 @@ class plugin_manager {
+                         $subplugin->typerootdir = $subplugintyperootdir;
+                         $modsubplugins[$subplugintype] = $subplugin;
+                     }
 -                $this->subpluginsinfo['mod_' . $mod] = $modsubplugins;
 +                        $this->subpluginsinfo[$parent . '_' . $mod] = $modsubplugins;
 +                    }
