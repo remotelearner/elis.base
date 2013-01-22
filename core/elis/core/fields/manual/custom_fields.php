@@ -69,6 +69,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
         $attrs['manual_field_control']['onchange'] = '';
     }
     $attrs['manual_field_control']['onchange'] .= 'switchFieldOptions();';
+    $attrs['manual_field_inctime']['group'] = 1;
 
     $form->addElement('html', '<script type="text/javascript">
         function switchFieldOptions() {
@@ -231,7 +232,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
     $form->setDefault('manual_field_startyear', 1970);
     $form->addElement('select', 'manual_field_stopyear', get_string('options_stopyear', 'elisfields_manual'), $year_opts, $attrs['manual_field_stopyear']);
     $form->setDefault('manual_field_stopyear', 2038);
-    $form->addElement('checkbox', 'manual_field_inctime', get_string('options_inctime', 'elisfields_manual'), '', $attrs['manual_field_inctime']); // TBD
+    $form->addElement('advcheckbox', 'manual_field_inctime', get_string('options_inctime', 'elisfields_manual'), '', $attrs['manual_field_inctime']); // TBD
     $form->setDefault('manual_field_inctime', false);
     $form->addElement('html', '</fieldset>');
 }

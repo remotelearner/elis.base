@@ -1,13 +1,15 @@
-function add_selection($eleid_base,$id,$label,$ui) {
-    if ($ui == 'inline') {
-        $('#'+$eleid_base).val($label);
+function add_selection(eleid_base,id,label,ui,useid) {
+    if (ui == 'inline') {
+        $('#id_'+eleid_base).val(useid ? id : label);
+        $('#id_grp_'+eleid_base).val(label);
     } else {
-        var element = window.opener.document.getElementById($eleid_base);
-        element.value = $id;
-        element = window.opener.document.getElementById($eleid_base+'_labelsave');
-        element.value = $label;
-        element = window.opener.document.getElementById($eleid_base+'_label');
-        element.innerHTML = $label;
+        eleid_base = 'id_'+eleid_base;
+        var element = window.opener.document.getElementById(eleid_base);
+        element.value = id;
+        element = window.opener.document.getElementById(eleid_base+'_labelsave');
+        element.value = label;
+        element = window.opener.document.getElementById(eleid_base+'_label');
+        element.innerHTML = label;
         window.close();
     }
 }

@@ -83,7 +83,15 @@ if ($filter->_selection_enabled !== true) {
 
 if ($mode === 'search') {
 
+    echo "<script>
+          var autocelem = document.getElementById('id_{$filter->_uniqueid}');
+          if (autocelem) {
+              autocelem.value = '". ($filter->_useid ? '': $q) ."';
+          }
+          </script>\n";
+
     //search the database
+    $results = '';
     if (!empty($q)) {
         $results = $filter->get_search_results($q);
         $q = explode(' ',$q);
@@ -105,10 +113,11 @@ if ($mode === 'search') {
 
     foreach ($results as $result) {
         $add_selection_params = array(
-            'id_'.$requested_filter,
+            $requested_filter,
             $result->id,
             addslashes($filter->get_results_label($result)),
-            $filter->_ui
+            $filter->_ui,
+            $filter->_useid
         );
 
         echo '<tr onclick="add_selection(\''.implode('\',\'',$add_selection_params).'\')" class="datarow">';
@@ -141,7 +150,6 @@ if ($mode === 'search') {
         <head>
             <script src="<?php echo $CFG->wwwroot.'/elis/core/js/jquery-1.7.1.min.js'; ?>"></script>
             <link rel="stylesheet" type="text/css" href="<?php echo $CFG->wwwroot,'/theme/styles.php?theme='.$CFG->theme?>" />
-            <link rel="stylesheet" type="text/css" href="<?php echo $CFG->wwwroot,'/theme/',$CFG->theme,'/styles.php'?>" />
             <style>
                 tr:hover{background-color:#efe;}
                 .mform {width:95%;}

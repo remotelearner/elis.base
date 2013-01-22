@@ -1,8 +1,8 @@
 diff --git a/message/lib.php b/message/lib.php
-index 478bad8..c953e21 100644
+index 22d6f8f..e204170 100644
 --- a/message/lib.php
 +++ b/message/lib.php
-@@ -775,6 +775,21 @@ function conversationsort($a, $b)
+@@ -787,6 +787,21 @@ function conversationsort($a, $b)
  }
  
  /**
@@ -24,7 +24,7 @@ index 478bad8..c953e21 100644
   * Get the users recent event notifications
   *
   * @param object $user the current user
-@@ -1811,7 +1826,7 @@ function message_get_history($user1, $user2, $limitnum=0, $viewingnewmessages=fa
+@@ -1823,7 +1838,7 @@ function message_get_history($user1, $user2, $limitnum=0, $viewingnewmessages=fa
                                                      array($user1->id, $user2->id, $user2->id, $user1->id, $user1->id),
                                                      "timecreated $sort", '*', 0, $limitnum)) {
          foreach ($messages_read as $message) {
@@ -33,7 +33,7 @@ index 478bad8..c953e21 100644
          }
      }
      if ($messages_new =  $DB->get_records_select('message', "((useridto = ? AND useridfrom = ?) OR
-@@ -1819,12 +1834,12 @@ function message_get_history($user1, $user2, $limitnum=0, $viewingnewmessages=fa
+@@ -1831,12 +1846,12 @@ function message_get_history($user1, $user2, $limitnum=0, $viewingnewmessages=fa
                                                      array($user1->id, $user2->id, $user2->id, $user1->id, $user1->id),
                                                      "timecreated $sort", '*', 0, $limitnum)) {
          foreach ($messages_new as $message) {

@@ -179,7 +179,7 @@ class OR_filter extends data_filter {
 
         $rv = array();
         if (!empty($where_clauses)) {
-            $rv['where'] = '(' . implode(")\n OR (", $where_clauses) . ')';
+            $rv['where'] = '((' . implode(")\n OR (", $where_clauses) . '))';
             $rv['where_parameters'] = $where_parameters;
         }
         return $rv;

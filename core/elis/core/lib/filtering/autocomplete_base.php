@@ -49,6 +49,8 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
     public $_default_id = '';
     public $_default_label = '';
     public $_popup_title = '';
+    public $_required = false;
+    public $_useid = false;
     public $results_fields = array();
     public $perm_req_for_config = 'elis/program:config';
 
@@ -109,8 +111,24 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
             $this->_default_label = $options['defaults']['label'];
         }
 
-        $this->load_options($options);
+        if (!empty($options['required'])) {
+            $this->_required = $options['required'];
+        }
 
+        $this->_useid = ($field == 'id');
+        $this->load_options($options);
+    }
+
+    /**
+     * Get the default value
+     * @return mixed   default values or null if none
+     */
+    public function get_default() {
+        if ($this->_useid) {
+            return(empty($this->_default_id) ? null : $this->_default_id);
+        } else {
+            return(empty($this->_default_label) ? null : $this->_default_label);
+        }
     }
 
     /**
@@ -132,13 +150,14 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
         $filt_action_url_base = $CFG->wwwroot.'/elis/core/lib/form/autocomplete.php?report='.$report.'&filter='.$filter;
 
         if ($this->_ui === 'inline') {
+            $mform->addElement('hidden', $this->_uniqueid, $this->get_default(), array('id' => 'id_'.$this->_uniqueid));
 
             $search_url = $filt_action_url_base.'&mode=search&q=';
             $config_url = $filt_action_url_base.'&mode=config';
 
             $main_input_ph = ($this->_selection_enabled === true) ? get_string('filt_autoc_typetosearch','elis_core') : '';
 
-            $text_input = array($mform->createElement('text', $this->_uniqueid, $this->_label, array('placeholder'=>$main_input_ph)));
+            $text_input = array($mform->createElement('text', $this->_uniqueid, $this->_label, array('placeholder' => $main_input_ph)));
             if ($this->config_allowed() === true) {
                 $text_input[] = $mform->createElement('static', 'configlink', '',
                         '<a onclick="show_panel(\''.$config_url.'\');" href="#">'
@@ -151,16 +170,23 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
                         <div id="search_results"></div>
                     </div>');
 
-
-            $mform->addGroup($text_input,'',$this->_label);
+            $mform->addGroup($text_input, 'grp', $this->_label);
 
             if ($this->_selection_enabled === true) {
+                if ($this->_required) {
+                    // This adds red * & that a required form field exists + validation
+                    $mform->addGroupRule('grp', get_string('required'), 'required', null, 1, 'client');
+                    if ($this->_useid) {
+                        $mform->addRule($this->_uniqueid, get_string('required'), 'required', null, 'client'); // hidden doesn't display
+                    }
+                }
+
                 $mform->addElement('html',"<link rel='stylesheet' type='text/css' href='{$CFG->wwwroot}/elis/core/lib/form/autocomplete.css' />");
                 $mform->addElement('html',"<script src='{$CFG->wwwroot}/elis/core/js/jquery-1.7.1.min.js'></script>");
                 $mform->addElement('html',"<script src='{$CFG->wwwroot}/elis/core/lib/form/autocomplete.js'></script>");
 
                 $filter_js[] =
-                        "var search_textbox = 'id_{$this->_uniqueid}';
+                        "var search_textbox = 'id_grp_{$this->_uniqueid}';
                         var search_results = 'search_results';
                         var search_status = 'search_status';
                         var search_results_outer = 'search_results_outer';
@@ -178,8 +204,13 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
                                 $('#'+search_results_outer).css('left',pos.left+2).css('top',(pos.top+height+2));
                             }
                         });";
+            } else {
+                $mform->freeze('grp');
             }
 
+            if (!empty($this->_default_label)) {
+                $mform->setDefault('grp['.$this->_uniqueid.']', $this->_default_label);
+            }
         } else {
 
             $popup_link = '<span id="id_'.$this->_uniqueid.'_label"></span> ';
@@ -195,7 +226,7 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
                 $mform->setDefault($this->_uniqueid.'_labelsave',$this->_default_label);
             }
             if (!empty($this->_default_id)) {
-                $mform->setDefault($this->_uniqueid,$this->_default_id);
+                $mform->setDefault($this->_uniqueid, $this->_default_id);
             }
             $mform->addElement('html','</div>');
             if (!empty($this->_filterhelp) && is_array($this->_filterhelp) && isset($this->_filterhelp[2])) {
@@ -222,7 +253,14 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
         $field = $this->_uniqueid;
 
         if (array_key_exists($field, $formdata) and $formdata->$field !== '') {
-            return array('value'=>(string)$formdata->$field);
+          /*
+            ob_start();
+            var_dump($formdata->$field);
+            $tmp = ob_get_contents();
+            ob_end_clean();
+            error_log("autocomplete_base.php::check_data() setting value => (string) {$tmp}");
+          */
+            return array('value'=>(string)$formdata->$field); // TBD (string)
         }
 
         return false;
@@ -263,10 +301,15 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
             return null;
         }
 
-        $sql = $full_fieldname.' LIKE :'.$param_name;
-        $params = array($param_name => '%'.$data['value'].'%');
+        if (!$this->_useid) {
+            $sql = $full_fieldname.' LIKE :'.$param_name;
+            $params = array($param_name => '%'.$data['value'].'%');
+        } else {
+            $sql = "{$full_fieldname} = :{$param_name}";
+            $params = array($param_name => $data['value']);
+        }
 
-        return array($sql,$params);
+        return array($sql, $params);
     }
 
     /* BEGIN autocomplete-specific functions */
