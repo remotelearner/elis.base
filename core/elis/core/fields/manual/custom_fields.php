@@ -83,7 +83,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
                 if (fotext && fomenu && fodatetime) {
                     if (cftype == "checkbox") {
                         fotext.className = "accesshide custom_field_options_fieldset";
-                        fomenu.className = "accesshide custom_field_options_fieldset";
+                        fomenu.className = "clearfix custom_field_options_fieldset";
                         fodatetime.className = "accesshide custom_field_options_fieldset";
                     } else if (cftype == "menu") {
                         fotext.className = "accesshide custom_field_options_fieldset";
@@ -388,9 +388,10 @@ function manual_field_is_view_or_editable($field, $context, $context_edit_cap = 
  *                                 is set up to use the "edit this context" option for editing
  * @param string $context_view_cap the view capability to check if the field owner
  *                                 is set up to use the "view this context" option for viewing
+ * @param string $entity  optional entity/context name
  */
 function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $check_required = true,
-                                       $context_edit_cap = NULL, $context_view_cap = NULL) {
+                                       $context_edit_cap = NULL, $context_view_cap = NULL, $entity = 'system') {
     //$mform = $form->_form;
 
     $is_view_or_editable = manual_field_is_view_or_editable($field, $context, $context_edit_cap, $context_view_cap);
@@ -410,7 +411,7 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
     $manual = new field_owner($field->owners['manual']);
     $control = $manual->param_control;
     require_once elis::plugin_file('elisfields_manual',"field_controls/{$control}.php");
-    call_user_func("{$control}_control_display", $form, $mform, $customdata, $field);
+    call_user_func("{$control}_control_display", $form, $mform, $customdata, $field, false, $entity);
 
     $manual_params = unserialize($manual->params);
 
@@ -438,6 +439,9 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
         }
 
         if (!is_null($defaultdata) && !is_object($defaultdata) && $defaultdata !== false) {
+            if (is_string($defaultdata)) {
+                $defaultdata = trim($defaultdata, "\r\n"); // radio buttons!
+            }
             $mform->setDefault($elem, $defaultdata);
         }
     }
