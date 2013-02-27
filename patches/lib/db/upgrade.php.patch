@@ -1,0 +1,26 @@
+diff --git a/lib/db/upgrade.php b/lib/db/upgrade.php
+index b17948e..6e9c2e1 100644
+--- a/lib/db/upgrade.php
++++ b/lib/db/upgrade.php
+@@ -7261,5 +7261,21 @@ FROM
+         upgrade_main_savepoint(true, 2011120506.06);
+     }
+ 
++    // Add index to field "timemodified" for grade_grades_history table
++    if ($oldversion < 2011120506.09) {
++        $table = new xmldb_table('grade_grades_history');
++        $field = new xmldb_field('timemodified');
++
++        if ($dbman->field_exists($table, $field)) {
++            $index = new xmldb_index('timemodified', XMLDB_INDEX_NOTUNIQUE, array('timemodified'));
++            if (!$dbman->index_exists($table, $index)) {
++                $dbman->add_index($table, $index);
++            }
++        }
++
++        // Main savepoint reached.
++        upgrade_main_savepoint(true, 2011120506.09);
++    }
++
+     return true;
+ }

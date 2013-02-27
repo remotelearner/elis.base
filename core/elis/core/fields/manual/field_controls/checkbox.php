@@ -25,8 +25,14 @@ function checkbox_control_display($form, $mform, $customdata, $field, $as_filter
             require_once elis::plugin_file('elisfields_manual', 'field_controls/menu.php');
             return menu_control_display($form, $mform, $customdata, $field, $as_filter);
         }
-        $options = explode("\n", $manual_params['options']);
-        $source = $manual_params['options_source'];
+        $options = array();
+        if (!empty($manual_params['options'])) {
+            $options = explode("\n", $manual_params['options']);
+        }
+        $source = '';
+        if (!empty($manual_params['options_source'])) {
+            $source = $manual_params['options_source'];
+        }
         if (!empty($source)) {
             $srcfile = elis::plugin_file('elisfields_manual', "sources/{$source}.php");
             if (file_exists($srcfile)) {
