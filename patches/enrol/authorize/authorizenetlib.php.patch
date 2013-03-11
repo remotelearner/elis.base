@@ -1,0 +1,14 @@
+diff --git a/enrol/authorize/authorizenetlib.php b/enrol/authorize/authorizenetlib.php
+index 5c7be9c..32c48de 100644
+--- a/enrol/authorize/authorizenetlib.php
++++ b/enrol/authorize/authorizenetlib.php
+@@ -276,7 +276,8 @@ function authorize_action(&$order, &$message, &$extra, $action=AN_ACTION_NONE, $
+         return AN_RETURNZERO;
+     }
+     $length = trim(substr($tmpstr, strpos($tmpstr,'content-length')+15));
+-    fgets($fp, 4096);
++    $data = fgets($fp, 4096);
++    while (!empty($data) && $data=trim(fgets($fp, 4096))); //get any remaining headers (fix to accommodate extra headers)
+     $data = fgets($fp, $length);
+     @fclose($fp);
+     $response = explode(AN_ENCAP.AN_DELIM.AN_ENCAP, $data);

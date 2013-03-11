@@ -1,0 +1,41 @@
+diff --git a/lib/phpmailer/class.phpmailer.php b/lib/phpmailer/class.phpmailer.php
+index 53d3668..efadcd1 100644
+--- a/lib/phpmailer/class.phpmailer.php
++++ b/lib/phpmailer/class.phpmailer.php
+@@ -538,6 +538,7 @@ class PHPMailer
+      * @return bool
+      */
+     function SmtpConnect() {
++        global $CFG;
+         if($this->smtp == NULL) { $this->smtp = new SMTP(); }
+ 
+         $this->smtp->do_debug = $this->SMTPDebug;
+@@ -548,14 +549,26 @@ class PHPMailer
+         // Retry while there is no connection
+         while($index < count($hosts) && $connection == false)
+         {
+-            if(strstr($hosts[$index], ":"))
+-                list($host, $port) = explode(":", $hosts[$index]);
++            $hostinfo = array();
++            if (preg_match('/^(.+):([0-9]+)$/', $hosts[$index], $hostinfo)) {
++                $host = $hostinfo[1];
++                $port = $hostinfo[2];
++            }
+             else
+             {
+                 $host = $hosts[$index];
+                 $port = $this->Port;
+             }
+ 
++            // Add SSL prefix to host if required
++            if (isset($CFG->smtpsecure)) {
++                if ($CFG->smtpsecure == "ssl") {
++                    if (strtolower(substr($host,0,6)) != "ssl://") {
++                        $host = "ssl://".$host;
++                    }
++                }
++            }
++
+             if($this->smtp->Connect($host, $port, $this->Timeout))
+             {
+                 if ($this->Helo != '')

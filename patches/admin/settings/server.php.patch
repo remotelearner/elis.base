@@ -1,0 +1,13 @@
+diff --git a/admin/settings/server.php b/admin/settings/server.php
+index f56484b..1fd1044 100644
+--- a/admin/settings/server.php
++++ b/admin/settings/server.php
+@@ -21,6 +21,8 @@ $ADMIN->add('server', $temp, 0);
+ // "email" settingpage
+ $temp = new admin_settingpage('mail', get_string('mail','admin'));
+ $temp->add(new admin_setting_configtext('smtphosts', get_string('smtphosts', 'admin'), get_string('configsmtphosts', 'admin'), '', PARAM_RAW));
++$options = array('' => get_string('none', 'admin'), 'ssl' => 'SSL');
++$temp->add(new admin_setting_configselect('smtpsecure', get_string('smtpsecure', 'admin'), get_string('configsmtpsecure', 'admin'), '', $options));
+ $temp->add(new admin_setting_configtext('smtpuser', get_string('smtpuser', 'admin'), get_string('configsmtpuser', 'admin'), '', PARAM_NOTAGS));
+ $temp->add(new admin_setting_configpasswordunmask('smtppass', get_string('smtppass', 'admin'), get_string('configsmtpuser', 'admin'), ''));
+ $temp->add(new admin_setting_configtext('smtpmaxbulk', get_string('smtpmaxbulk', 'admin'), get_string('configsmtpmaxbulk', 'admin'), 1, PARAM_INT));
