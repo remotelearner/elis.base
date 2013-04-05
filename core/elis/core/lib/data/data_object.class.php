@@ -128,8 +128,7 @@ class elis_data_object {
 
     /**
      * Extra data that is associated with the record, but is not part of the
-     * database record (e.g. counts for related records).  This is only used
-     * when loading the data from an object/array.
+     * database record (e.g. counts for related records).
      */
     private $_extradata = array();
 
@@ -196,9 +195,10 @@ class elis_data_object {
 
         // initialize the object fields
         if ($src === false) {
-            // do nothing
+            $this->_setup_extradata((object)array(), $extradatafields);
         } else if (is_numeric($src)) {
             $this->_dbfield_id = $src;
+            $this->_setup_extradata((object)array(), $extradatafields);
         } else if (is_object($src)) {
             $this->_load_data_from_record($src, false, $field_map, $from_db, $extradatafields);
         } else if (is_array($src)) {
@@ -513,6 +513,10 @@ class elis_data_object {
      */
     public function to_object() {
         $obj = new object;
+        // Add extradata fields first
+        foreach ($this->_extradata as $key => $val) {
+            $obj->$key = $val;
+        }
         $reflect = new ReflectionClass(get_class($this));
         $prefix_len = strlen(self::FIELD_PREFIX);
         foreach ($reflect->getProperties() as $prop) {
@@ -730,6 +734,27 @@ class elis_data_object {
      **************************************************************************/
 
     /**
+     * setup extradata fields for a record object
+     * @param object $rec the source record object
+     * @param array $extradatafields extra data from the $src object/array
+     * associated with the record that should be kept in the data object (such
+     * as counts of related records)
+     */
+     protected function _setup_extradata($rec, array $extradatafields = array()) {
+        foreach ($extradatafields as $field_name => $rec_name) {
+            if (is_int($field_name)) {
+                // array is an array instead of a map
+                $field_name = $rec_name;
+            }
+            if (isset($rec->$rec_name)) {
+                $this->_extradata[$field_name] = $rec->$rec_name;
+            } else {
+                $this->_extradata[$field_name] = null;
+            }
+        }
+    }
+
+    /**
      * Load data from a record object
      * @param object $rec the source record object
      * @param boolean $overwrite whether to overwrite existing values
@@ -774,17 +799,7 @@ class elis_data_object {
                 }
             }
         }
-        foreach ($extradatafields as $field_name => $rec_name) {
-            if (is_int($field_name)) {
-                // array is an array instead of a map
-                $field_name = $rec_name;
-            }
-            if (isset($rec->$rec_name)) {
-                $this->_extradata[$field_name] = $rec->$rec_name;
-            } else {
-                $this->_extradata[$field_name] = null;
-            }
-        }
+        $this->_setup_extradata($rec, $extradatafields);
         $this->_is_loaded = true;
         if ($from_db) {
             $this->_is_saved = true;

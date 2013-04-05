@@ -359,11 +359,11 @@ function xmldb_elis_core_upgrade($oldversion=0) {
             }
 
             // remove any old instances
-            if ($dbman->table_exists(new XMLDBTable('block_instance_old'))) {
+            if ($dbman->table_exists(new xmldb_table('block_instance_old'))) {
                 $DB->delete_records('block_instance_old', array('blockid' => $eiblock->id));
             }
             // remove any old pinned blocks
-            if ($dbman->table_exists(new XMLDBTable('block_pinned_old'))) {
+            if ($dbman->table_exists(new xmldb_table('block_pinned_old'))) {
                 $DB->delete_records('block_pinned_old', array('blockid' => $eiblock->id));
             }
             // remove block record
@@ -503,6 +503,23 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         }
 
         upgrade_plugin_savepoint(true, 2012032102, 'elis', 'core');
+    }
+
+    if ($result && $oldversion < 2012032103) {
+        // ELIS-8295: install missing message processors
+        if ($dbman->table_exists('message_processors')) {
+            foreach (get_list_of_plugins('message/output') as $mp) {
+                // error_log("elis_core::upgrade.php: checking for message processor: '{$mp}'");
+                if (!$DB->record_exists('message_processors', array('name' => $mp))) {
+                    require_once("{$CFG->dirroot}/message/output/{$mp}/db/install.php");
+                    $installfcn = "xmldb_message_{$mp}_install";
+                    if (function_exists($installfcn)) {
+                        $installfcn();
+                    }
+                }
+            }
+        }
+        upgrade_plugin_savepoint(true, 2012032103, 'elis', 'core');
     }
 
     return $result;

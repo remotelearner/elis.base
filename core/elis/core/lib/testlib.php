@@ -164,7 +164,9 @@ class overlay_database extends moodle_database {
             $table = $structure->getTable($tablename);
             // FIXME: when http://bugs.mysql.com/bug.php?id=10327 gets fixed,
             // we can switch this back to drop_temp_table
-            $manager->drop_table($table);
+            if ($manager->table_exists($table)) {
+                $manager->drop_table($table);
+            }
         }
     }
 
@@ -420,7 +422,7 @@ class overlay_database extends moodle_database {
     }
 
     public function sql_cast_2signed($fieldname) {
-        return $this->basedb->sql_cast_char2signed($fieldname);
+        return $this->basedb->sql_cast_char2int($fieldname);
     }
 
     public function sql_compare_text($fieldname, $numchars=32) {

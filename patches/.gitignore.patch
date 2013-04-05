@@ -1,0 +1,9 @@
+diff --git a/.gitignore b/.gitignore
+index 5a12349..e50e926 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -25,3 +25,4 @@ CVS
+ /.project
+ /.buildpath
+ /.cache
++/local/defaults.php
