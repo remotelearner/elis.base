@@ -37,13 +37,13 @@ $mode = optional_param('mode','ui',PARAM_CLEAN);
 //instantiate the report
 $report = php_report::get_default_instance($requested_report);
 if (empty($report)) {
-    echo 'Error0';
+    echo get_string('autocomplete_noreport', 'elis_core'), ' (Error0)';
     die();
 }
 
 //authenticate ability to view this report
 if (!$report->is_available() || !$report->can_view_report()) {
-    echo 'Error1';
+    echo get_string('autocomplete_reportunavail', 'elis_core'), ' (Error1)';
     die();
 }
 
@@ -57,7 +57,7 @@ foreach ($filters as $i => $filter) {
     }
 }
 if (empty($found_filter) || strpos($found_filter->type,'autocomplete') !== 0) {
-    echo 'Error2';
+    echo get_string('autocomplete_nofilterfound', 'elis_core'), ' (Error2)';
     die();
 }
 
@@ -76,7 +76,7 @@ $filter = new $filter_class(
 
 
 if ($filter->_selection_enabled !== true) {
-    echo 'Error3';
+    echo get_string('autocomplete_filterdisabled', 'elis_core'), ' (Error3)';
     die();
 }
 

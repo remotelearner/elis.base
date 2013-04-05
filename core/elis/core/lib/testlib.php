@@ -420,7 +420,7 @@ class overlay_database extends moodle_database {
     }
 
     public function sql_cast_2signed($fieldname) {
-        return $this->basedb->sql_cast_char2signed($fieldname);
+        return $this->basedb->sql_cast_char2int($fieldname);
     }
 
     public function sql_compare_text($fieldname, $numchars=32) {

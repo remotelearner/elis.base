@@ -1,5 +1,5 @@
 diff --git a/lib/form/filemanager.php b/lib/form/filemanager.php
-index f6d968d..c1444c0 100644
+index bf3cbdc..a2b02c3 100644
 --- a/lib/form/filemanager.php
 +++ b/lib/form/filemanager.php
 @@ -227,7 +227,27 @@ class MoodleQuickForm_filemanager extends HTML_QuickForm_element {

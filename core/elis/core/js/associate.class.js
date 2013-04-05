@@ -126,8 +126,8 @@ function associate_link_handler(basepage, divid) {
         var parenttarget = target.parentNode;
         var classnames = target.parentNode.className.split(' ');
 
-        for(var i = 0; i < classnames.length; i++) {
-            if(classnames[i] == 'external_report_link') {
+        for (var i = 0; i < classnames.length; i++) {
+            if (classnames[i] == 'external_report_link' || classnames[i] == 'tooltip') {
                 return;
             }
         }

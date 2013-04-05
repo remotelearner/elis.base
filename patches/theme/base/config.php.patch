@@ -1,0 +1,25 @@
+diff --git a/theme/base/config.php b/theme/base/config.php
+index 7c9aa2d..cd85c66 100644
+--- a/theme/base/config.php
++++ b/theme/base/config.php
+@@ -153,12 +153,19 @@ $THEME->layouts = array(
+         'regions' => array(),
+         'options' => array('nofooter'=>true, 'nonavbar'=>true, 'nocustommenu'=>true),
+     ),
+-    // The pagelayout used for reports
++    // The pagelayout used for reports.
+     'report' => array(
+         'file' => 'report.php',
+         'regions' => array('side-pre'),
+         'defaultregion' => 'side-pre',
+     ),
++    // The pagelayout used for safebrowser and securewindow.
++    'secure' => array(
++        'file' => 'general.php',
++        'regions' => array('side-pre', 'side-post'),
++        'defaultregion' => 'side-pre',
++        'options' => array('nofooter'=>true, 'nonavbar'=>true, 'nocustommenu'=>true, 'nologinlinks'=>true),
++    ),
+ );
+ 
+ // We don't want the base theme to be shown on the theme selection screen, by setting

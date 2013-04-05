@@ -1,0 +1,34 @@
+diff --git a/lib/yui/blocks/blocks.js b/lib/yui/blocks/blocks.js
+index 99c4b48..9ad4fc2 100644
+--- a/lib/yui/blocks/blocks.js
++++ b/lib/yui/blocks/blocks.js
+@@ -34,29 +34,6 @@ YUI.add('moodle-core-blocks', function(Y) {
+                 return false;
+             }
+ 
+-            // See if we are missing either of block regions,
+-            // if yes we need to add an empty one to use as target
+-            if (blockregionlist.size() != this.get('regions').length) {
+-                var blockregion = Y.Node.create('<div></div>')
+-                    .addClass(CSS.BLOCKREGION);
+-                var regioncontent = Y.Node.create('<div></div>')
+-                    .addClass(CSS.REGIONCONTENT);
+-                blockregion.appendChild(regioncontent);
+-
+-                var regionid = this.get_region_id(blockregionlist.item(0));
+-                if (regionid === 'post') {
+-                    // pre block is missing, instert it before post
+-                    blockregion.setAttrs({id : 'region-pre'});
+-                    blockregionlist.item(0).insert(blockregion, 'before');
+-                    blockregionlist.unshift(blockregion);
+-                } else {
+-                    // post block is missing, instert it after pre
+-                    blockregion.setAttrs({id : 'region-post'});
+-                    blockregionlist.item(0).insert(blockregion, 'after');
+-                    blockregionlist.push(blockregion);
+-                }
+-            }
+-
+             blockregionlist.each(function(blockregionnode) {
+ 
+                 // Setting blockregion as droptarget (the case when it is empty)

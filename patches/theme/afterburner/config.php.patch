@@ -1,0 +1,25 @@
+diff --git a/theme/afterburner/config.php b/theme/afterburner/config.php
+index b0e7006..316e844 100644
+--- a/theme/afterburner/config.php
++++ b/theme/afterburner/config.php
+@@ -122,12 +122,19 @@ $THEME->layouts = array(
+         'file' => 'embedded.php',
+         'regions' => array()
+     ),
+-    // The pagelayout used for reports
++    // The pagelayout used for reports.
+     'report' => array(
+         'file' => 'default.php',
+         'regions' => array('side-pre'),
+         'defaultregion' => 'side-pre',
+     ),
++    // The pagelayout used for safebrowser and securewindow.
++    'secure' => array(
++        'file' => 'default.php',
++        'regions' => array('side-pre', 'side-post'),
++        'defaultregion' => 'side-pre',
++        'options' => array('nofooter'=>true, 'nonavbar'=>true, 'nocustommenu'=>true, 'nologinlinks'=>true),
++    ),
+ );
+ 
+ $THEME->enable_dock = true;

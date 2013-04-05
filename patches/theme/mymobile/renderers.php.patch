@@ -1,0 +1,13 @@
+diff --git a/theme/mymobile/renderers.php b/theme/mymobile/renderers.php
+index b5d35e5..fe10725 100644
+--- a/theme/mymobile/renderers.php
++++ b/theme/mymobile/renderers.php
+@@ -301,7 +301,7 @@ class theme_mymobile_core_renderer extends core_renderer {
+      *
+      * @return string
+      */
+-    public function login_info() {
++    public function login_info($withlinks = null) {
+         global $USER, $CFG, $DB, $SESSION;
+ 
+         if (during_initial_install()) {
