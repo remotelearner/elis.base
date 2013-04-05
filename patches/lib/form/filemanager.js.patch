@@ -1,0 +1,14 @@
+diff --git a/lib/form/filemanager.js b/lib/form/filemanager.js
+index 917ad8c..c6d32fb 100644
+--- a/lib/form/filemanager.js
++++ b/lib/form/filemanager.js
+@@ -80,6 +80,9 @@ M.form_filemanager.init = function(Y, options) {
+             this.filepicker_options.areamaxbytes = this.areamaxbytes;
+             this.filepicker_options.env = 'filemanager';
+             this.filepicker_options.itemid = options.itemid;
++            // RL EDIT: BJB130213
++            this.filepicker_options.accepted_types = options.accepted_types;
++            // End RL EDIT
+ 
+             if (options.filecount) {
+                 this.filecount = options.filecount;

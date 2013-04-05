@@ -1,0 +1,15 @@
+diff --git a/lib/pluginlib.php b/lib/pluginlib.php
+index b740093..ff74826 100644
+--- a/lib/pluginlib.php
++++ b/lib/pluginlib.php
+@@ -165,7 +165,9 @@ class plugin_manager {
+ 
+         if ($disablecache or is_null($this->subpluginsinfo)) {
+             $this->subpluginsinfo = array();
+-            foreach (array('mod', 'editor') as $type) {
++            // RL EDIT: BJB130213 - added 'block' & 'elis' to array
++            foreach (array('mod', 'block', 'editor', 'elis') as $type) {
++            // End RL EDIT
+                 $owners = get_plugin_list($type);
+                 foreach ($owners as $component => $ownerdir) {
+                     $componentsubplugins = array();

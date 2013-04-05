@@ -1,0 +1,44 @@
+diff --git a/admin/tool/unsuproles/index.php b/admin/tool/unsuproles/index.php
+index c6d2f36..bf12cc7 100644
+--- a/admin/tool/unsuproles/index.php
++++ b/admin/tool/unsuproles/index.php
+@@ -61,7 +61,19 @@ if ($action === 'delete') {
+     //show confirmation
+     echo $OUTPUT->header();
+     $yesurl = new moodle_url($PAGE->url, array('roleid'=>$roleid, 'contextlevel'=>$contextlevel, 'action'=>'delete', 'confirm'=>1, 'sesskey'=>sesskey()));
++    // RL EDIT: BJB130213 - support ELIS custom contexts
++    try {
+     $levelname = get_contextlevel_name($contextlevel);
++    } catch (Exception $e) {
++        if (file_exists($CFG->dirroot.'/elis/program/accesslib.php')) {
++            require_once($CFG->dirroot.'/elis/program/accesslib.php');
++            $contextclass = context_elis_helper::get_class_for_level($contextlevel);
++            if (!empty($contextclass)) {
++                $levelname = $contextclass::get_level_name();
++            }
++        }
++    }
++    // End RL EDIT
+     $rolename = format_string($role->name);
+     $message = get_string('confirmdelete', 'tool_unsuproles', array('level'=>$levelname, 'role'=>$rolename));
+     echo $OUTPUT->confirm($message, $yesurl, $PAGE->url);
+@@ -96,7 +108,19 @@ if (!$problems) {
+     $roles = get_all_roles();
+     $data = array();
+     foreach ($problems as $problem) {
++        // RL EDIT: BJB130213 - support ELIS custom contexts
++        try {
+         $levelname = get_contextlevel_name($problem->contextlevel);
++        } catch (Exception $e) {
++            if (file_exists($CFG->dirroot.'/elis/program/accesslib.php')) {
++                require_once($CFG->dirroot.'/elis/program/accesslib.php');
++                $contextclass = context_elis_helper::get_class_for_level($contextlevel);
++                if (!empty($contextclass)) {
++                    $levelname = $contextclass::get_level_name();
++                }
++            }
++        }
++        // End RL EDIT
+         $rolename = role_get_name($roles[$problem->roleid]);
+         //TODO: show list of users if count low
+         $count = $problem->racount;

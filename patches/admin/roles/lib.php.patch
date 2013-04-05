@@ -1,0 +1,41 @@
+diff --git a/admin/roles/lib.php b/admin/roles/lib.php
+index 2166a67..6851acb 100644
+--- a/admin/roles/lib.php
++++ b/admin/roles/lib.php
+@@ -545,6 +545,7 @@ class define_role_table_advanced extends capability_table_with_risks {
+     protected $disabled = '';
+ 
+     public function __construct($context, $roleid) {
++
+         $this->roleid = $roleid;
+         parent::__construct($context, 'defineroletable', $roleid);
+         $this->displaypermissions = $this->allpermissions;
+@@ -558,6 +559,28 @@ class define_role_table_advanced extends capability_table_with_risks {
+             CONTEXT_MODULE => get_string('activitymodule'),
+             CONTEXT_BLOCK => get_string('block')
+         );
++
++        //RL edit - allow custom context levels to be selected
++        if (class_exists('context_elis_helper') && ($context_levels = context_elis_helper::get_legacy_levels())) {
++            foreach ($context_levels as $context_level_name => $context_id) {
++                $ctxclass = context_elis_helper::get_class_for_level($context_id);
++
++                //default string display name can be overridden specifically for this display
++                //by setting this language string for the context level's component
++                $override_string_name = "context_level_{$context_level_name}";
++
++                if (get_string_manager()->string_exists($override_string_name, $ctxclass::get_component())) {
++                    //name override
++                    $display_string = get_string($override_string_name, $ctxclass::get_component());
++                } else {
++                    //standard entity name
++                    $display_string = get_string($context_level_name, $ctxclass::get_component());
++                }
++
++                $this->allcontextlevels[$context_id] = $display_string;
++            }
++        }
++        //end of RL edit
+     }
+ 
+     protected function load_current_permissions() {

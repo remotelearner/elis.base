@@ -1,0 +1,115 @@
+diff --git a/user/profile/field/menu/field.class.php b/user/profile/field/menu/field.class.php
+index c0b8694..af03547 100644
+--- a/user/profile/field/menu/field.class.php
++++ b/user/profile/field/menu/field.class.php
+@@ -5,6 +5,28 @@ class profile_field_menu extends profile_field_base {
+     var $datakey;
+ 
+     /**
++     * Encode data method to convert menu option to custom field data value
++     * @param  mixed $data the raw custom field data menu option value
++     * @return mixed the converted data value
++     * RL EDIT: BJB121219 ELIS-8124
++     */
++    static function encode_data($data) {
++        //return htmlspecialchars($data);
++        return $data;
++    }
++
++    /**
++     * Decode data method to convert custom field data value to menu option
++     * @param  mixed $data the custom field data value
++     * @return mixed the custom field value converted back to menu option value
++     * RL EDIT: BJB121219 ELIS-8124
++     */
++    static function decode_data($data) {
++        //return htmlspecialchars_decode($data);
++        return $data;
++    }
++
++    /**
+      * Constructor method.
+      * Pulls out the options for the menu from the database and sets the
+      * the corresponding key for the data if it exists
+@@ -20,12 +42,27 @@ class profile_field_menu extends profile_field_base {
+             $this->options[''] = get_string('choose').'...';
+         }
+         foreach($options as $key => $option) {
+-            $this->options[$key] = format_string($option);//multilang formatting
++            //$this->options[$key] = format_string($option);//multilang formatting
++            // RL EDIT: BJB121219 ELIS-8124
++            $this->options[self::encode_data($option)] = format_string($option); // multilang formatting w/ filters
++            // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
+         }
+ 
+         /// Set the data key
+         if ($this->data !== NULL) {
+-            $this->datakey = (int)array_search($this->data, $this->options);
++            //$this->datakey = (int)array_search($this->data, $this->options);
++            // RL EDIT: BJB121219 ELIS-8124
++            $this->data = self::encode_data(self::decode_data($this->data)); // required for default
++            $this->datakey = '';
++            foreach ($this->options as $key => $val) {
++                if ($this->data == $key || $this->data == $val) {
++                    $this->data = $key;
++                    $this->datakey = $key;
++                    break;
++                }
++            }
++            //error_log("/user/profile/field/menu/field.class.php::profile_field_menu(): data: {$this->data} => datakey: {$this->datakey}");
++            // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
+         }
+     }
+ 
+@@ -43,10 +80,14 @@ class profile_field_menu extends profile_field_base {
+      * Overwrites the base class method
+      */
+     function edit_field_set_default($mform) {
+-        if (FALSE !==array_search($this->field->defaultdata, $this->options)){
+-            $defaultkey = (int)array_search($this->field->defaultdata, $this->options);
+-        } else {
++        // RL EDIT: BJB121219 ELIS-8124
+             $defaultkey = '';
++        $check = self::encode_data($this->field->defaultdata);
++        foreach ($this->options as $key => $val) {
++            if ($check == $key) {
++                $defaultkey = $key;
++                break;
++            }
+         }
+         $mform->setDefault($this->inputname, $defaultkey);
+     }
+@@ -59,7 +100,9 @@ class profile_field_menu extends profile_field_base {
+      * @param   stdClass $datarecord The object that will be used to save the record
+      */
+     function edit_save_data_preprocess($data, $datarecord) {
+-        return isset($this->options[$data]) ? $this->options[$data] : NULL;
++        //return isset($this->options[$data]) ? $this->options[$data] : NULL;
++        return isset($this->options[$data]) ? $data : NULL;
++        // BJB110906: ELIS-3099, MDL-16764, ELIS-6724
+     }
+ 
+     /**
+@@ -82,9 +125,21 @@ class profile_field_menu extends profile_field_base {
+         }
+         if ($this->is_locked() and !has_capability('moodle/user:update', context_system::instance())) {
+             $mform->hardFreeze($this->inputname);
+-            $mform->setConstant($this->inputname, $this->datakey);
++            // RL EDIT: BJB121219 ELIS-8124
++            $val = format_string(self::decode_data($this->datakey));
++            $mform->setConstant($this->inputname, $val);
++        }
+         }
++
++    /**
++     * Display the data for this field
++     * @return string the formatted custom field data value (i.e. thru multi-lang filters, etc.)
++     * RL EDIT: BJB121219 ELIS-8124
++     */
++    function display_data() {
++        return format_string(self::decode_data($this->data));
+     }
++
+     /**
+      * Convert external data (csv file) from value to key for processing later
+      * by edit_save_data_preprocess

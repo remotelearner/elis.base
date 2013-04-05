@@ -1,0 +1,17 @@
+diff --git a/lib/outputlib.php b/lib/outputlib.php
+index e982958..fdc679c 100644
+--- a/lib/outputlib.php
++++ b/lib/outputlib.php
+@@ -995,6 +995,12 @@ class theme_config {
+             $css = $csspostprocess($css, $this);
+         }
+ 
++        // ELIS-3985: remove image urls that point to site index page
++        global $CFG;
++        $match = $CFG->wwwroot;
++        $css = preg_replace("|.*background:[ ]*url\({$match}\).*;|", '', $css);
++        $css = preg_replace("|.*background:[ ]*([#,0-9,A-Z,a-z]*)[ ]*url\({$match}\).*;|", ' background-color: $1;', $css);
++
+         return $css;
+     }
+ 

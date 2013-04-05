@@ -1,0 +1,41 @@
+.phpunittest {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    line-height: 1em;
+}
+
+.testsearch {
+    line-height: 1em;
+}
+
+.dirlevel0 {
+    list-style-type: disc;
+}
+
+.dirlevel1 {
+    list-style-type: circle;
+}
+
+.dirlevel2 {
+    list-style-type: square;
+}
+
+.testpass {
+    list-style-image: url('../../../pix/i/tick_green_small.gif');
+}
+
+.testerror {
+    list-style-image: url('../../../pix/i/risk_xss.gif');
+}
+
+.testfail {
+    list-style-image: url('../../../pix/i/cross_red_big.gif');
+}
+
+.testskipped {
+    list-style-image: url('../../../pix/i/risk_spam.gif');
+}
+
+.testincomplete {
+    list-style-type: square;
+}

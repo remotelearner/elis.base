@@ -1,0 +1,17 @@
+diff --git a/lib/yui/formchangechecker/formchangechecker.js b/lib/yui/formchangechecker/formchangechecker.js
+index bdd28ff..ee0a31a 100644
+--- a/lib/yui/formchangechecker/formchangechecker.js
++++ b/lib/yui/formchangechecker/formchangechecker.js
+@@ -28,6 +28,12 @@ YUI.add('moodle-core-formchangechecker',
+                     }
+ 
+                     // Add change events to the form elements
++                    var currentform = Y.one(formid);
++                    // RL EDIT: ELIS-8291,ELIS-7858 - no form tag for frozen forms!
++                    if (!currentform) {
++                        return;
++                    }
++                    // End RL EDIT
+                     currentform.delegate('change', M.core_formchangechecker.set_form_changed, 'input', this);
+                     currentform.delegate('change', M.core_formchangechecker.set_form_changed, 'textarea', this);
+                     currentform.delegate('change', M.core_formchangechecker.set_form_changed, 'select', this);

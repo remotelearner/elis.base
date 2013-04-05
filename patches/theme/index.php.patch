@@ -1,0 +1,12 @@
+diff --git a/theme/index.php b/theme/index.php
+index ce2a3d1..c72b744 100644
+--- a/theme/index.php
++++ b/theme/index.php
+@@ -69,6 +69,7 @@ if ($reset and confirm_sesskey()) {
+     echo format_text(get_string('choosereadme', 'theme_'.$theme->name), FORMAT_MOODLE);
+     echo $output->box_end();
+     echo $output->continue_button($CFG->wwwroot . '/theme/index.php');
++    echo $PAGE->requires->get_end_code(); // ELIS-4012
+     echo $output->footer();
+     exit;
+ } else if ($device && $unsettheme && confirm_sesskey() && ($device != 'default')) {
