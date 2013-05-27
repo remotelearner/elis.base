@@ -1,5 +1,5 @@
 diff --git a/lib/db/upgrade.php b/lib/db/upgrade.php
-index 51f56c5..42c8be2 100644
+index 51f56c5..37f04f9 100644
 --- a/lib/db/upgrade.php
 +++ b/lib/db/upgrade.php
 @@ -7261,6 +7261,74 @@ FROM
@@ -77,3 +77,23 @@ index 51f56c5..42c8be2 100644
      if ($oldversion < 2011120507.03) {
          // Make sure the sortorder is not above the unsigned integer MySQL range.
          fix_course_sortorder();
+@@ -7268,5 +7336,19 @@ FROM
+         upgrade_main_savepoint(true, 2011120507.03);
+     }
+ 
++    if ($oldversion < 2011120509.05) {
++        // Adding index to unreadmessageid field of message_working table (MDL-34933)
++        $table = new xmldb_table('message_working');
++        $index = new xmldb_index('unreadmessageid_idx', XMLDB_INDEX_NOTUNIQUE, array('unreadmessageid'));
++
++        // Conditionally launch add index unreadmessageid
++        if (!$dbman->index_exists($table, $index)) {
++            $dbman->add_index($table, $index);
++        }
++
++        // Main savepoint reached.
++        upgrade_main_savepoint(true, 2011120509.05);
++    }
++
+     return true;
+ }
