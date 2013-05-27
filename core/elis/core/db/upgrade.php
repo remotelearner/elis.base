@@ -453,7 +453,9 @@ function xmldb_elis_core_upgrade($oldversion=0) {
 
         // Get rid of the 'context_levels' table as it's no longer needed
         $table = new xmldb_table('context_levels');
-        $dbman->drop_table($table);
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
 
         upgrade_plugin_savepoint(true, 2012032100, 'elis', 'core');
     }
@@ -520,6 +522,18 @@ function xmldb_elis_core_upgrade($oldversion=0) {
             }
         }
         upgrade_plugin_savepoint(true, 2012032103, 'elis', 'core');
+    }
+
+    if ($result && $oldversion < 2012032104) {
+        // Add new table column: (int)blocked
+        $table = new xmldb_table('elis_scheduled_tasks');
+        if ($dbman->table_exists($table)) {
+            $field = new xmldb_field('blocked', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'customized');
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2012032104, 'elis', 'core');
     }
 
     return $result;

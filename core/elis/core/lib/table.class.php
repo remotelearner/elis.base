@@ -325,18 +325,65 @@ class display_table {
 }
 
 /**
+ * Convert a date format to a strftime format
+ * from: http://php.net/manual/en/function.strftime.php
+ * Timezone conversion is done for unix. Windows users must exchange %z and %Z.
+ *
+ * Unsupported date formats : S, n, t, L, B, G, u, e, I, P, Z, c, r
+ * Unsupported strftime formats : %U, %W, %C, %g, %r, %R, %T, %X, %c, %D, %F, %x
+ *
+ * @param string $dateformat a date format
+ * @return string the equivalent strftime format
+ */
+function date_format_to_strftime($dateformat) {
+    static $caracs = array(
+        // Day - no strf eq : S
+        'd' => '%d', 'D' => '%a', 'j' => '%e', 'l' => '%A', 'N' => '%u', 'w' => '%w', 'z' => '%j',
+        // Week - no date eq : %U, %W
+        'W' => '%V',
+        // Month - no strf eq : n, t
+        'F' => '%B', 'm' => '%m', 'M' => '%b',
+        // Year - no strf eq : L; no date eq : %C, %g
+        'o' => '%G', 'Y' => '%Y', 'y' => '%y',
+        // Time - no strf eq : B, G, u; no date eq : %r, %R, %T, %X
+        'a' => '%P', 'A' => '%p', 'g' => '%l', 'h' => '%I', 'H' => '%H', 'i' => '%M', 's' => '%S',
+        // Timezone - no strf eq : e, I, P, Z
+        'O' => '%z', 'T' => '%Z',
+        // Full Date / Time - no strf eq : c, r; no date eq : %c, %D, %F, %x
+        'U' => '%s'
+    );
+
+    return strtr((string)$dateformat, $caracs);
+}
+
+/**
  * Display function for a date element
  */
 class display_date_item {
-    public function __construct($format = "M j, Y") {
+    /**
+     * constructor for display_date_item
+     * @param string $format optional format for userdate(), defaults to '%b %d, %Y'
+     */
+    public function __construct($format = '%b %d, %Y') {
+        // Check if the old 'date' format was passed and try to convert it
+        if (strpos($format, '%') === false) {
+            debugging('display_date_item class no longer uses date() format. Please update your code to use strftime() format strings.');
+            $format = date_format_to_strftime($format);
+        }
         $this->format = $format;
     }
 
+    /**
+     * display method for display_date_item
+     * @param string $column the column's field name
+     * @param object $item the current record object
+     * @return string the formatted date string or '-' if 'empty' date
+     */
     public function display($column, $item) {
         if (empty($item->$column)) {
             return '-';
         } else {
-            return date($this->format, $item->$column);
+            return userdate($item->$column, $this->format);
         }
     }
 }
