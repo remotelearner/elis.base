@@ -1,5 +1,5 @@
 diff --git a/lib/yui/blocks/blocks.js b/lib/yui/blocks/blocks.js
-index 99c4b48..9ad4fc2 100644
+index f6fbf82..ac30677 100644
 --- a/lib/yui/blocks/blocks.js
 +++ b/lib/yui/blocks/blocks.js
 @@ -34,29 +34,6 @@ YUI.add('moodle-core-blocks', function(Y) {

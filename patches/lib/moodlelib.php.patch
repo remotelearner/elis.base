@@ -1,8 +1,8 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index a1252e1..4e00517 100644
+index 90ba8c2..c81996e 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
-@@ -6551,6 +6551,8 @@ class core_string_manager implements string_manager {
+@@ -6538,6 +6538,8 @@ class core_string_manager implements string_manager {
              if ($plugintype === 'mod') {
                  // bloody mod hack
                  $file = $pluginname;
@@ -11,7 +11,7 @@ index a1252e1..4e00517 100644
              } else {
                  $file = $plugintype . '_' . $pluginname;
              }
-@@ -7963,6 +7965,7 @@ function get_plugin_types($fullpaths=true) {
+@@ -7981,6 +7983,7 @@ function get_plugin_types($fullpaths=true) {
                        'plagiarism'    => 'plagiarism',
                        'tool'          => $CFG->admin.'/tool',
                        'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
@@ -19,7 +19,7 @@ index a1252e1..4e00517 100644
          );
  
          $mods = get_plugin_list('mod');
-@@ -7976,6 +7979,30 @@ function get_plugin_types($fullpaths=true) {
+@@ -7994,6 +7997,30 @@ function get_plugin_types($fullpaths=true) {
              }
          }
  
@@ -50,7 +50,7 @@ index a1252e1..4e00517 100644
          // local is always last!
          $info['local'] = 'local';
  
-@@ -8015,6 +8042,12 @@ function get_plugin_list($plugintype) {
+@@ -8042,6 +8069,12 @@ function get_plugin_list($plugintype) {
          // mod is an exception because we have to call this function from get_plugin_types()
          $fulldirs[] = $CFG->dirroot.'/mod';
  
@@ -63,7 +63,7 @@ index a1252e1..4e00517 100644
      } else if ($plugintype === 'theme') {
          $fulldirs[] = $CFG->dirroot.'/theme';
          // themes are special because they may be stored also in separate directory
-@@ -8022,6 +8055,12 @@ function get_plugin_list($plugintype) {
+@@ -8049,6 +8082,12 @@ function get_plugin_list($plugintype) {
              $fulldirs[] = $CFG->themedir;
          }
  

@@ -1,5 +1,5 @@
 diff --git a/lib/db/install.xml b/lib/db/install.xml
-index 22835b2..92fe676 100644
+index 1fc7e86..f9aad2f 100644
 --- a/lib/db/install.xml
 +++ b/lib/db/install.xml
 @@ -1,5 +1,5 @@
@@ -19,7 +19,7 @@ index 22835b2..92fe676 100644
        </INDEXES>
      </TABLE>
      <TABLE NAME="grade_import_newitem" COMMENT="temporary table for storing new grade_item names from grade import" PREVIOUS="grade_grades_history" NEXT="grade_import_values">
-@@ -2829,7 +2830,7 @@
+@@ -2832,7 +2833,7 @@
          <KEY NAME="fk_usercreated" TYPE="foreign" FIELDS="usercreated" REFTABLE="user" REFFIELDS="id" PREVIOUS="uq_area_method"/>
        </KEYS>
      </TABLE>
@@ -28,7 +28,7 @@ index 22835b2..92fe676 100644
        <FIELDS>
          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="definitionid"/>
          <FIELD NAME="definitionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The ID of the form definition this is instance of" PREVIOUS="id" NEXT="raterid"/>
-@@ -2847,5 +2848,38 @@
+@@ -2850,5 +2851,38 @@
          <KEY NAME="fk_raterid" TYPE="foreign" FIELDS="raterid" REFTABLE="user" REFFIELDS="id" PREVIOUS="fk_definitionid"/>
        </KEYS>
      </TABLE>
@@ -67,4 +67,3 @@ index 22835b2..92fe676 100644
 +    </TABLE>
    </TABLES>
  </XMLDB>
-\ No newline at end of file
