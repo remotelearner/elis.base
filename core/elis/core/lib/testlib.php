@@ -75,6 +75,11 @@ function load_phpunit_data_set(PHPUnit_Extensions_Database_DataSet_IDataSet $dat
  */
 class overlay_database extends moodle_database {
     /**
+     * @var array Holds any tables that have been changed.
+     */
+    protected $changed_tables = array();
+
+    /**
      * Create a new object.
      *
      * @param moodle_database $basedb the base database object
@@ -143,11 +148,14 @@ class overlay_database extends moodle_database {
     }
 
     /**
-     * Empty out all the overlay tables.
+     * Truncate tables that have been changed. This is run after every test to ensure tests don't conflict with eachother.
      */
     public function reset_overlay_tables() {
-        foreach ($this->overlaytables as $tablename => $component) {
-            $this->delete_records($tablename);
+        foreach ($this->changed_tables as $i => $tablename) {
+            if (isset($this->overlaytables[$tablename])) {
+                $this->delete_records($tablename);
+            }
+            unset($this->changed_tables[$i]);
         }
     }
 
@@ -272,7 +280,21 @@ class overlay_database extends moodle_database {
         return preg_replace($this->pattern, $this->overlayprefix.'$1', $sql);
     }
 
+    /**
+     * Add a table name to the internal array of changed tables. Only tables in the changed table array will be
+     * truncated after every test
+     * @param string $table The name of the changed table.
+     */
+    protected function record_changed_table($table) {
+        $this->changed_tables[$table] = $table;
+    }
+
     public function execute($sql, array $params=null) {
+        if (stripos($sql, 'INSERT') === 0 || stripos($sql, 'UPDATE') === 0 || stripos($sql, 'DELETE') === 0) {
+            if (preg_match($this->pattern, $sql, $matches)) {
+                $this->record_changed_table($matches[1]);
+            }
+        }
         return $this->basedb->execute($this->fix_overlay_table_names($sql), $params);
     }
 
@@ -302,7 +324,7 @@ class overlay_database extends moodle_database {
         if ($this->check_table_writable($table) === null) {
             return true;
         }
-
+        $this->record_changed_table($table);
         $cacheprefix = $this->basedb->prefix;
         $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->insert_record_raw($table, $params, $returnid, $bulk, $customsequence);
@@ -314,7 +336,7 @@ class overlay_database extends moodle_database {
         if ($this->check_table_writable($table) === null) {
             return true;
         }
-
+        $this->record_changed_table($table);
         $cacheprefix = $this->basedb->prefix;
         $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->insert_record($table, $dataobject, $returnid, $bulk);
@@ -326,7 +348,7 @@ class overlay_database extends moodle_database {
         if ($this->check_table_writable($table) === null) {
             return true;
         }
-
+        $this->record_changed_table($table);
         $cacheprefix = $this->basedb->prefix;
         $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->import_record($table, $dataobject);
@@ -338,7 +360,7 @@ class overlay_database extends moodle_database {
         if ($this->check_table_writable($table) === null) {
             return true;
         }
-
+        $this->record_changed_table($table);
         $cacheprefix = $this->basedb->prefix;
         $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->update_record_raw($table, $params, $bulk);
@@ -350,7 +372,7 @@ class overlay_database extends moodle_database {
         if ($this->check_table_writable($table) === null) {
             return true;
         }
-
+        $this->record_changed_table($table);
         $cacheprefix = $this->basedb->prefix;
         $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->update_record($table, $dataobject, $bulk);
@@ -362,7 +384,7 @@ class overlay_database extends moodle_database {
         if ($this->check_table_writable($table) === null) {
             return true;
         }
-
+        $this->record_changed_table($table);
         $cacheprefix = $this->basedb->prefix;
         $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->set_field_select($table, $newfield, $newvalue, $select, $params);
@@ -374,7 +396,7 @@ class overlay_database extends moodle_database {
         if ($this->check_table_writable($table) === null) {
             return true;
         }
-
+        $this->record_changed_table($table);
         $cacheprefix = $this->basedb->prefix;
         $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->delete_records_select($table, $select, $params);

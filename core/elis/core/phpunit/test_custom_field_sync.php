@@ -2764,6 +2764,77 @@ class custom_field_sync_test extends elis_database_test {
             null
         );
 
+        $testdata[] = array(
+            // menu => multi-valued menu - can't sync _to_ moodle
+            array( // Moodle field data
+                'shortname' => 'mdlcf80',
+                'name'      => 'mdlcf80',
+                'datatype'  => 'menu',
+                'param1'    => "MoodleOption1\nMoodleOption2\nMoodleOption3"
+            ),
+            array( // ELIS field data
+                'field'          => array(
+                    'shortname'   => 'mdlcf80',
+                    'name'        => 'elis_mdlcf80',
+                    'datatype'    => 'char',
+                    'categoryid'  => 0, // TBD
+                    'multivalued' => 1
+                ),
+                'context'        => CONTEXT_ELIS_USER,
+                'manual'         => array(
+                    'control'         => 'menu',
+                    'edit_capability' => '',
+                    'view_capability' => '',
+                    'options_source'  => '',
+                    'options'         => "Option1\nOption2\nOption3"
+                ),
+                'moodle_profile' => array(
+                    'exclude'     => pm_moodle_profile::sync_to_moodle
+                )
+            ),
+            false, // can't sync
+            null,
+            null
+        );
+
+        $testdata[] = array(
+            // menu => multi-valued menu - can sync _from_ moodle - update options
+            array( // Moodle field data
+                'shortname' => 'mdlcf81',
+                'name'      => 'mdlcf81',
+                'datatype'  => 'menu',
+                'param1'    => "MoodleOption1\nMoodleOption2\nMoodleOption3"
+            ),
+            array( // ELIS field data
+                'field'          => array(
+                    'shortname'   => 'mdlcf81',
+                    'name'        => 'elis_mdlcf81',
+                    'datatype'    => 'char',
+                    'categoryid'  => 0, // TBD
+                    'multivalued' => 1
+                ),
+                'context'        => CONTEXT_ELIS_USER,
+                'manual'         => array(
+                    'control'         => 'menu',
+                    'edit_capability' => '',
+                    'view_capability' => '',
+                    'options_source'  => '',
+                    'options'         => "Option1\nOption2\nOption3"
+                ),
+                'moodle_profile' => array(
+                    'exclude'     => pm_moodle_profile::sync_from_moodle
+                )
+            ),
+            true, // can sync
+            null,
+            array( // ELIS field expected
+                'manual' => array(
+                    'options'        => "MoodleOption1\nMoodleOption2\nMoodleOption3",
+                    'options_source' => '',
+                )
+            )
+        );
+
         return $testdata;
     }
 

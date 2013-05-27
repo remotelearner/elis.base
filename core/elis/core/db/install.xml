@@ -23,7 +23,8 @@
         <FIELD NAME="runsremaining" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  COMMENT="Number of times left that the task will run -- null if no limit" PREVIOUS="timezone" NEXT="startdate"/>
         <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  COMMENT="Task will start being scheduled at this date." PREVIOUS="runsremaining" NEXT="enddate"/>
         <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  COMMENT="Task will not run after this date (unix timestamp) -- null if no end date" PREVIOUS="startdate" NEXT="customized"/>
-        <FIELD NAME="customized" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  COMMENT="0 or 1 - whether this time differs from what is in code" PREVIOUS="enddate"/>
+        <FIELD NAME="customized" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  COMMENT="0 or 1 - whether this time differs from what is in code" PREVIOUS="enddate" NEXT="blocked"/>
+        <FIELD NAME="blocked" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="time task is blocked until" PREVIOUS="customized"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

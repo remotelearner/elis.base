@@ -859,8 +859,9 @@ abstract class field_data extends elis_data_object {
      * @param mixed $contextlevel the context level.  Either a numeric value,
      * or the name of the context level from the ELIS Program Manager
      * @param object $record the data_object to fetch the field values from
+     * @return bool  true
      */
-    public function set_for_context_from_datarecord($contextlevel, $record) {
+    public static function set_for_context_from_datarecord($contextlevel, $record) {
         if (!is_numeric($contextlevel)) {
             $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
             if (!$contextlevel) {

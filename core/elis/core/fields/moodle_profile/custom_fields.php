@@ -450,6 +450,16 @@ function moodle_profile_can_sync($shortname, $eliscontrol = null) {
     if (!empty($fieldtypenosync) && is_array($fieldtypenosync) && in_array($eliscontrol, $fieldtypenosync)) {
         return false; // sync not permitted
     }
+
+    // ELIS-8363: Check for multi-valued fields that can't sync to Moodle
+    if (empty($elisfield)) {
+        $elisfield = field::get_for_context_level_with_name(CONTEXT_ELIS_USER, $shortname);
+    }
+    if (!empty($elisfield) && !empty($elisfield->multivalued) && isset($elisfield->owners['moodle_profile']) &&
+        $elisfield->owners['moodle_profile']->exclude == pm_moodle_profile::sync_to_moodle) {
+        return false; // sync not permitted
+    }
+
     // Handle special cases of ELIS checkbox using list
     if ($eliscontrol == 'checkbox') {
         if ($mdldatatype == 'checkbox') {
