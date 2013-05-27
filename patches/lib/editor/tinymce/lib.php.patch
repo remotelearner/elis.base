@@ -1,8 +1,8 @@
 diff --git a/lib/editor/tinymce/lib.php b/lib/editor/tinymce/lib.php
-index cf037cb..55c2e22 100644
+index 1208fdf..9276c76 100644
 --- a/lib/editor/tinymce/lib.php
 +++ b/lib/editor/tinymce/lib.php
-@@ -215,6 +215,13 @@ class tinymce_texteditor extends texteditor {
+@@ -214,6 +214,13 @@ class tinymce_texteditor extends texteditor {
          // Remove temporary parameters.
          unset($params['moodle_config']);
  

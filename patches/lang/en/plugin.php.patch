@@ -1,5 +1,5 @@
 diff --git a/lang/en/plugin.php b/lang/en/plugin.php
-index cb78b3b..b6a1165 100644
+index 235dcf4..d3a1571 100644
 --- a/lang/en/plugin.php
 +++ b/lang/en/plugin.php
 @@ -63,6 +63,7 @@ $string['plugindisable'] = 'Disable';
