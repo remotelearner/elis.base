@@ -1,8 +1,8 @@
 
-ELIS 2.3 System Requirements
+ELIS 2.4 System Requirements
 ============================
 
-The requirements for ELIS are the same as Moodle -- [Moodle 2.3 System requirements][moodle_requirements]
+The requirements for ELIS are the same as Moodle -- [Moodle 2.4 System requirements][moodle_requirements]
 
 *	*NOTE:* ELIS is currently not fully compatible with PostgreSQL.
 
@@ -158,18 +158,18 @@ or download a zip or tarball package of the code.
 The direct download zip archive links for the latest version of the code in each
 ELIS community repository are as follows:
 
-*	*elis.base* --- [MOODLE\_23\_STABLE][zipdl_elis_base]
-*	*elis.cm* --- [MOODLE\_23\_STABLE][zipdl_elis_cm]
-*	*moodle-block_php_report* --- [MOODLE\_23\_STABLE][zipdl_elis_reporting]
-*	*elis.alfresco* --- [MOODLE\_23\_STABLE][zipdl_elis_alfresco]
+*	*elis.base* --- [MOODLE\_24\_STABLE][zipdl_elis_base]
+*	*elis.cm* --- [MOODLE\_24\_STABLE][zipdl_elis_cm]
+*	*moodle-block_php_report* --- [MOODLE\_24\_STABLE][zipdl_elis_reporting]
+*	*elis.alfresco* --- [MOODLE\_24\_STABLE][zipdl_elis_alfresco]
 
 Optional:
 
-*	*moodle-auth_openid* --- [MOODLE\_23\_STABLE][zipdl_auth_openid]
-*	*moodle-block_openid* --- [MOODLE\_23\_STABLE][zipdl_block_openid]
+*	*moodle-auth_openid* --- [MOODLE\_24\_STABLE][zipdl_auth_openid]
+*	*moodle-block_openid* --- [MOODLE\_24\_STABLE][zipdl_block_openid]
 
 
-[moodle_requirements]: http://docs.moodle.org/dev/Moodle_2.3_release_notes#Requirements
+[moodle_requirements]: http://docs.moodle.org/dev/Moodle_2.4_release_notes#Requirements
 [elis_docs_home]: http://rlcommunity.remote-learner.net/mod/book/view.php?id=69
 [elis_release_notes]: http://rlcommunity.remote-learner.net/course/view.php?id=2
 [elis_files_docs]: http://rlcommunity.remote-learner.net/mod/book/view.php?id=65
@@ -178,7 +178,7 @@ Optional:
 [stuart_metcalfe]: https://launchpad.net/~stuartmetcalfe
 [moodle_org_openid]: https://moodle.org/mod/data/view.php?d=13&rid=928]
 [openid_original_source]: https://launchpad.net/moodle-openid
-[img_depdencies]: https://raw.github.com/remotelearner/elis.base/MOODLE_23_STABLE/elis_community_dependencies.png
+[img_depdencies]: https://raw.github.com/remotelearner/elis.base/MOODLE_24_STABLE/elis_community_dependencies.png
 [github_remotelearner]: https://github.com/remotelearner
 [elis_repo_base]: https://github.com/remotelearner/elis.base
 [elis_repo_cm]: https://github.com/remotelearner/elis.cm
@@ -186,14 +186,14 @@ Optional:
 [elis_repo_reporting]: https://github.com/remotelearner/moodle-block_php_report
 [elis_repo_auth_openid]: https://github.com/remotelearner/moodle-auth_openid
 [elis_repo_block_openid]: https://github.com/remotelearner/moodle-block_openid
-[elis_repo_branch_base]: https://github.com/remotelearner/elis.base/tree/MOODLE_23_STABLE
-[elis_repo_branch_cm]: https://github.com/remotelearner/elis.cm/tree/MOODLE_23_STABLE
-[elis_repo_branch_alfresco]: https://github.com/remotelearner/elis.alfresco/tree/MOODLE_23_STABLE
-[elis_repo_branch_reporting]: https://github.com/remotelearner/moodle-block_php_report/tree/MOODLE_23_STABLE
-[zipdl_elis_base]: https://github.com/remotelearner/elis.base/zipball/MOODLE_23_STABLE
-[zipdl_elis_cm]: https://github.com/remotelearner/elis.cm/zipball/MOODLE_23_STABLE
-[zipdl_elis_reporting]: https://github.com/remotelearner/moodle-block_php_report/zipball/MOODLE_23_STABLE
-[zipdl_elis_alfresco]: https://github.com/remotelearner/elis.alfresco/zipball/MOODLE_23_STABLE
-[zipdl_auth_openid]: https://github.com/remotelearner/moodle-auth_openid/zipball/MOODLE_23_STABLE
-[zipdl_block_openid]: https://github.com/remotelearner/moodle-block_openid/zipball/MOODLE_23_STABLE
+[elis_repo_branch_base]: https://github.com/remotelearner/elis.base/tree/MOODLE_24_STABLE
+[elis_repo_branch_cm]: https://github.com/remotelearner/elis.cm/tree/MOODLE_24_STABLE
+[elis_repo_branch_alfresco]: https://github.com/remotelearner/elis.alfresco/tree/MOODLE_24_STABLE
+[elis_repo_branch_reporting]: https://github.com/remotelearner/moodle-block_php_report/tree/MOODLE_24_STABLE
+[zipdl_elis_base]: https://github.com/remotelearner/elis.base/zipball/MOODLE_24_STABLE
+[zipdl_elis_cm]: https://github.com/remotelearner/elis.cm/zipball/MOODLE_24_STABLE
+[zipdl_elis_reporting]: https://github.com/remotelearner/moodle-block_php_report/zipball/MOODLE_24_STABLE
+[zipdl_elis_alfresco]: https://github.com/remotelearner/elis.alfresco/zipball/MOODLE_24_STABLE
+[zipdl_auth_openid]: https://github.com/remotelearner/moodle-auth_openid/zipball/MOODLE_24_STABLE
+[zipdl_block_openid]: https://github.com/remotelearner/moodle-block_openid/zipball/MOODLE_24_STABLE
 
