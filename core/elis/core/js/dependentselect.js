@@ -32,48 +32,37 @@
 function dependentselect_updateoptions(pid, id, path) {
     var parent = document.getElementById('id_'+pid);
     var child  = document.getElementById('id_'+id);
-    var childId = child.value;
 
     var option_success = function(o) {
         var data = YAHOO.lang.JSON.parse(o.responseText);
         var selectCache = [];
         var selected    = false;
+        var childId     = child.value;
 
-        for (i = 0; i < child.options.length; i++) {
-            if (child.options[i].select == true) {
+        for (var i = 0; i < child.options.length; i++) {
+            if (child.options[i].selected) {
                 selectCache.push(child.options[i].value);
             }
         }
-        
+
         child.options.length = 0;
         for (i = 0; i < data.length; i++) {
-            //response text is an array of arrays, where each sub-array's
-            //first element is the element id and the second is the name
+            // response text is an array of arrays, where each sub-array's
+            // first element is the element id and the second is the name
             addOption(child, childId, data[i][0], data[i][1]);
         }
-        // ELIS-3474/MAEOPPS - Do NOT reset selected option!
-        //child.options[0].selected = true;
 
-        if ("fireEvent" in child) {
-            child.fireEvent("onchange");
-        } else {
-            var evt = document.createEvent("HTMLEvents");
-            evt.initEvent("change", false, true);
-            child.dispatchEvent(evt);
-        }
-        
         for (i = 0; i < selectCache.length; i++) {
-            for (h = 0; h < child.options.length; h++) {
-                if (selectCache[i].value == child.options[h].value) {
-                    child.options[h].selected = true;
+            for (var h = 0; h < child.options.length; h++) {
+                if (selectCache[i] == child.options[h].value || childId == child.options[h].value) {
+                    child.options[h].selected = 'selected';
                     selected = true;
                 }
             }
         }
-        
-        if ((! selected) && (typeof child.options[0] !== 'undefined')
-                && ((child.options[0].value == 0) || (child.options[0].value == '')) ) {
-            child.options[0].selected = true;
+
+        if (!selected && (typeof child.options[0] !== 'undefined') && (child.options[0].value == 0 || child.options[0].value == '') ) {
+            child.options[0].selected = 'selected';
         }
 
         if ("fireEvent" in child) {
@@ -112,10 +101,17 @@ function dependentselect_updateoptions(pid, id, path) {
     return true;
 }
 
-function addOption(child,childId,key,val) {
+/**
+ * Add option to select element
+ * @param object child the select object
+ * @param mixed childId the previous element setting
+ * @param mixed key element id
+ * @param mixed val the element value
+ */
+function addOption(child, childId, key, val) {
     var id = child.options.length;
-    child.options[id] = new Option(val,key);
+    child.options[id] = new Option(val, key);
     if (key == childId) {
-        child.options[id].selected = true;
+        child.options[id].selected = 'selected';
     }
 }

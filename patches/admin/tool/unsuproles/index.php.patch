@@ -7,7 +7,7 @@ index e1c6cf0..3135376 100644
      echo $OUTPUT->header();
      $yesurl = new moodle_url($PAGE->url, array('roleid'=>$roleid, 'contextlevel'=>$contextlevel, 'action'=>'delete', 'confirm'=>1, 'sesskey'=>sesskey()));
 +    try {
-         $levelname = get_contextlevel_name($contextlevel);
+     $levelname = get_contextlevel_name($contextlevel);
 +    } catch (Exception $e) {
 +        if (file_exists($CFG->dirroot.'/elis/program/accesslib.php')) {
 +            require_once($CFG->dirroot.'/elis/program/accesslib.php');
@@ -25,7 +25,7 @@ index e1c6cf0..3135376 100644
      $data = array();
      foreach ($problems as $problem) {
 +        try {
-             $levelname = get_contextlevel_name($problem->contextlevel);
+         $levelname = get_contextlevel_name($problem->contextlevel);
 +        } catch (Exception $e) {
 +            if (file_exists($CFG->dirroot.'/elis/program/accesslib.php')) {
 +                require_once($CFG->dirroot.'/elis/program/accesslib.php');

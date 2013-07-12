@@ -1,5 +1,5 @@
 diff --git a/lib/db/upgrade.php b/lib/db/upgrade.php
-index 04ae4e1..8e7f205 100644
+index 73d48f8..f80c871 100644
 --- a/lib/db/upgrade.php
 +++ b/lib/db/upgrade.php
 @@ -992,6 +992,74 @@ function xmldb_main_upgrade($oldversion) {
