@@ -1,8 +1,8 @@
 diff --git a/lib/db/upgrade.php b/lib/db/upgrade.php
-index 51f56c5..37f04f9 100644
+index f055505..804f7a6 100644
 --- a/lib/db/upgrade.php
 +++ b/lib/db/upgrade.php
-@@ -7261,6 +7261,74 @@ FROM
+@@ -7285,6 +7285,74 @@ FROM
          upgrade_main_savepoint(true, 2011120506.06);
      }
  
@@ -77,7 +77,7 @@ index 51f56c5..37f04f9 100644
      if ($oldversion < 2011120507.03) {
          // Make sure the sortorder is not above the unsigned integer MySQL range.
          fix_course_sortorder();
-@@ -7268,5 +7336,19 @@ FROM
+@@ -7292,5 +7360,19 @@ FROM
          upgrade_main_savepoint(true, 2011120507.03);
      }
  

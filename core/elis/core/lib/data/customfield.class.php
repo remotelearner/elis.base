@@ -394,9 +394,16 @@ class field extends elis_data_object {
         if (empty($this->id)) { // TBD: or throw exception?
             return false;
         }
-        return $DB->get_field_select($this->data_table(), 'data',
-                                     'contextid IS NULL AND fieldid = ?',
-                                     array($this->id));
+        if (!$this->multivalued) {
+            return $DB->get_field_select($this->data_table(), 'data', 'contextid IS NULL AND fieldid = ?', array($this->id));
+        } else {
+            $result = array();
+            $defaults = $DB->get_records_select($this->data_table(), 'contextid IS NULL AND fieldid = ?', array($this->id));
+            foreach ($defaults as $default) {
+                $result[] = $default->data;
+            }
+            return !empty($result) ? $result : false;
+        }
     }
 
 }
@@ -796,8 +803,12 @@ abstract class field_data extends elis_data_object {
         $data_table = $field->data_table();
         // FIXME: check exclude, unique, etc
         if ($field->multivalued) {
-            // find what data already exists (excluding default value)
-            $records = self::get_for_context_and_field($context, $field, ($context == NULL));
+            if (!is_array($data)) {
+                $data = array($data);
+            }
+            // find what data already exists (excluding default value if we have a context, including if we don't)
+            $include_default = (is_null($contextid)) ? true : false;
+            $records = self::get_for_context_and_field($context, $field, $include_default);
             $records = $records ? $records : array();
             $todelete = array();
             $existing = array();
