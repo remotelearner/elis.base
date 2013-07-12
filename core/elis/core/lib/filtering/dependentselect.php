@@ -110,16 +110,12 @@ class generalized_filter_dependentselect extends generalized_filter_type {
 
         $mform->addHelpButton($this->_uniqueid.'_grp', $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */); // TBV
 
-        if (!is_null($this->_default)) {
-            $mform->setDefault($this->_uniqueid, $this->_default);
-        }
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid.'_grp');
         }
 
         // Always refresh the child pulldown
-        $params = array($parent, $this->_uniqueid, $fullpath);
-        $PAGE->requires->js_init_code($js);
+        $PAGE->requires->js_init_code($js, true);
     }
 
     /**

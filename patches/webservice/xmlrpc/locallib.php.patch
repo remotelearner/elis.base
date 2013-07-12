@@ -1,0 +1,24 @@
+diff --git a/webservice/xmlrpc/locallib.php b/webservice/xmlrpc/locallib.php
+index 3a85311..da1ba67 100644
+--- a/webservice/xmlrpc/locallib.php
++++ b/webservice/xmlrpc/locallib.php
+@@ -59,7 +59,7 @@ class moodle_zend_xmlrpc_server extends Zend_XmlRpc_Server {
+             // the accurate errorcode from the last | in the exception message.
+             $code = substr($code, 0, 8);
+             // Add the debuginfo to the exception message if debuginfo must be returned.
+-            if (debugging() and isset($fault->debuginfo)) {
++            if (isset($fault->debuginfo)) {
+                 $fault = new Exception($fault->getMessage() . ' | DEBUG INFO: ' . $fault->debuginfo
+                         . ' | ERRORCODE: ' . $fault->errorcode, $code);
+             } else {
+@@ -102,10 +102,8 @@ class webservice_xmlrpc_server extends webservice_zend_server {
+         Zend_XmlRpc_Server_Fault::attachFaultException('moodle_exception');
+         //when DEBUG >= NORMAL then the thrown exceptions are "casted" into a plain PHP Exception class
+         //in order to display the $debuginfo (see moodle_zend_xmlrpc_server class - MDL-29435)
+-        if (debugging()) {
+             Zend_XmlRpc_Server_Fault::attachFaultException('Exception');
+         }
+-    }
+ 
+ }
+ 
