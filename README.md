@@ -107,13 +107,23 @@ two ways of doing this current:
 	7.	When this process has finished it should report no errors and tell you
 		that it has found more web scripts than were previously already there
 
+[moodle-block\_rlip][elis_repo_branch_block_rlip] (optional)
+------------------------------------------------------
+
+This repository contains the ELIS Files (Alfresco integration) component.
+
+#### Component documentation
+
+*	[Standard (non-ELIS) plugin][rldh_docs_basic]
+*	[ELIS plugin][rldh_docs_elis]
+
 OpenID (optional)
 -----------------
 
 We supply two plugins for Moodle to allow users to authenticate into Moodle via OpenID:
-1.	An authentication plugin
+1.	An authentication plugin -- [browse code][elis_repo_branch_auth_openid]
 2.	A block which allows users not currently authenticated via OpenID to switch
-	their authentication method to use a valid OpenID source.
+	their authentication method to use a valid OpenID source -- [browse_code][elis_repo_branch_block_openid]
 
 #### [Component documentation][elis_docs_openid]
 
@@ -149,6 +159,7 @@ available at the following URLs:
 
 Optional:
 
+*	*moodle-block_rlip* --  [https://github.com/remotelearner/moodle-block\_rlip][elis_repo_block_rlip]
 *	*moodle-auth_openid* --- [https://github.com/remotelearner/moodle-auth\_openid][elis_repo_auth_openid]
 *	*moodle-block_openid* --- [https://github.com/remotelearner/moodle-block\_openid][elis_repo_block_openid]
 
@@ -165,6 +176,7 @@ ELIS community repository are as follows:
 
 Optional:
 
+*	*moodle-block_rlip* --- [MOODLE\_23\_STABLE][zipdl_block_rlip]
 *	*moodle-auth_openid* --- [MOODLE\_23\_STABLE][zipdl_auth_openid]
 *	*moodle-block_openid* --- [MOODLE\_23\_STABLE][zipdl_block_openid]
 
@@ -173,12 +185,14 @@ Optional:
 [elis_docs_home]: http://rlcommunity.remote-learner.net/mod/book/view.php?id=69
 [elis_release_notes]: http://rlcommunity.remote-learner.net/course/view.php?id=2
 [elis_files_docs]: http://rlcommunity.remote-learner.net/mod/book/view.php?id=65
+[rldh_docs_basic]: http://rlcommunity.remote-learner.net/mod/book/view.php?id=59
+[rldh_docs_elis]: http://rlcommunity.remote-learner.net/mod/book/view.php?id=69&chapterid=928
 [elis_docs_reporting]: http://rlcommunity.remote-learner.net/mod/book/view.php?id=69&chapterid=902
 [elis_docs_openid]: http://rlcommunity.remote-learner.net/mod/book/view.php?id=26
 [stuart_metcalfe]: https://launchpad.net/~stuartmetcalfe
 [moodle_org_openid]: https://moodle.org/mod/data/view.php?d=13&rid=928]
 [openid_original_source]: https://launchpad.net/moodle-openid
-[img_depdencies]: https://raw.github.com/remotelearner/elis.base/MOODLE_23_STABLE/elis_community_dependencies.png
+[img_depdencies]: elis_community_dependencies.png
 [github_remotelearner]: https://github.com/remotelearner
 [elis_repo_base]: https://github.com/remotelearner/elis.base
 [elis_repo_cm]: https://github.com/remotelearner/elis.cm
@@ -190,10 +204,14 @@ Optional:
 [elis_repo_branch_cm]: https://github.com/remotelearner/elis.cm/tree/MOODLE_23_STABLE
 [elis_repo_branch_alfresco]: https://github.com/remotelearner/elis.alfresco/tree/MOODLE_23_STABLE
 [elis_repo_branch_reporting]: https://github.com/remotelearner/moodle-block_php_report/tree/MOODLE_23_STABLE
+[elis_repo_branch_block_rlip]: https://github.com/remotelearner/moodle-block_rlip/tree/MOODLE_23_STABLE
+[elis_repo_branch_auth_openid]: https://github.com/remotelearner/moodle-auth_openid/tree/MOODLE_23_STABLE
+[elis_repo_branch_block_openid]: https://github.com/remotelearner/moodle-block_openid/tree/MOODLE_23_STABLE
 [zipdl_elis_base]: https://github.com/remotelearner/elis.base/zipball/MOODLE_23_STABLE
 [zipdl_elis_cm]: https://github.com/remotelearner/elis.cm/zipball/MOODLE_23_STABLE
 [zipdl_elis_reporting]: https://github.com/remotelearner/moodle-block_php_report/zipball/MOODLE_23_STABLE
 [zipdl_elis_alfresco]: https://github.com/remotelearner/elis.alfresco/zipball/MOODLE_23_STABLE
+[zipdl_block_rlip]: https://github.com/remotelearner/moodle-block_rlip/zipball/MOODLE_23_STABLE
 [zipdl_auth_openid]: https://github.com/remotelearner/moodle-auth_openid/zipball/MOODLE_23_STABLE
 [zipdl_block_openid]: https://github.com/remotelearner/moodle-block_openid/zipball/MOODLE_23_STABLE
 
