@@ -1,8 +1,18 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index 0b0ee4a..3bc7cc7 100644
+index 0b0ee4a..9ee15b9 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
-@@ -5064,6 +5064,7 @@ function get_mailer($action='get') {
+@@ -4226,6 +4226,9 @@ function update_internal_user_password($user, $password) {
+     if ($user->password !== $hashedpassword) {
+         $DB->set_field('user', 'password',  $hashedpassword, array('id'=>$user->id));
+         $user->password = $hashedpassword;
++
++        // Trigger user updated event
++        events_trigger('user_updated', $user);
+     }
+ 
+     return true;
+@@ -5064,6 +5067,7 @@ function get_mailer($action='get') {
                  $mailer->SMTPDebug = true;
              }
              $mailer->Host          = $CFG->smtphosts;        // specify main and backup servers
@@ -10,7 +20,23 @@ index 0b0ee4a..3bc7cc7 100644
              $mailer->SMTPKeepAlive = $prevkeepalive;         // use previous keepalive
  
              if ($CFG->smtpuser) {                            // Use SMTP authentication
-@@ -6370,6 +6371,8 @@ class core_string_manager implements string_manager {
+@@ -5412,7 +5416,14 @@ function setnew_password_and_mail($user) {
+ 
+     $newpassword = generate_password();
+ 
+-    $DB->set_field('user', 'password', hash_internal_user_password($newpassword), array('id'=>$user->id));
++    $hashedpassword = hash_internal_user_password($newpassword);
++
++    $DB->set_field('user', 'password', $hashedpassword, array('id'=>$user->id));
++
++    $user->password = $hashedpassword;
++
++    // Trigger user updated event
++    events_trigger('user_updated', $user);
+ 
+     $a = new stdClass();
+     $a->firstname   = fullname($user, true);
+@@ -6370,6 +6381,8 @@ class core_string_manager implements string_manager {
              if ($plugintype === 'mod') {
                  // bloody mod hack
                  $file = $pluginname;
@@ -19,7 +45,7 @@ index 0b0ee4a..3bc7cc7 100644
              } else {
                  $file = $plugintype . '_' . $pluginname;
              }
-@@ -7736,6 +7739,7 @@ function get_plugin_types($fullpaths=true) {
+@@ -7736,6 +7749,7 @@ function get_plugin_types($fullpaths=true) {
                        'qbehaviour'    => 'question/behaviour',
                        'qformat'       => 'question/format',
                        'plagiarism'    => 'plagiarism',
@@ -27,7 +53,7 @@ index 0b0ee4a..3bc7cc7 100644
                        'tool'          => $CFG->admin.'/tool',
                        'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
          );
-@@ -7751,6 +7755,28 @@ function get_plugin_types($fullpaths=true) {
+@@ -7751,6 +7765,28 @@ function get_plugin_types($fullpaths=true) {
              }
          }
  
@@ -56,7 +82,7 @@ index 0b0ee4a..3bc7cc7 100644
          // local is always last!
          $info['local'] = 'local';
  
-@@ -7790,6 +7816,14 @@ function get_plugin_list($plugintype) {
+@@ -7790,6 +7826,14 @@ function get_plugin_list($plugintype) {
          // mod is an exception because we have to call this function from get_plugin_types()
          $fulldirs[] = $CFG->dirroot.'/mod';
  

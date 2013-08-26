@@ -184,12 +184,19 @@ function user_module_activity_add_session($userid, $courseid, $cmid, $session_st
  * Processes approx 40k records / minute
  */
 function user_activity_etl_cron() {
+    global $DB;
     $rununtil = time() + USERACT_TIME_LIMIT;
 
     $state = user_activity_task_init();
-
+    if (!isset($state['last_processed_time']) || (time() - $state['last_processed_time']) >= DAYSECS) {
+        $state['recs_last_processed'] = 0;
+        $state['last_processed_time'] = time();
+        $state['log_entries_per_day'] = (float)$DB->count_records_select('log', 'time >= ? AND time < ?',
+                array($state['last_processed_time'] - 10 * DAYSECS, $state['last_processed_time'])) / 10.0;
+    }
     do {
         list($completed,$total) = user_activity_task_process($state);
+        $state['recs_last_processed'] += $completed;
     } while (time() < $rununtil && $completed < $total);
 
     if ($completed < $total) {
