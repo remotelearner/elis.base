@@ -213,6 +213,10 @@ $string['filt_autoc_wcf_config_title'] = 'Autocomplete Configuration';
 $string['filt_autoc_wcf_config_formtitle'] = 'User Fields to Search and Display';
 $string['filt_autoc_wcf_config_desc'] = 'Notes: <ul><li>Any fields which are set to be searched will also be displayed.</li><li><b><i>Restrict</i></b> will restrict searching to users with the same value for this field as the user who is searching</li></ul>';
 
+$string['health_etl_prune_log_desc'] = 'The ETL process is currently processing log data that could be deleted due to Moodle\'s <i>loglifetime</i> setting of <b>{$a} days</b>.';
+$string['health_etl_prune_log_soln'] = 'Set Moodle\'s <i>loglifetime</i> setting to a larger value or <i>Never delete logs</i> until the ETL process can complete.';
+$string['health_etl_prune_log_title'] = 'ETL process is processing log data that maybe prematurely deleted';
+
 $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
 

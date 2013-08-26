@@ -65,53 +65,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
         }
     }
 
-    if (!isset($attrs['manual_field_control']['onchange'])) {
-        $attrs['manual_field_control']['onchange'] = '';
-    }
-    $attrs['manual_field_control']['onchange'] .= 'switchFieldOptions();';
     $attrs['manual_field_inctime']['group'] = 1;
-
-    $form->addElement('html', '<script type="text/javascript">
-        function switchFieldOptions() {
-            var fcontrol = document.getElementById("id_manual_field_control");
-            if (fcontrol) {
-                var fotext = document.getElementById("field_options_text");
-                var fomenu = document.getElementById("field_options_menu");
-                var fodatetime = document.getElementById("field_options_datetime");
-                var cftype = fcontrol.options[fcontrol.selectedIndex].value;
-                //alert("switchFieldOptions(): cftype = " + cftype);
-                if (fotext && fomenu && fodatetime) {
-                    if (cftype == "checkbox") {
-                        fotext.className = "accesshide custom_field_options_fieldset";
-                        fomenu.className = "clearfix custom_field_options_fieldset";
-                        fodatetime.className = "accesshide custom_field_options_fieldset";
-                    } else if (cftype == "menu") {
-                        fotext.className = "accesshide custom_field_options_fieldset";
-                        fomenu.className = "clearfix custom_field_options_fieldset";
-                        fodatetime.className = "accesshide custom_field_options_fieldset";
-                    } else if (cftype == "datetime") {
-                        fotext.className = "accesshide custom_field_options_fieldset";
-                        fomenu.className = "accesshide custom_field_options_fieldset";
-                        fodatetime.className = "clearfix custom_field_options_fieldset";
-                    } else {
-                        fotext.className = "clearfix custom_field_options_fieldset";
-                        fomenu.className = "accesshide custom_field_options_fieldset";
-                        fodatetime.className = "accesshide custom_field_options_fieldset";
-                    }
-                }
-            }
-        }
-        function initCustomFieldOptions() {
-            YUI().use("yui2-event", function(Y) {
-                var YAHOO = Y.YUI2;
-                YAHOO.util.Event.addListener(window, "load", switchFieldOptions());
-            });
-        }
-        YUI().use("yui2-event", function(Y) {
-            var YAHOO = Y.YUI2;
-            YAHOO.util.Event.onDOMReady(initCustomFieldOptions);
-        });
-    </script>');
 
     $form->addElement('header', '', get_string('field_manual_header', 'elisfields_manual'));
 
@@ -496,15 +450,12 @@ function manual_field_add_help_button($mform, $elementname, $field) {
             //$mform->setAdvanced($elementname .'_help');
         }
         //$mform->addElement('static', $elementname .'_help',
-        $mform->addElement('html',
-            '<div class="'. $divclass .'"><div class="fitemtitle"><label for="id_'.
-            $elementname .'"><span class="helplink"><a href="'. $url
-            .'" title="'. $heading .'" id="'. $id .'"><img src="'.
-            $OUTPUT->pix_url('help') .'" alt="'. $heading .'" title="'.
-            $heading .'" class="iconhelp"></a></span>&nbsp;</label></div></div>'
+        $mform->addElement('html', '<div class="'.$divclass.'"><div class="fitemtitle"><label for="id_'.$elementname.
+                '"><span class="helplink"><a href="'.$url.'" title="'.$heading.'" id="'.$id.
+                '" target="_blank" aria-haspopup="true" class="tooltip"><img src="'.$OUTPUT->pix_url('help').'" alt="'.$heading.'" title="'.
+                $heading.'" class="iconhelp"></a></span>&nbsp;</label></div></div>'
         );
-        $PAGE->requires->js_init_call('M.util.help_icon.add',
-                             array(array('id' => $id, 'url' => $url)));
+        $PAGE->requires->js_init_call('M.util.help_icon.setup');
     }
 }
 

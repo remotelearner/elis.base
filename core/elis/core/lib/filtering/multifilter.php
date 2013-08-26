@@ -266,7 +266,7 @@ class generalized_filter_multifilter {
         $shortfieldname = substr($name, 0, MAX_FILTER_SUFFIX_LEN);
 
         if (in_array($shortfieldname, $this->_shortfields)) {
-            error_log("generalized_filter_multifilter: non-unique field name: '{$shortfieldname}' - modify code!");
+            // error_log("generalized_filter_multifilter: non-unique field name: '{$shortfieldname}' - modify code!");
         } else {
             $this->_shortfields[] = $shortfieldname;
         }

@@ -83,11 +83,6 @@ class elis {
      * plugin configuration options
      */
     public static $config;
-
-    /**
-     * JS module information for elis_core
-     */
-    public static $jsmodule;
 }
 
 class elis_config {
@@ -132,20 +127,3 @@ elis::$config = new elis_config();
     elis::$version = $plugin->version;
     elis::$release = $plugin->release;
 }
-
-elis::$jsmodule = array(
-    'name'     => 'elis_core',
-    'fullpath' => '/elis/core/js/module.js',
-    'requires' => array('base', 'node', 'node-event-simulate', 'json', 'async-queue', 'io', 'array-extras', 'yui2-container', 'yui2-layout', 'yui2-tabview', 'yui2-dragdrop'),
-    'strings' => array(
-        array('browse', 'editor'),
-        array('loading', 'repository'),
-        array('activities', 'grades'),
-        array('gradeitems', 'grades'),
-        array('add', 'moodle'),
-        array('allitemsselected', 'elis_core'),
-        array('field_category', 'elis_core'),
-        array('field_name', 'elis_core'),
-        array('nofieldsselected', 'elis_core'),
-    ),
-);
