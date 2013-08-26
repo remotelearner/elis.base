@@ -1,0 +1,23 @@
+diff --git a/user/filters/user_filter_forms.php b/user/filters/user_filter_forms.php
+index 1912aee..2de6671 100644
+--- a/user/filters/user_filter_forms.php
++++ b/user/filters/user_filter_forms.php
+@@ -26,6 +26,18 @@ class user_add_filter_form extends moodleform {
+         // Add button
+         $mform->addElement('submit', 'addfilter', get_string('addfilter','filters'));
+     }
++
++    // RL EDIT: BJB130214 - from rlmoodle.reporting.git
++    /**
++     * Obtain the list of elements that that one or more elements depend on
++     *
++     * @return  array  List of the names of the appropriate elements
++     */
++    function get_dependencies() {
++        // fetch from QuickForm
++        return $this->_form->_dependencies;
++    }
++    // End RL EDIT
+ }
+ 
+ class user_active_filter_form extends moodleform {

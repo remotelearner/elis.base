@@ -1,0 +1,43 @@
+diff --git a/message/lib.php b/message/lib.php
+index bd642ce..f884a38 100644
+--- a/message/lib.php
++++ b/message/lib.php
+@@ -772,6 +772,38 @@ function message_get_recent_conversations($user, $limitfrom=0, $limitto=100) {
+     return $conversations;
+ }
+ 
++// RL EDIT
++/**
++ * Sort function used to order conversations
++ *
++ * @param object $a A conversation object
++ * @param object $b A conversation object
++ * @return integer
++ */
++function conversationsort($a, $b)
++{
++    if ($a->timecreated == $b->timecreated) {
++        return 0;
++    }
++    return ($a->timecreated > $b->timecreated) ? -1 : 1;
++}
++
++/**
++ * Sort function used to order messages in ascending order by time created
++ *
++ * @param object $a A message object
++ * @param object $b A message object
++ * @return integer
++ */
++function messagesort($a, $b)
++{
++    if ($a->timecreated == $b->timecreated) {
++        return 0;
++    }
++    return ($a->timecreated < $b->timecreated) ? -1 : 1;
++}
++// End: RL EDIT
++
+ /**
+  * Get the users recent event notifications
+  *

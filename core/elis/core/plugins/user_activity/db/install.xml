@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="elis/core/plugins/user_activity/db" VERSION="20110502" COMMENT="User activity session data"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="etl_user_activity" COMMENT="User activity sesssion data" NEXT="etl_user_module_activity">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="userid" NEXT="hour"/>
+        <FIELD NAME="hour" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="courseid" NEXT="duration"/>
+        <FIELD NAME="duration" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="hour"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="user_idx" UNIQUE="true" FIELDS="userid, courseid, hour" NEXT="course_idx"/>
+        <INDEX NAME="course_idx" UNIQUE="false" FIELDS="courseid" PREVIOUS="user_idx" NEXT="hour_idx"/>
+        <INDEX NAME="hour_idx" UNIQUE="false" FIELDS="hour" PREVIOUS="course_idx"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="etl_user_module_activity" COMMENT="User activity session data per activity module" PREVIOUS="etl_user_activity">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="userid" NEXT="cmid"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="courseid" NEXT="hour"/>
+        <FIELD NAME="hour" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="cmid" NEXT="duration"/>
+        <FIELD NAME="duration" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="hour"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="user_cmid_hour_idx" UNIQUE="true" FIELDS="userid, cmid, hour" NEXT="cm_idx"/>
+        <INDEX NAME="cm_idx" UNIQUE="false" FIELDS="cmid" PREVIOUS="user_cmid_hour_idx" NEXT="hour_idx"/>
+        <INDEX NAME="hour_idx" UNIQUE="false" FIELDS="hour" PREVIOUS="cm_idx"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

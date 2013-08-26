@@ -1,0 +1,34 @@
+diff --git a/lib/formslib.php b/lib/formslib.php
+index 4a91911..7d52d65 100644
+--- a/lib/formslib.php
++++ b/lib/formslib.php
+@@ -1413,9 +1413,16 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
+      * @param mixed $attributes (optional)Extra attributes for <form> tag
+      */
+     function MoodleQuickForm($formName, $method, $action, $target='', $attributes=null){
+-        global $CFG, $OUTPUT;
++        global $CFG, $OUTPUT, $PAGE; // RL EDIT
+ 
+         static $formcounter = 1;
++        // RL EDIT
++        if ($PAGE->pagelayout == 'embedded' && $formcounter == 1) {
++            // ELIS-3679, ELIS-3643: don't reuse PAGE form ids for embedded content
++            // error_log("MoodleQuickForm: re-initializing formcounter to 999!");
++            $formcounter = 999;
++        }
++        // End: RL EDIT
+ 
+         HTML_Common::HTML_Common($attributes);
+         $target = empty($target) ? array() : array('target' => $target);
+@@ -1938,6 +1945,11 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
+                 if (@PEAR::isError($value)) {
+                     return $value;
+                 }
++                // RL EDIT
++                if (!is_array($value)) { // ELIS-4509: setselect::setupForm()
++                    $value = array($elementName => $value);
++                }
++                // End: RL EDIT
+                 //oh, stock QuickFOrm was returning array of arrays!
+                 $unfiltered = HTML_QuickForm::arrayMerge($unfiltered, $value);
+             }

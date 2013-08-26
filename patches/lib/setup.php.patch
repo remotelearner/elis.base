@@ -1,0 +1,22 @@
+diff --git a/lib/setup.php b/lib/setup.php
+index 0b9cbd2..5730296 100644
+--- a/lib/setup.php
++++ b/lib/setup.php
+@@ -275,6 +275,17 @@ if (!defined('AJAX_SCRIPT')) {
+     define('AJAX_SCRIPT', false);
+ }
+ 
++// RL EDIT - *TBD* - detect NanoGong plugin
++if (!defined('NANOGONG')) {
++    if (file_exists($CFG->libdir.'/editor/tinymce/tiny_mce/3.5.7b/plugins/nanogong/nanogong.php')) {
++        define('NANOGONG', '3.5.7b');
++    }
++    if (file_exists($CFG->libdir.'/editor/tinymce/tiny_mce/3.5.8/plugins/nanogong/nanogong.php')) {
++        define('NANOGONG', '3.5.8');
++    }
++}
++// End: RL EDIT
++
+ // File permissions on created directories in the $CFG->dataroot
+ if (empty($CFG->directorypermissions)) {
+     $CFG->directorypermissions = 02777;      // Must be octal (that's why it's here)

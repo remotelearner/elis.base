@@ -1,0 +1,35 @@
+diff --git a/lib/upgradelib.php b/lib/upgradelib.php
+index c1ada2e..7fe01fd 100644
+--- a/lib/upgradelib.php
++++ b/lib/upgradelib.php
+@@ -376,6 +376,10 @@ function upgrade_stale_php_files_present() {
+ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
+     global $CFG, $DB;
+ 
++    // RL EDIT
++    require_once($CFG->dirroot.'/elis/core/lib/tasklib.php');
++    // End: RL EDIT
++
+ /// special cases
+     if ($type === 'mod') {
+         return upgrade_plugins_modules($startcallback, $endcallback, $verbose);
+@@ -481,6 +485,9 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
+             log_update_descriptions($component);
+             external_update_descriptions($component);
+             events_update_definition($component);
++            // RL EDIT
++            elis_tasks_update_definition($component);
++            // End: RL EDIT
+             message_update_providers($component);
+             if ($type === 'message') {
+                 message_update_processors($plug);
+@@ -514,6 +521,9 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
+             log_update_descriptions($component);
+             external_update_descriptions($component);
+             events_update_definition($component);
++            // RL EDIT
++            elis_tasks_update_definition($component);
++            // End: RL EDIT
+             message_update_providers($component);
+             if ($type === 'message') {
+                 message_update_processors($plug);

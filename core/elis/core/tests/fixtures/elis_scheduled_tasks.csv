@@ -1,0 +1,2 @@
+id,plugin,callfile,callfunction
+10000,elis_program,/elis/program/lib/lib.php,s:7:"pm_cron";

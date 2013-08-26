@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common ELIS database tables"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+  <TABLE NAME="elis_scheduled_tasks" COMMENT="Scheduled tasks" NEXT="elis_workflow_instances">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="plugin"/>
+        <FIELD NAME="plugin" TYPE="char" LENGTH="166" NOTNULL="true" SEQUENCE="false"  COMMENT="e.g. moodle, mod/forum, block/rss_client" PREVIOUS="id" NEXT="taskname"/>
+        <FIELD NAME="taskname" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"  COMMENT="a plugin-specific identifier for the task, used to differentiate between multiple tasks for the same plugin" PREVIOUS="plugin" NEXT="callfile"/>
+        <FIELD NAME="callfile" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  COMMENT="path to the file of the function, eg /grade/export/lib.ph" PREVIOUS="taskname" NEXT="callfunction"/>
+        <FIELD NAME="callfunction" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  COMMENT="serialized string or array describing function, suitable to be passed to call_user_func()" PREVIOUS="callfile" NEXT="lastruntime"/>
+        <FIELD NAME="lastruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  COMMENT="unix timestamp for the last time the task was run" PREVIOUS="callfunction" NEXT="nextruntime"/>
+        <FIELD NAME="nextruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  COMMENT="unix timestamp for the next time the task will run" PREVIOUS="lastruntime" NEXT="blocking"/>
+        <FIELD NAME="blocking" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  COMMENT="0 or 1 - whether this task, when running, blocks everything else from running." PREVIOUS="nextruntime" NEXT="minute"/>
+        <FIELD NAME="minute" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"  COMMENT="minute component of the cron specification" PREVIOUS="blocking" NEXT="hour"/>
+        <FIELD NAME="hour" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"  COMMENT="hour part of the cron spec" PREVIOUS="minute" NEXT="day"/>
+        <FIELD NAME="day" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"  COMMENT="day of month component of the cron spec" PREVIOUS="hour" NEXT="month"/>
+        <FIELD NAME="month" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"  COMMENT="month component of the cron spec" PREVIOUS="day" NEXT="dayofweek"/>
+        <FIELD NAME="dayofweek" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"  COMMENT="day of week part of the cron spec" PREVIOUS="month" NEXT="timezone"/>
+        <FIELD NAME="timezone" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="99" SEQUENCE="false"  PREVIOUS="dayofweek" NEXT="runsremaining"/>
+        <FIELD NAME="runsremaining" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  COMMENT="Number of times left that the task will run -- null if no limit" PREVIOUS="timezone" NEXT="startdate"/>
+        <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  COMMENT="Task will start being scheduled at this date." PREVIOUS="runsremaining" NEXT="enddate"/>
+        <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  COMMENT="Task will not run after this date (unix timestamp) -- null if no end date" PREVIOUS="startdate" NEXT="customized"/>
+        <FIELD NAME="customized" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  COMMENT="0 or 1 - whether this time differs from what is in code" PREVIOUS="enddate" NEXT="blocked"/>
+        <FIELD NAME="blocked" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="time task is blocked until" PREVIOUS="customized"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="plugin_idx" UNIQUE="false" FIELDS="plugin, taskname" NEXT="nextruntime_idx"/>
+        <INDEX NAME="nextruntime_idx" UNIQUE="false" FIELDS="nextruntime" PREVIOUS="plugin_idx"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="elis_workflow_instances" COMMENT="Data about in-progress workflows" PREVIOUS="elis_scheduled_tasks" NEXT="elis_field">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="type"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="127" NOTNULL="true" SEQUENCE="false"  COMMENT="The type of workflow" PREVIOUS="id" NEXT="subtype"/>
+        <FIELD NAME="subtype" TYPE="char" LENGTH="127" NOTNULL="false" SEQUENCE="false"  COMMENT="The sub-type of the workflow" PREVIOUS="type" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  COMMENT="The user that the workflow instance belongs to." PREVIOUS="subtype" NEXT="data"/>
+        <FIELD NAME="data" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false"  COMMENT="The workflow's current state data (generally as a serialized PHP array or object)." PREVIOUS="userid" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="data"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="usertype_idx" UNIQUE="false" FIELDS="userid, type, subtype" COMMENT="Index by user and type"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="elis_field" COMMENT="Custom field definitions" PREVIOUS="elis_workflow_instances" NEXT="elis_field_categories">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="shortname"/>
+        <FIELD NAME="shortname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="id" NEXT="name"/>
+        <FIELD NAME="name" TYPE="text" LENGTH="big" NOTNULL="true" SEQUENCE="false"  PREVIOUS="shortname" NEXT="datatype"/>
+        <FIELD NAME="datatype" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="name" NEXT="description"/>
+        <FIELD NAME="description" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false"  PREVIOUS="datatype" NEXT="categoryid"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="description" NEXT="sortorder"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  PREVIOUS="categoryid" NEXT="multivalued"/>
+        <FIELD NAME="multivalued" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  COMMENT="whether or not the field can hold multiple (unordered) values" PREVIOUS="sortorder" NEXT="forceunique"/>
+        <FIELD NAME="forceunique" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  PREVIOUS="multivalued" NEXT="params"/>
+        <FIELD NAME="params" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false"  PREVIOUS="forceunique"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="shortname_idx" UNIQUE="false" FIELDS="shortname"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="elis_field_categories" COMMENT="Custom field category definitions" PREVIOUS="elis_field" NEXT="elis_field_contextlevels">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="id" NEXT="sortorder"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  PREVIOUS="name"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="elis_field_contextlevels" COMMENT="Which context levels a custom field applies to" PREVIOUS="elis_field_categories" NEXT="elis_field_category_contexts">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="id" NEXT="contextlevel"/>
+        <FIELD NAME="contextlevel" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="fieldid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="elis_field_category_contexts" COMMENT="Which context levels a custom field category applies to" PREVIOUS="elis_field_contextlevels" NEXT="elis_field_data_text">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="categoryid"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="id" NEXT="contextlevel"/>
+        <FIELD NAME="contextlevel" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="categoryid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="contextlevel_idx" UNIQUE="false" FIELDS="contextlevel" NEXT="category_idx"/>
+        <INDEX NAME="category_idx" UNIQUE="false" FIELDS="categoryid" PREVIOUS="contextlevel_idx"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="elis_field_data_text" COMMENT="Custom field data for (long) textual data types" PREVIOUS="elis_field_category_contexts" NEXT="elis_field_data_int">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="contextid"/>
+        <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="id" NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="contextid" NEXT="data"/>
+        <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="true" SEQUENCE="false"  PREVIOUS="fieldid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="context_idx" UNIQUE="false" FIELDS="contextid" NEXT="field_idx"/>
+        <INDEX NAME="field_idx" UNIQUE="false" FIELDS="fieldid" PREVIOUS="context_idx"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="elis_field_data_int" COMMENT="Custom field data for integer data types" PREVIOUS="elis_field_data_text" NEXT="elis_field_data_num">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="contextid"/>
+        <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="id" NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="contextid" NEXT="data"/>
+        <FIELD NAME="data" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false"  PREVIOUS="fieldid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="context_idx" UNIQUE="false" FIELDS="contextid" NEXT="field_idx"/>
+        <INDEX NAME="field_idx" UNIQUE="false" FIELDS="fieldid" PREVIOUS="context_idx"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="elis_field_data_num" COMMENT="Custom field data for integer data types" PREVIOUS="elis_field_data_int" NEXT="elis_field_data_char">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="contextid"/>
+        <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="id" NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="contextid" NEXT="data"/>
+        <FIELD NAME="data" TYPE="number" LENGTH="15" NOTNULL="true" UNSIGNED="false" SEQUENCE="false"  DECIMALS="5" PREVIOUS="fieldid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="context_idx" UNIQUE="false" FIELDS="contextid" NEXT="field_idx"/>
+        <INDEX NAME="field_idx" UNIQUE="false" FIELDS="fieldid" PREVIOUS="context_idx"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="elis_field_data_char" COMMENT="Custom field data for integer data types" PREVIOUS="elis_field_data_num" NEXT="elis_field_owner">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="contextid"/>
+        <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="id" NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="contextid" NEXT="data"/>
+        <FIELD NAME="data" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="fieldid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="context_idx" UNIQUE="false" FIELDS="contextid" NEXT="field_idx"/>
+        <INDEX NAME="field_idx" UNIQUE="false" FIELDS="fieldid" PREVIOUS="context_idx"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="elis_field_owner" COMMENT="Custom field data owners" PREVIOUS="elis_field_data_char">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false"  PREVIOUS="id" NEXT="plugin"/>
+        <FIELD NAME="plugin" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"  PREVIOUS="fieldid" NEXT="exclude"/>
+        <FIELD NAME="exclude" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"  COMMENT="whether or not other plugins are allowed to modify data created/last edited by this plugin" PREVIOUS="plugin" NEXT="params"/>
+        <FIELD NAME="params" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false"  PREVIOUS="exclude"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="field_idx" UNIQUE="false" FIELDS="fieldid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

@@ -1,0 +1,21 @@
+diff --git a/admin/settings/plugins.php b/admin/settings/plugins.php
+index a11cbfa..8976162 100644
+--- a/admin/settings/plugins.php
++++ b/admin/settings/plugins.php
+@@ -457,6 +457,16 @@ if ($hassiteconfig) {
+     }
+ }
+ 
++$ADMIN->add('root', new admin_category('elis', get_string('elis', 'elis_core')));
++// Now add ELIS plugins
++
++foreach (get_plugin_list('elis') as $plugin => $plugindir) {
++    $settings_path = "$plugindir/settings.php";
++    if (file_exists($settings_path)) {
++        include($settings_path);
++    }
++}
++
+ /// Add all local plugins - must be always last!
+ if ($hassiteconfig) {
+     $ADMIN->add('modules', new admin_category('localplugins', new lang_string('localplugins')));

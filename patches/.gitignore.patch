@@ -1,0 +1,12 @@
+diff --git a/.gitignore b/.gitignore
+index 4b61b24..5eac6d5 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -30,6 +30,7 @@ phpunit.xml
+ composer.phar
+ composer.lock
+ /vendor/
++/local/defaults.php
+ /behat.yml
+ */yui/build/*/*-coverage.js
+ /lib/yuilib/*/build/*/*-coverage.js

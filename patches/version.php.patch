@@ -1,0 +1,13 @@
+diff --git a/version.php b/version.php
+index c77ae31..6f18087 100644
+--- a/version.php
++++ b/version.php
+@@ -29,7 +29,7 @@
+ 
+ defined('MOODLE_INTERNAL') || die();
+ 
+-$version  = 2013051401.05;              // 20130514      = branching date YYYYMMDD - do not modify!
++$version  = 2013051401.04;              // 20130514      = branching date YYYYMMDD - do not modify!
+                                         //         RR    = release increments - 00 in DEV branches
+                                         //           .XX = incremental changes
+ 
