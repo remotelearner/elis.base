@@ -93,20 +93,16 @@ class generalized_filter_dependentselect extends generalized_filter_type {
      */
     function setupForm(&$mform) {
         global $PAGE;
-        $PAGE->requires->yui2_lib(array('yahoo', 'dom', 'event',
-                                        'connection', 'json'));
-        $PAGE->requires->js('/elis/core/js/dependentselect.js');
 
         $options_array = $this->get_main_options();
 
         $fullpath = $this->_report_path . $this->_filename;
         $parent   = $this->_uniqueid .'_parent';
 
-        $js = "dependentselect_updateoptions('{$parent}', '{$this->_uniqueid}', '{$fullpath}');";
+        $PAGE->requires->yui_module('moodle-elis_core-dependentselect', 'M.elis_core.init_dependentselect', array($parent, $this->_uniqueid, $fullpath));
 
         $objs = array();
-        $objs[] =& $mform->createElement('select', $this->_uniqueid.'_parent', null, $options_array,
-                                         array('onChange' => $js));
+        $objs[] =& $mform->createElement('select', $this->_uniqueid.'_parent', null, $options_array);
         $objs[] =& $mform->createElement('select', $this->_uniqueid, null, $this->_options);
         $grp =& $mform->addElement('group', $this->_uniqueid.'_grp', $this->_label, $objs, '<br/>', false);
 
@@ -115,9 +111,6 @@ class generalized_filter_dependentselect extends generalized_filter_type {
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid.'_grp');
         }
-
-        // Always refresh the child pulldown
-        $PAGE->requires->js_init_code($js, true);
     }
 
     /**

@@ -836,13 +836,13 @@ class elis_data_object {
         }
 
         $allfields = implode(', ', $dbfields);
-        error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): '{$allfields}' for class: {$objclass}");
+        // error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): '{$allfields}' for class: {$objclass}");
         // Test that all data_object's fields are in the database table.
         $ret = true;
         foreach ($dbfields as $dbfield) {
             if (!$this->_db->get_manager()->field_exists($this::TABLE, $dbfield)) {
                 $ret = false;
-                error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  has invalid '\$_dbfield_{$dbfield}' property or TABLE spec.");
+                // error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  has invalid '\$_dbfield_{$dbfield}' property or TABLE spec.");
             }
         }
 
@@ -852,7 +852,7 @@ class elis_data_object {
             foreach ($recs as $rec) {
                 foreach ($rec as $key => $value) {
                     if (!in_array($key, $dbfields)) {
-                        error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$key} (\$_dbfield_{$key})");
+                        // error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$key} (\$_dbfield_{$key})");
                         $ret = false;
                     }
                 }
@@ -863,12 +863,12 @@ class elis_data_object {
                 $recs = $this->_db->get_recordset_sql($sql);
                 foreach ($recs as $rec) {
                     if (!in_array($rec->field, $dbfields)) {
-                        error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$rec->field} (\$_dbfield_{$rec->field})");
+                        // error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$rec->field} (\$_dbfield_{$rec->field})");
                         $ret = false;
                     }
                 }
             } else {
-                error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): WARNING '". $this::TABLE ."' table empty, could not test dbfields complete.");
+                // error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): WARNING '". $this::TABLE ."' table empty, could not test dbfields complete.");
             }
         }
         unset($recs);

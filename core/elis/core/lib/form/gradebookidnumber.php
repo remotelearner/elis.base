@@ -87,7 +87,10 @@ class elis_gradebook_idnumber_selector extends MoodleQuickForm_text {
                              'lockcourse' => $this->_options['lockcourse'],
                              'nocoursestring' => $this->_options['nocoursestring'],
             );
-            $PAGE->requires->js_init_call("M.elis_core.init_gradebook_popup", array($options), false, elis::$jsmodule);
+            $PAGE->requires->string_for_js('browse', 'editor');
+            $PAGE->requires->string_for_js('loading', 'repository');
+            $PAGE->requires->strings_for_js(array('activities', 'gradeitems'), 'grades');
+            $PAGE->requires->yui_module('moodle-elis_core-gradebook_popup', 'M.elis_core.init_gradebook_popup', array($options));
         }
 
         return parent::toHtml();
