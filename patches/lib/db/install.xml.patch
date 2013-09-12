@@ -1,5 +1,5 @@
 diff --git a/lib/db/install.xml b/lib/db/install.xml
-index 19695f2..cfe90d6 100644
+index a4c30db..7d14877 100644
 --- a/lib/db/install.xml
 +++ b/lib/db/install.xml
 @@ -1983,7 +1983,8 @@

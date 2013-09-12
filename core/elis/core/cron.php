@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/lib/setup.php');
 
-define('ELIS_TASKS_CRONSECS', 4 * 60); // TBD: 4 min max total runtime (save 1 min for other cron?)
+define('ELIS_TASKS_CRONSECS', 10 * 60); // TBD: 10 min max total runtime (save 1 min for other cron?)
 
 /**
  * Run scheduled tasks according to a cron spec.
@@ -48,7 +48,12 @@ function elis_cron() {
     $params = array('timenow' => $timenow);
     $tasks = $DB->get_recordset_select('elis_scheduled_tasks', 'nextruntime <= :timenow', $params, 'nextruntime ASC');
     $numtasks = $DB->count_records_select('elis_scheduled_tasks', 'nextruntime <= :timenow', $params);
+
+    // Check if the maximum cron run time is overridden
     $remtime = ELIS_TASKS_CRONSECS;
+    if (isset($CFG->elistaskscronsecs) && is_int($CFG->elistaskscronsecs) && 0 < $CFG->elistaskscronsecs) {
+        $remtime = $CFG->elistaskscronsecs;
+    }
 
     if (empty($tasks) || !$tasks->valid()) {
         return;

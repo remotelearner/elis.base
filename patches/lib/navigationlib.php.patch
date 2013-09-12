@@ -1,8 +1,8 @@
 diff --git a/lib/navigationlib.php b/lib/navigationlib.php
-index da03b02..102ddc9 100644
+index c29cf0e..8834bf9 100644
 --- a/lib/navigationlib.php
 +++ b/lib/navigationlib.php
-@@ -3591,7 +3591,9 @@ class settings_navigation extends navigation_node {
+@@ -3592,7 +3592,9 @@ class settings_navigation extends navigation_node {
                  $editstring = get_string('turneditingon');
              }
              $coursenode->add($editstring, $editurl, self::TYPE_SETTING, null, null, new pix_icon('i/edit', ''));

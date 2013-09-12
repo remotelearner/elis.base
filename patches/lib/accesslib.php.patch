@@ -1,5 +1,5 @@
 diff --git a/lib/accesslib.php b/lib/accesslib.php
-index 65bc9d8..0d33b0e 100644
+index bf5653c..83cefc0 100644
 --- a/lib/accesslib.php
 +++ b/lib/accesslib.php
 @@ -763,6 +763,22 @@ function get_user_access_sitewide($userid) {

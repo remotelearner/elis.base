@@ -1,5 +1,5 @@
 diff --git a/lib/form/filemanager.js b/lib/form/filemanager.js
-index 917ad8c..c6d32fb 100644
+index fa0c62e..8d5403e 100644
 --- a/lib/form/filemanager.js
 +++ b/lib/form/filemanager.js
 @@ -80,6 +80,9 @@ M.form_filemanager.init = function(Y, options) {
