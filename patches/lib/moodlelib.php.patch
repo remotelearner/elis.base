@@ -1,8 +1,8 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index 1b4581f..3826bfd 100644
+index 04c0eb1..93225cf 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
-@@ -4536,6 +4536,9 @@ function update_internal_user_password($user, $password) {
+@@ -4538,6 +4538,9 @@ function update_internal_user_password($user, $password) {
      if ($passwordchanged || $algorithmchanged) {
          $DB->set_field('user', 'password',  $hashedpassword, array('id'=>$user->id));
          $user->password = $hashedpassword;
@@ -12,7 +12,7 @@ index 1b4581f..3826bfd 100644
      }
  
      return true;
-@@ -5758,6 +5761,11 @@ function setnew_password_and_mail($user, $fasthash = false) {
+@@ -5760,6 +5763,11 @@ function setnew_password_and_mail($user, $fasthash = false) {
      $hashedpassword = hash_internal_user_password($newpassword, $fasthash);
      $DB->set_field('user', 'password', $hashedpassword, array('id'=>$user->id));
  
@@ -24,7 +24,7 @@ index 1b4581f..3826bfd 100644
      $a = new stdClass();
      $a->firstname   = fullname($user, true);
      $a->sitename    = format_string($site->fullname);
-@@ -6775,6 +6783,10 @@ class core_string_manager implements string_manager {
+@@ -6777,6 +6785,10 @@ class core_string_manager implements string_manager {
              if ($plugintype === 'mod') {
                  // bloody mod hack
                  $file = $pluginname;
@@ -35,7 +35,7 @@ index 1b4581f..3826bfd 100644
              } else {
                  $file = $plugintype . '_' . $pluginname;
              }
-@@ -8266,6 +8278,9 @@ function get_plugin_types($fullpaths=true) {
+@@ -8268,6 +8280,9 @@ function get_plugin_types($fullpaths=true) {
                        'cachestore'    => 'cache/stores',
                        'cachelock'     => 'cache/locks',
                        'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
@@ -45,7 +45,7 @@ index 1b4581f..3826bfd 100644
          );
  
          $subpluginowners = array_merge(array_values(get_plugin_list('mod')),
-@@ -8280,6 +8295,32 @@ function get_plugin_types($fullpaths=true) {
+@@ -8282,6 +8297,32 @@ function get_plugin_types($fullpaths=true) {
              }
          }
  
@@ -78,7 +78,7 @@ index 1b4581f..3826bfd 100644
          // local is always last!
          $info['local'] = 'local';
  
-@@ -8341,7 +8382,12 @@ function get_plugin_list($plugintype) {
+@@ -8343,7 +8384,12 @@ function get_plugin_list($plugintype) {
      if ($plugintype === 'mod') {
          // mod is an exception because we have to call this function from get_plugin_types()
          $fulldirs[] = $CFG->dirroot.'/mod';
@@ -92,7 +92,7 @@ index 1b4581f..3826bfd 100644
      } else if ($plugintype === 'editor') {
          // Exception also needed for editor for same reason.
          $fulldirs[] = $CFG->dirroot . '/lib/editor';
-@@ -8352,7 +8398,12 @@ function get_plugin_list($plugintype) {
+@@ -8354,7 +8400,12 @@ function get_plugin_list($plugintype) {
          if (!empty($CFG->themedir) and file_exists($CFG->themedir) and is_dir($CFG->themedir) ) {
              $fulldirs[] = $CFG->themedir;
          }

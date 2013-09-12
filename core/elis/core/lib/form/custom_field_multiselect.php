@@ -90,10 +90,11 @@ class elis_custom_field_multiselect extends MoodleQuickForm_group {
         $id = $this->getAttribute('id');
 
         $this->_elements = array();
-        // a hidden element to contain the actual values to be submitted
-        $this->_elements[] = MoodleQuickForm::createElement('hidden', 'value', '', array('id' => $id.'_value'));
-        // a container that will be populated by JavaScript
-        $this->_elements[] = MoodleQuickForm::createElement('static', '', '', "<div id=\"{$id}_container\"></div>");
+        $form = new MoodleQuickForm('test', 'POST', 'http://localhost');
+        // A hidden element to contain the actual values to be submitted.
+        $this->_elements[] = $form->createElement('hidden', 'value', '', array('id' => $id.'_value'));
+        // A container that will be populated by JavaScript.
+        $this->_elements[] = $form->createElement('static', '', '', "<div id=\"{$id}_container\"></div>");
 
         $options = array(
             'id' => $id,
