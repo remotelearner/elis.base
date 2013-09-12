@@ -1,9 +1,7 @@
 <?php
 /**
- * A script to run certain steps that are required before an upgrade to Moodle 2.x / ELIS 2.
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +19,14 @@
  * @package    elis
  * @subpackage core
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
+/**
+ * A script to run certain steps that are required before an upgrade to Moodle 2.x / ELIS 2.
+ */
 
 define('CLI_SCRIPT', true);
 
@@ -33,18 +34,19 @@ require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/ddllib.php');
 
 $steps = array(
-             'None',
-             '1. Fixed duplicate grade letters',
-             '2. Fixed duplicate user preferences',
-             '3. Fixed role capabilities',
-             '4. Updated repository:elis_files',
-             '5. Updated obsolete authentication plugins (last)',
-             'Complete' // shouldn't get here, move "(last)" to last step, above
-         );
+        'None',
+        '1. Fixed duplicate grade letters',
+        '2. Fixed duplicate user preferences',
+        '3. Fixed role capabilities',
+        '4. Updated repository:elis_files',
+        '5. Updated obsolete authentication plugins',
+        '6. Drop obsolete view tables (last)',
+        'Complete' // Shouldn't get here, move "(last)" to last step, above.
+);
 
-$completed_steps = array();
+$completedsteps = array();
 
-// Delete any existing pre-upgrade status (TBD)
+// Delete any existing pre-upgrade status (TBD).
 $DB->delete_records('config', array('name' => 'elis_preupgrade_status'));
 
 $dbman = $DB->get_manager();
@@ -57,7 +59,7 @@ $status = true;
 
 mtrace(' >>> '.get_string('preup_gl_check', 'elis_core'));
 
-// Detect if we have any duplicate records that need removal
+// Detect if we have any duplicate records that need removal.
 $sql = "SELECT contextid, lowerboundary, letter, COUNT('x') count
         FROM {grade_letters}
         GROUP BY contextid, lowerboundary, letter
@@ -113,19 +115,19 @@ if ($rec = $DB->record_exists_sql($sql, array())) {
 }
 
 if ($status) {
-    $completed_steps[] = $steps[1];
+    $completedsteps[] = $steps[1];
 }
 
 mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 
 
 /*
-* Handle duplicate records in the mdl_user_preferences table.
-*/
+ * Handle duplicate records in the mdl_user_preferences table.
+ */
 
 mtrace(' >>> '.get_string('preup_up_check', 'elis_core'));
 
-// Detect if we have any duplicate records before we try to remove duplicates
+// Detect if we have any duplicate records before we try to remove duplicates.
 $sql = "SELECT userid, name, value, COUNT('x') count
         FROM {user_preferences}
         GROUP BY userid, name, value
@@ -188,9 +190,9 @@ mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 mtrace(' >>> '.get_string('preup_ec_check', 'elis_core'));
 
 if ($status) {
-    $completed_steps[] = $steps[2];
+    $completedsteps[] = $steps[2];
     try {
-        // Find all of the capabilities that are set to enabled
+        // Find all of the capabilities that are set to enabled.
         $select = 'capability LIKE :cap AND permission LIKE :perm';
         $params = array('cap' => 'block/repository:%', 'perm' => CAP_ALLOW);
 
@@ -222,9 +224,9 @@ mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 mtrace(' >>> '.get_string('preup_ac_check', 'elis_core'));
 
 if ($status) {
-    $completed_steps[] = $steps[3];
+    $completedsteps[] = $steps[3];
     try {
-    // Find all of the old Alfresco repository plugin capabilities that are set to enabled
+        // Find all of the old Alfresco repository plugin capabilities that are set to enabled.
         $select = 'name LIKE :name';
         $params = array('name' => 'repository_alfresco%');
 
@@ -232,11 +234,11 @@ if ($status) {
             mtrace(' --- '.get_string('preup_ac_found', 'elis_core'));
 
             foreach ($cfgs as $cfg) {
-                // We need to create a new entry in the mdl_plugin_config table and remove the mdl_config values
+                // We need to create a new entry in the mdl_plugin_config table and remove the mdl_config values.
                 $pcfg = new stdClass;
                 $pcfg->plugin = 'elis_files';
 
-                // Some variables should not be migrated and need to just be deleted
+                // Some variables should not be migrated and need to just be deleted.
                 if ($cfg->name == 'repository_alfresco_version' || $cfg->name == 'repository_alfresco_cachetime') {
                     continue;
                 }
@@ -244,11 +246,9 @@ if ($status) {
                 $pcfg->name  = str_replace('repository_alfresco_', '', $cfg->name);
                 $pcfg->value = $cfg->value;
 
-                // ELIS-3677 changing "empty" values as a workaround for limitations in the repository
-                // system
-                $update_setting = ($pcfg->name == 'user_quota' || $pcfg->name == 'deleteuserdir') &&
-                                  $pcfg->value === '0';
-                if ($update_setting) {
+                // ELIS-3677 changing "empty" values as a workaround for limitations in the repository system.
+                $updatesetting = ($pcfg->name == 'user_quota' || $pcfg->name == 'deleteuserdir') && $pcfg->value === '0';
+                if ($updatesetting) {
                     $pcfg->value = '';
                 }
 
@@ -257,7 +257,7 @@ if ($status) {
 
             $cfgs->close();
 
-            // Delete the old plugin configuration values
+            // Delete the old plugin configuration values.
             $DB->delete_records_select('config', $select, $params);
             mtrace(' --- '.get_string('preup_ac_success', 'elis_core'));
         }
@@ -278,7 +278,7 @@ mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 mtrace(' >>> '.get_string('preup_as_check', 'elis_core'));
 
 if ($status) {
-    $completed_steps[] = $steps[4];
+    $completedsteps[] = $steps[4];
     try {
         $auth = $DB->get_field('config', 'value', array('name' => 'auth'));
 
@@ -289,13 +289,13 @@ if ($status) {
             switch ($val) {
                 case 'alfrescosso':
                 case 'elis':
-                    // Remove these values if found
+                    // Remove these values if found.
                     unset($auths[$i]);
                     $found = true;
                     break;
 
                 default:
-                    // do nothing
+                    // Do nothing.
             }
         }
 
@@ -314,11 +314,84 @@ if ($status) {
 
 mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 
+/*
+ * Drop all obsolete "view" tables that still exist.
+ */
+
+mtrace(' >>> '.get_string('preup_vt_check', 'elis_core'));
+
 if ($status) {
-    $completed_steps[] = $steps[5];
+    $completedsteps[] = $steps[5];
+    try {
+        $viewtables = array(
+                'courseNforums',
+                'grade_grades_with_outcome_counts',
+                'grade_grades_with_outcomes_ext',
+                'GradesListing4Transcript',
+                'GroupsNMembers',
+                'LoginDurationByUserNDate',
+                'LoginDurationbyUserNDate1',
+                'LoginDurationByUserNDate1Ext',
+                'LoginDurationByUserNDateExt',
+                'LogSummaryWithGroups',
+                'LogwDateSummary',
+                'moodleLog',
+                'moodleLogwDate',
+                'Role2RoleAssignments',
+                'Role2RoleAssignments5',
+                'SiteWideTimeStats',
+                'testweekdayCalc',
+                'Top5ForumUserTest',
+                'UserExt',
+                $CFG->prefix.'courseNforums',
+                $CFG->prefix.'grade_grades_with_outcome_counts',
+                $CFG->prefix.'grade_grades_with_outcomes_ext',
+                $CFG->prefix.'GradesListing4Transcript',
+                $CFG->prefix.'GroupsNMembers',
+                $CFG->prefix.'LoginDurationByUserNDate',
+                $CFG->prefix.'LoginDurationbyUserNDate1',
+                $CFG->prefix.'LoginDurationByUserNDate1Ext',
+                $CFG->prefix.'LoginDurationByUserNDateExt',
+                $CFG->prefix.'LogSummaryWithGroups',
+                $CFG->prefix.'LogwDateSummary',
+                $CFG->prefix.'moodleLog',
+                $CFG->prefix.'moodleLogwDate',
+                $CFG->prefix.'Role2RoleAssignments',
+                $CFG->prefix.'Role2RoleAssignments5',
+                $CFG->prefix.'SiteWideTimeStats',
+                $CFG->prefix.'testweekdayCalc',
+                $CFG->prefix.'Top5ForumUserTest',
+                $CFG->prefix.'UserExt'
+        );
+        // Must use direct PHP database commands since Moodle does not know about these tables.
+        if ($CFG->dbfamily == 'mysql') {
+            $db = mysqli_connect($CFG->dbhost, $CFG->dbuser, $CFG->dbpass);
+            mysqli_select_db($db, $CFG->dbname);
+            foreach ($viewtables as $viewtable) {
+                $sql = "DROP VIEW IF EXISTS {$viewtable}";
+                mysqli_query($db, $sql);
+            }
+            mysqli_close($db);
+        } else if ($CFG->dbfamily == 'postgres') {
+            $db = pg_connect('host='.$CFG->dbhost.' dbname='.$CFG->dbname.' user='.$CFG->dbuser.' password='.$CFG->dbpass);
+            foreach ($viewtables as $viewtable) {
+                $sql = "DROP VIEW IF EXISTS {$viewtable}";
+                pg_query($db, $sql);
+            }
+            pg_close($db);
+        }
+    } catch (Excpetion $e) {
+        mtrace(' xxx '.get_string('preup_vt_error', 'elis_core'));
+
+        $status = false;
+    }
 }
 
-// Update pre-upgrade status
-$DB->insert_record('config', (object)array('name'  => 'elis_preupgrade_status',
-                                           'value' => implode("\n", $completed_steps)));
+mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 
+if ($status) {
+    $completedsteps[] = $steps[6];
+}
+
+// Update pre-upgrade status.
+$DB->insert_record('config', (object)array('name'  => 'elis_preupgrade_status', 'value' => implode("\n", $completedsteps)));

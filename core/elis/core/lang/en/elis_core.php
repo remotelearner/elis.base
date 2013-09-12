@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * @package    elis
  * @subpackage core
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -196,7 +196,7 @@ The filter has the following options:</p>
 </ul>';
 $string['fld_version'] = 'Version';
 
-//Autocomplete Filter
+// Autocomplete Filter
 $string['filt_autoc_noresults'] = 'No Results';
 $string['filt_autoc_results'] = 'Results';
 $string['filt_autoc_search'] = 'Search';
@@ -249,6 +249,8 @@ $string['preup_gl_check'] = 'Checking for duplicate records in grade_letters tab
 $string['preup_gl_success'] = 'removed duplicate grade_letters records';
 $string['preup_up_check'] = 'Checking for duplicate records in user_preferences table';
 $string['preup_up_success'] = 'removed duplicate user_preferences records';
+$string['preup_vt_check'] = 'Checking for obsolete view tables';
+$string['preup_vt_error'] = 'error dropping obsolete view tables';
 $string['profilefield_help'] = '<h1>Profile filter</h1>
 <p>This filter allows you to filter users based on values of profile fields.
 The filter can be applied on a single profile field or an all profile fields.
