@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * @package    elis
  * @subpackage core
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -538,6 +538,67 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2013022701, 'elis', 'core');
     }
 
+    if ($result && $oldversion < 2013022702) {
+        // ELIS-8272: remove any old view tables that may still be around.
+        $viewtables = array(
+                'courseNforums',
+                'grade_grades_with_outcome_counts',
+                'grade_grades_with_outcomes_ext',
+                'GradesListing4Transcript',
+                'GroupsNMembers',
+                'LoginDurationByUserNDate',
+                'LoginDurationbyUserNDate1',
+                'LoginDurationByUserNDate1Ext',
+                'LoginDurationByUserNDateExt',
+                'LogSummaryWithGroups',
+                'LogwDateSummary',
+                'moodleLog',
+                'moodleLogwDate',
+                'Role2RoleAssignments',
+                'Role2RoleAssignments5',
+                'SiteWideTimeStats',
+                'testweekdayCalc',
+                'Top5ForumUserTest',
+                'UserExt',
+                $CFG->prefix.'courseNforums',
+                $CFG->prefix.'grade_grades_with_outcome_counts',
+                $CFG->prefix.'grade_grades_with_outcomes_ext',
+                $CFG->prefix.'GradesListing4Transcript',
+                $CFG->prefix.'GroupsNMembers',
+                $CFG->prefix.'LoginDurationByUserNDate',
+                $CFG->prefix.'LoginDurationbyUserNDate1',
+                $CFG->prefix.'LoginDurationByUserNDate1Ext',
+                $CFG->prefix.'LoginDurationByUserNDateExt',
+                $CFG->prefix.'LogSummaryWithGroups',
+                $CFG->prefix.'LogwDateSummary',
+                $CFG->prefix.'moodleLog',
+                $CFG->prefix.'moodleLogwDate',
+                $CFG->prefix.'Role2RoleAssignments',
+                $CFG->prefix.'Role2RoleAssignments5',
+                $CFG->prefix.'SiteWideTimeStats',
+                $CFG->prefix.'testweekdayCalc',
+                $CFG->prefix.'Top5ForumUserTest',
+                $CFG->prefix.'UserExt'
+        );
+        // Must use direct PHP database commands since Moodle does not know about these tables.
+        if ($CFG->dbfamily == 'mysql') {
+            $db = mysqli_connect($CFG->dbhost, $CFG->dbuser, $CFG->dbpass);
+            mysqli_select_db($db, $CFG->dbname);
+            foreach ($viewtables as $viewtable) {
+                $sql = "DROP VIEW IF EXISTS {$viewtable}";
+                mysqli_query($db, $sql);
+            }
+            mysqli_close($db);
+        } else if ($CFG->dbfamily == 'postgres') {
+            $db = pg_connect('host='.$CFG->dbhost.' dbname='.$CFG->dbname.' user='.$CFG->dbuser.' password='.$CFG->dbpass);
+            foreach ($viewtables as $viewtable) {
+                $sql = "DROP VIEW IF EXISTS {$viewtable}";
+                pg_query($db, $sql);
+            }
+            pg_close($db);
+        }
+        upgrade_plugin_savepoint(true, 2013022702, 'elis', 'core');
+    }
+
     return $result;
 }
-

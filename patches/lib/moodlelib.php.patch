@@ -1,8 +1,8 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index a1f8a0a..ad43093 100644
+index aa67d85..7bc1122 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
-@@ -4346,6 +4346,9 @@ function update_internal_user_password($user, $password) {
+@@ -4348,6 +4348,9 @@ function update_internal_user_password($user, $password) {
      if ($user->password !== $hashedpassword) {
          $DB->set_field('user', 'password',  $hashedpassword, array('id'=>$user->id));
          $user->password = $hashedpassword;
@@ -12,7 +12,7 @@ index a1f8a0a..ad43093 100644
      }
  
      return true;
-@@ -5553,7 +5556,14 @@ function setnew_password_and_mail($user) {
+@@ -5555,7 +5558,14 @@ function setnew_password_and_mail($user) {
  
      $newpassword = generate_password();
  
@@ -28,7 +28,7 @@ index a1f8a0a..ad43093 100644
  
      $a = new stdClass();
      $a->firstname   = fullname($user, true);
-@@ -6541,6 +6551,8 @@ class core_string_manager implements string_manager {
+@@ -6543,6 +6553,8 @@ class core_string_manager implements string_manager {
              if ($plugintype === 'mod') {
                  // bloody mod hack
                  $file = $pluginname;
@@ -37,7 +37,7 @@ index a1f8a0a..ad43093 100644
              } else {
                  $file = $plugintype . '_' . $pluginname;
              }
-@@ -7984,6 +7996,7 @@ function get_plugin_types($fullpaths=true) {
+@@ -7986,6 +7998,7 @@ function get_plugin_types($fullpaths=true) {
                        'plagiarism'    => 'plagiarism',
                        'tool'          => $CFG->admin.'/tool',
                        'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
@@ -45,7 +45,7 @@ index a1f8a0a..ad43093 100644
          );
  
          $mods = get_plugin_list('mod');
-@@ -7997,6 +8010,30 @@ function get_plugin_types($fullpaths=true) {
+@@ -7999,6 +8012,30 @@ function get_plugin_types($fullpaths=true) {
              }
          }
  
@@ -76,7 +76,7 @@ index a1f8a0a..ad43093 100644
          // local is always last!
          $info['local'] = 'local';
  
-@@ -8045,6 +8082,12 @@ function get_plugin_list($plugintype) {
+@@ -8047,6 +8084,12 @@ function get_plugin_list($plugintype) {
          // mod is an exception because we have to call this function from get_plugin_types()
          $fulldirs[] = $CFG->dirroot.'/mod';
  
@@ -89,7 +89,7 @@ index a1f8a0a..ad43093 100644
      } else if ($plugintype === 'theme') {
          $fulldirs[] = $CFG->dirroot.'/theme';
          // themes are special because they may be stored also in separate directory
-@@ -8052,6 +8095,12 @@ function get_plugin_list($plugintype) {
+@@ -8054,6 +8097,12 @@ function get_plugin_list($plugintype) {
              $fulldirs[] = $CFG->themedir;
          }
  
