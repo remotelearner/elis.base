@@ -52,6 +52,10 @@ $string['field_category'] = 'Category';
 $string['field_name'] = 'Name';
 
 // Default user profile field labels for userprofilematch filter - can override
+$string['fld_address'] = 'Address';
+$string['fld_address_help'] = '<h1>Address Filter</h1>';
+$string['fld_address2'] = 'Address 2';
+$string['fld_address2_help'] = '<h1>Address 2 Filter</h1>';
 $string['fld_auth'] = 'Authentication';
 $string['fld_auth_help'] = '<h1>Authentication filter</h1>
 <p>This filter allows you to filter users\' authentication method based on a drop down list of available authentication methods. This filter does not have any other options.</p>';
@@ -89,7 +93,19 @@ $string['fld_credits'] = 'Credits';
 $string['fld_curriculum'] = 'Curriculum';
 $string['fld_description'] = 'Description';
 $string['fld_email'] = 'Email address';
+$string['fld_email2'] = 'Email address 2';
 $string['fld_email_help'] = '<h1>Email address filter</h1>
+<p>This filter allows you to filter users\' Email address based on a free form text.
+The filter has the following options:</p>
+<ul>
+<li>contains - this option allows only Email addresses that contain the text entered (if no text is entered, then the filter is disabled)</li>
+<li>doesn\'t contain - this option allows only Email addresses that do not contain the text entered (if no text is entered, then the filter is disabled)</li>
+<li>is equal to - this option allows only Email addresses that are equal to the text entered (if no text is entered, then the filter is disabled)</li>
+<li>starts with - this option allows only Email addresses that start with the text entered (if no text is entered, then the filter is disabled)</li>
+<li>ends with - this option allows only Email addresses that end with the text entered (if no text is entered, then the filter is disabled)</li>
+<li>is empty - this option allows only Email addresses that are equal to the empty string (the text entered is ignored)</li>
+</ul>';
+$string['fld_email2_help'] = '<h1>Email address filter</h1>
 <p>This filter allows you to filter users\' Email address based on a free form text.
 The filter has the following options:</p>
 <ul>
@@ -103,6 +119,8 @@ The filter has the following options:</p>
 $string['fld_enddate'] = 'End date';
 $string['fld_environment'] = 'Environment';
 $string['fld_environmentid'] = 'Environment';
+$string['fld_fax'] = 'Fax';
+$string['fld_fax_help'] = '<h1>Fax Filter</h1>';
 $string['fld_firstaccess'] = 'First access';
 $string['fld_firstaccess_help'] = '<h1>First access filter</h1>
 <p>This filter allows you to filter users\' firstaccess time from before and/or after selected dates. Where firstaccess time is the date and time the user first accessed the system.</p>';
@@ -169,15 +187,26 @@ The filter has the following options:</p>
 </ul>';
 $string['fld_length'] = 'Length';
 $string['fld_lengthdescription'] = 'Length description';
+$string['fld_mi'] = 'Middle Initial';
+$string['fld_mi_help'] = '<h1>Middle Initial Filter</h1>';
 $string['fld_name'] = 'Name';
+$string['fld_phone'] = 'Phone';
+$string['fld_phone_help'] = '<h1>Phone Filter</h1>';
+$string['fld_phone2'] = 'Phone 2';
+$string['fld_phone2_help'] = '<h1>Phone 2 Filter</h1>';
+$string['fld_postalcode'] = 'Zip/Postal Code';
+$string['fld_postalcode_help'] = '<h1>Zip/Postal Code Filter</h1>';
 $string['fld_priority'] = 'Priority';
 $string['fld_reqcredits'] = 'Required credits';
 $string['fld_startdate'] = 'Start date';
+$string['fld_state'] = 'State/Prov';
+$string['fld_state_help'] = '<h1>State/Province Filter</h1>';
 $string['fld_syllabus'] = 'Syllabus';
 $string['fld_systemrole'] = 'System role';
 $string['fld_systemrole_help'] = '<h1>Global role filter</h1>
 <p>This filter allows you to filter users based the global role they have assigned.</p>';
 $string['fld_timecreated'] = 'Time created';
+$string['fld_timecreated_help'] = '<h1>Time Created Filter</h1>';
 $string['fld_timemodified'] = 'Last modified';
 $string['fld_timemodified_help'] = '<h1>Last modified filter</h1>
 <p>This filter allows you to filter on the last time the users\' profile was modified, from before and/or after selected dates. Where last modified is the date and time the users\' profile was last updated.</p>';

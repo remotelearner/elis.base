@@ -142,9 +142,10 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
         $filter = $this->_uniqueid;
 
         $filter_js = array(
-            'function show_panel( url ) {
+            'var ac_show_panel = function( url ) {
                 var x = window.open(url, \'newWindow\', \'height=700,width=650,resizable=yes,scrollbars=yes,screenX=50,screenY=50\');
-            }'
+            }
+            window.ac_show_panel = ac_show_panel;'
         );
 
         $filt_action_url_base = $CFG->wwwroot.'/elis/core/lib/form/autocomplete.php?report='.$report.'&filter='.$filter;
@@ -160,7 +161,7 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
             $text_input = array($mform->createElement('text', $this->_uniqueid, $this->_label, array('placeholder' => $main_input_ph)));
             if ($this->config_allowed() === true) {
                 $text_input[] = $mform->createElement('static', 'configlink', '',
-                        '<a onclick="show_panel(\''.$config_url.'\');" href="#">'
+                        '<a onclick="ac_show_panel(\''.$config_url.'\');" href="#">'
                             .'<img src='.$CFG->wwwroot.'/elis/program/pix/configuration.png>'
                         .'</a>');
             }
@@ -215,7 +216,7 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
 
             $popup_link = '<span id="id_'.$this->_uniqueid.'_label"></span> ';
             if ($this->_selection_enabled === true) {
-                $popup_link .= '<a onclick="show_panel(\''.$filt_action_url_base.'\');" href="#">'.get_string('filt_autoc_select','elis_core').'</a>';
+                $popup_link .= '<a onclick="ac_show_panel(\''.$filt_action_url_base.'\');" href="#">'.get_string('filt_autoc_select','elis_core').'</a>';
             }
 
             $mform->addElement('static', 'selector', $this->_label,$popup_link);
