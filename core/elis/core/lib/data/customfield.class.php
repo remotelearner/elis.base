@@ -406,6 +406,114 @@ class field extends elis_data_object {
         }
     }
 
+    /**
+     * Create a user-level ELIS field from an existing Moodle user profile field.
+     *
+     * @param int $mfieldid The ID of a Moodle user profile field.
+     * @param field_category $category An ELIS field_category object to add the new field to.
+     * @param boolean $syncdir Data Sync Direction.
+     *                         Possible values:
+     *                             false = no syncing
+     *                             pm_moodle_profile::sync_from_moodle = sync from moodle.
+     *                             pm_moodle_profile::sync_to_moodle = sync to moodle.
+     * @return field The new field object.
+     */
+    public static function make_from_moodle_field($mfieldid, field_category $category, $syncdir = false) {
+        require_once(elis::file('core/fields/manual/custom_fields.php'));
+        require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+
+        global $DB;
+
+        // Get moodle field information.
+        $mfield = $DB->get_record('user_info_field', array('id'=>$mfieldid));
+        if (empty($mfield)) {
+            return null;
+        }
+
+        if (!defined('CONTEXT_ELIS_USER')) {
+            return null;
+        }
+
+        // Initially elis field data is the same as moodle field data.
+        $field = (array)$mfield;
+        unset($field['id']);
+        $field['datatype'] = 'text';
+        $field['categoryid'] = $category->id;
+
+        // Manual field owner data.
+        $fieldmanualowner = new field_owner;
+        $fieldmanualowner->plugin = 'manual';
+        $fieldmanualowner->param_control = $mfield->datatype;
+        $fieldmanualowner->param_required = (bool)(int)$mfield->required;
+
+        // Set data based on moodle field's datatype.
+        switch ($mfield->datatype) {
+            case static::CHECKBOX:
+                $field['datatype'] = 'bool';
+                break;
+            case static::DATETIME:
+                $field['datatype'] = 'datetime';
+                $fieldmanualowner->param_startyear = $mfield->param1;
+                $fieldmanualowner->param_stopyear = $mfield->param2;
+                $fieldmanualowner->param_inctime = $mfield->param3;
+                break;
+            case static::MENU:
+                $field['datatype'] = 'char';
+                $fieldmanualowner->param_options = $mfield->param1;
+                break;
+            case static::TEXTAREA:
+                $fieldmanualowner->param_columns = (!empty($mfield->param1)) ? $mfield->param1 : 30;
+                $fieldmanualowner->param_rows = (!empty($mfield->param2)) ? $mfield->param2 : 10;
+                break;
+            case static::TEXT:
+                if ($mfield->param3) {
+                    $fieldmanualowner->param_control = 'password';
+                }
+                $fieldmanualowner->param_columns = $mfield->param1;
+                $fieldmanualowner->param_maxlength = $mfield->param2;
+                break;
+        }
+
+        // Create field.
+        $field = new field($field);
+        $field->save();
+
+        // Create moodle profile owner.
+        if ($syncdir === pm_moodle_profile::sync_from_moodle || $syncdir === pm_moodle_profile::sync_from_moodle) {
+            $fieldmoodleprofileowner = new field_owner(array(
+                'fieldid' => $field->id,
+                'plugin' => 'moodle_profile',
+                'exclude' => $syncdir
+            ));
+            $fieldmoodleprofileowner->save();
+        }
+
+        // Create manual owner.
+        $fieldmanualowner->fieldid = $field->id;
+        $fieldmanualowner->save();
+
+        // Update field context level.
+        static::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_USER, $category);
+
+        // Reload field object.
+        $field = new field($field->id);
+        $field->load();
+
+        if ($syncdir === pm_moodle_profile::sync_from_moodle) {
+            sync_profile_field_settings_from_moodle($field);
+        }
+
+        // Set default data.
+        if (isset($mfield->defaultdata) && $mfield->defaultdata !== '') {
+            field_data::set_for_context_and_field(null, $field, $mfield->defaultdata);
+        }
+
+        // Reload field object.
+        $field = new field($field->id);
+        $field->load();
+
+        return $field;
+    }
 }
 
 class elis_field_filter extends field_filter {
@@ -650,6 +758,48 @@ class field_category extends elis_data_object {
 
         //delete the actual category record
         parent::delete();
+    }
+
+    /**
+     * Ensure a category exists with a given name for a given contextlevel.
+     * @param string $name The name of the category.
+     * @param int $contextlevel The contextlevel.
+     * @return field_category Either the existing or the new field_category object.
+     */
+    public static function ensure_exists_for_contextlevel($name, $contextlevel) {
+
+        if (empty($name)) {
+            return null;
+        }
+
+        if (empty($contextlevel) || !is_int($contextlevel)) {
+            return null;
+        }
+
+        global $DB;
+        $sql = 'SELECT cat.id
+                  FROM {'.static::TABLE.'} cat
+                  JOIN {'.field_category_contextlevel::TABLE.'} catctx ON cat.id = catctx.categoryid
+                 WHERE cat.name = ?
+                       AND catctx.contextlevel = ?';
+        $existingcat = $DB->get_records_sql($sql, array($name, $contextlevel));
+        if (!empty($existingcat)) {
+            $existingcat = current($existingcat);
+            $category = new field_category($existingcat->id);
+            $category->load();
+            return $category;
+        } else {
+            $category = new field_category;
+            $category->name = $name;
+            $category->save();
+
+            $catctx = new field_category_contextlevel;
+            $catctx->categoryid = $category->id;
+            $catctx->contextlevel = $contextlevel;
+            $catctx->save();
+
+            return $category;
+        }
     }
 }
 

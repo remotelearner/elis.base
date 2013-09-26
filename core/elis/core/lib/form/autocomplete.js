@@ -1,4 +1,4 @@
-function add_selection(eleid_base,id,label,ui,useid) {
+var ac_add_selection = function(eleid_base,id,label,ui,useid) {
     if (ui == 'inline') {
         $('#id_'+eleid_base).val(useid ? id : label);
         $('#id_grp_'+eleid_base).val(label);
@@ -13,6 +13,7 @@ function add_selection(eleid_base,id,label,ui,useid) {
         window.close();
     }
 }
+window.ac_add_selection = ac_add_selection;
 
 function autocomplete_ui(textbox,results,search_status,search_url,results_wrpr) {
     var last_req = '';

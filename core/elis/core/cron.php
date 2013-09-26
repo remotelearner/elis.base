@@ -70,7 +70,13 @@ function elis_cron() {
             continue;
         }
 
-        // FIXME: check for blocking tasks
+        // Check for blocking tasks.
+        if (!empty($task->blocked) && $timenow < $task->blocked) {
+            // Task is still running - do not start another instance of it.
+            mtrace("{$task->plugin}: Previous {$task->taskname} process has not yet completed - aborting!");
+            continue;
+        }
+
         // FIXME: check if task is locked
 
         // See if some other cron has already run the function while we were
