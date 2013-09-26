@@ -120,7 +120,7 @@ if ($mode === 'search') {
             $filter->_useid
         );
 
-        echo '<tr onclick="add_selection(\''.implode('\',\'',$add_selection_params).'\')" class="datarow">';
+        echo '<tr onclick="ac_add_selection(\''.implode('\',\'',$add_selection_params).'\')" class="datarow">';
 
         foreach ($results_fields as $field) {
             $str = highlight_substrings($q,$result->$field);

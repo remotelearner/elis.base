@@ -43,8 +43,8 @@ class user_activity_health_empty extends crlm_health_check_base {
             return true;
         }
         require_once(dirname(__FILE__) .'/etl.php');
-        $state = user_activity_task_init(false);
-        $last_time = (int)$state['starttime'];
+        $etlobj = new etl_user_activity(0, false);
+        $last_time = (int)$etlobj->state['starttime'];
         return($DB->count_records_select('log', "time >= $last_time") > 0 &&
                (time() - (7 * DAYSECS)) > $last_time);
     }
@@ -70,9 +70,9 @@ class user_activity_health_empty extends crlm_health_check_base {
 
         if ($this->inprogress) {
             require_once(dirname(__FILE__) .'/etl.php');
-            $state = user_activity_task_init(false);
-            $lasttime = (int)$state['starttime'];
-            $lastprocessed = (int)$state['recs_last_processed'];
+            $etlobj = new etl_user_activity(0, false);
+            $lasttime = (int)$etlobj->state['starttime'];
+            $lastprocessed = !empty($etlobj->state['recs_last_processed']) ? (int)$etlobj->state['recs_last_processed'] : 0;
             $etlminhour = $DB->get_field('etl_user_activity', 'MIN(hour)', array());
             $etlmaxhour = $DB->get_field('etl_user_activity', 'MAX(hour)', array());
             $logendtime = $DB->get_field('log', 'MAX(time)', array());
@@ -83,7 +83,7 @@ class user_activity_health_empty extends crlm_health_check_base {
             $description = 'The ETL process has not completed running.  Certain reports (such as the site-wide time summary) may show incomplete data '.
                     "until the ETL process has completed.<br/>Currently, the ETL process is <b>{$percentcomplete}%</b> complete";
             if ($lastprocessed) {
-                if (isset($state['log_entries_per_day']) && ($logentriesperday = (float)$state['log_entries_per_day']) > 0) {
+                if (isset($etlobj->state['log_entries_per_day']) && ($logentriesperday = (float)$etlobj->state['log_entries_per_day']) > 0) {
                     $est1 = (float)$DB->count_records_select('log', 'time >= ?', array($lasttime)) / $lastprocessed;
                     $daystodo = ceil($est1 + ($logentriesperday * $est1 / $lastprocessed));
                 } else {

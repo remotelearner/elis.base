@@ -251,7 +251,34 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
         run_inner_html_scripts : function(elid) {
             var el = Y.one('#'+elid);
             if (el) {
-                el.all('script').each(function(el) { eval(el.getHTML()); });
+                var js = '';
+                el.all('script').each(function(elem) {
+                        var newjs = elem.getHTML();
+                        if (newjs == '') {
+                            // Get script file to load
+                            var src = elem.getAttribute('src');
+                            // console.log('associateclass.js::run_inner_html_scripts: src = '+src);
+                            if (src) {
+                                // Download the script
+                                var cfg = {
+                                    method: 'GET',
+                                    sync: true,
+                                    timeout: 30000, // TBD: 30secs ?
+                                    context: this
+                                };
+                                var resobj = Y.io(src, cfg);
+                                if (resobj && resobj.status == 200 && resobj.responseText) {
+                                    // console.log('associateclass.js::run_inner_html_scripts: status = '+resobj.status+', responseText = '
+                                    //         +resobj.responseText);
+                                    js += resobj.responseText;
+                                }
+                            }
+                        } else {
+                            // console.log('associateclass.js::run_inner_html_scripts: elem = '+newjs);
+                            js += newjs;
+                        }
+                });
+                eval(js);
             }
         },
 
