@@ -166,6 +166,11 @@ if ($mode === 'search') {
             }
             ?>
             <?php $configform->display(); ?>
+             <script>
+                $('#id_cancel').click(function(e) {
+                    window.close();
+                });
+            </script>
         </body>
         </html>
         <?php
