@@ -366,4 +366,333 @@ class custom_field_permissions_testcase extends elis_database_test {
         // Validation.
         $this->assertFalse($mform->elementExists('field_field'));
     }
+
+    /**
+     * Test using an invalid entity id
+     * This test only rund when elis/program/setuplib.php exists.
+     */
+    public function test_manual_field_is_view_or_editable_with_pm_using_invalid_entity_id() {
+        global $DB, $CFG;
+
+        // Skip test if elis/program doesn't exist.
+        if (!file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            $this->markTestSkipped('Requires elis/program to be installed.');
+        }
+
+        $this->resetAfterTest(true);
+        $this->load_libraries_for_additional_tests();
+        // Load CSV data.
+        $this->load_csv_data();
+
+        // Setup place holders for capabilities.
+        $editcap = 'elis/program:user_edit';
+        $viewcap = 'elis/program:user_view';
+
+        // Retrieve the PM user id to be assigned to a userset.
+        $param = array('id' => 103);
+        $pmuserinusersetid = $DB->get_field('crlm_user', 'id', $param);
+
+        // Get the userset context.
+        $usersetcontext = context_elis_userset::instance(1);
+        // System context.
+        $syscontext = context_system::instance();
+
+        $field = new field(array('id' => 101));
+        $field->load();
+
+        $result = manual_field_is_view_or_editable($field, $syscontext, $editcap, $viewcap, 'user', '99999');
+
+        $this->assertEquals(MANUAL_FIELD_NO_VIEW_OR_EDIT, $result);
+    }
+
+    /**
+     * Test using an invalid entity type.
+     * This test only rund when elis/program/setuplib.php exists.
+     * @expectedException coding_exception
+     */
+    public function test_manual_field_is_view_or_editable_with_pm_using_invalid_entity() {
+        global $DB, $CFG;
+
+        // Skip test if elis/program doesn't exist.
+        if (!file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            $this->markTestSkipped('Requires elis/program to be installed.');
+        }
+
+        $this->resetAfterTest(true);
+        $this->load_libraries_for_additional_tests();
+        // Load CSV data.
+        $this->load_csv_data();
+
+        // Setup place holders for capabilities.
+        $editcap = 'elis/program:user_edit';
+        $viewcap = 'elis/program:user_view';
+
+        // Retrieve the PM user id to be assigned to a userset.
+        $param = array('id' => 103);
+        $pmuserinusersetid = $DB->get_field('crlm_user', 'id', $param);
+
+        // Get the userset context.
+        $usersetcontext = context_elis_userset::instance(1);
+        // System context.
+        $syscontext = context_system::instance();
+
+        $field = new field(array('id' => 101));
+        $field->load();
+
+        $result = manual_field_is_view_or_editable($field, $syscontext, $editcap, $viewcap, 'system', $pmuserinusersetid);
+
+        $this->assertEquals(MANUAL_FIELD_NO_VIEW_OR_EDIT, $result);
+    }
+
+    /**
+     * Test user with only edit permission on userset.
+     * This test only rund when elis/program/setuplib.php exists.
+     */
+    public function test_manual_field_is_view_or_editable_with_no_permissions_on_userset() {
+        global $DB, $CFG;
+
+        // Skip test if elis/program doesn't exist.
+        if (!file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            $this->markTestSkipped('Requires elis/program to be installed.');
+        }
+
+        $this->resetAfterTest(true);
+        $this->load_libraries_for_additional_tests();
+        // Load CSV data.
+        $this->load_csv_data();
+
+        // Setup place holders for capabilities.
+        $editcap = 'elis/program:user_edit';
+        $viewcap = 'elis/program:user_view';
+
+        // Retrieve the PM user id to be assigned to a userset.
+        $param = array('id' => 103);
+        $pmuserinusersetid = $DB->get_field('crlm_user', 'id', $param);
+
+        // Retrieve the user who will be assigned a role in the user set.
+        $param = array('id' => 101);
+        $userroleinuserset = $DB->get_record('user', $param);
+        // Set user with role as logged in user
+        $this->setUser($userroleinuserset);
+
+        // Get the userset context.
+        $usersetcontext = context_elis_userset::instance(1);
+        // System context.
+        $syscontext = context_system::instance();
+
+        // Create role and assign capabilites to it.
+        $roleid = create_role('testrole', 'testrole', 'testrole');
+
+        // Assin role to user in the userset context.
+        role_assign($roleid, $userroleinuserset->id, $usersetcontext->id);
+
+        // Add user to cluster/userset.
+        $usersetassign = new clusterassignment(array('clusterid' => 1, 'userid' => $pmuserinusersetid, 'plugin' => 'manual'));
+        $usersetassign->save();
+
+        $field = new field(array('id' => 101));
+        $field->load();
+
+        $result = manual_field_is_view_or_editable($field, $syscontext, $editcap, $viewcap, 'user', $pmuserinusersetid);
+
+        $this->assertEquals(MANUAL_FIELD_NO_VIEW_OR_EDIT, $result);
+    }
+
+    /**
+     * Test user with only edit permission on userset.
+     * This test only rund when elis/program/setuplib.php exists.
+     */
+    public function test_manual_field_is_view_or_editable_with_edit_permissions_on_userset() {
+        global $DB, $CFG;
+
+        // Skip test if elis/program doesn't exist.
+        if (!file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            $this->markTestSkipped('Requires elis/program to be installed.');
+        }
+
+        $this->resetAfterTest(true);
+        $this->load_libraries_for_additional_tests();
+        // Load CSV data.
+        $this->load_csv_data();
+
+        // Setup place holders for capabilities.
+        $editcap = 'elis/program:user_edit';
+        $viewcap = 'elis/program:user_view';
+
+        // Retrieve the PM user id to be assigned to a userset.
+        $param = array('id' => 103);
+        $pmuserinusersetid = $DB->get_field('crlm_user', 'id', $param);
+
+        // Retrieve the user who will be assigned a role in the user set.
+        $param = array('id' => 101);
+        $userroleinuserset = $DB->get_record('user', $param);
+        // Set user with role as logged in user
+        $this->setUser($userroleinuserset);
+
+        // Get the userset context.
+        $usersetcontext = context_elis_userset::instance(1);
+        // System context.
+        $syscontext = context_system::instance();
+
+        // Create role and assign capabilites to it.
+        $roleid = create_role('testrole', 'testrole', 'testrole');
+        assign_capability($editcap, CAP_ALLOW, $roleid, $syscontext->id);
+
+        // Assin role to user in the userset context.
+        role_assign($roleid, $userroleinuserset->id, $usersetcontext->id);
+
+        // Add user to cluster/userset.
+        $usersetassign = new clusterassignment(array('clusterid' => 1, 'userid' => $pmuserinusersetid, 'plugin' => 'manual'));
+        $usersetassign->save();
+
+        $field = new field(array('id' => 101));
+        $field->load();
+
+        $result = manual_field_is_view_or_editable($field, $syscontext, $editcap, $viewcap, 'user', $pmuserinusersetid);
+
+        $this->assertEquals(MANUAL_FIELD_EDITABLE, $result);
+    }
+
+    /**
+     * Test user with only view permission on userset.
+     * This test only rund when elis/program/setuplib.php exists.
+     */
+    public function test_manual_field_is_view_or_editable_with_view_permissions_on_userset() {
+        global $DB, $CFG;
+
+        // Skip test if elis/program doesn't exist.
+        if (!file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            $this->markTestSkipped('Requires elis/program to be installed.');
+        }
+
+        $this->resetAfterTest(true);
+        $this->load_libraries_for_additional_tests();
+        // Load CSV data.
+        $this->load_csv_data();
+
+        // Setup place holders for capabilities.
+        $editcap = 'elis/program:user_edit';
+        $viewcap = 'elis/program:user_view';
+
+        // Retrieve the PM user id to be assigned to a userset.
+        $param = array('id' => 103);
+        $pmuserinusersetid = $DB->get_field('crlm_user', 'id', $param);
+
+        // Retrieve the user who will be assigned a role in the user set.
+        $param = array('id' => 101);
+        $userroleinuserset = $DB->get_record('user', $param);
+        // Set user with role as logged in user
+        $this->setUser($userroleinuserset);
+
+        // Get the userset context.
+        $usersetcontext = context_elis_userset::instance(1);
+        // System context.
+        $syscontext = context_system::instance();
+
+        // Create role and assign capabilites to it.
+        $roleid = create_role('testrole', 'testrole', 'testrole');
+        assign_capability($viewcap, CAP_ALLOW, $roleid, $syscontext->id);
+
+        // Assin role to user in the userset context.
+        role_assign($roleid, $userroleinuserset->id, $usersetcontext->id);
+
+        // Add user to cluster/userset.
+        $usersetassign = new clusterassignment(array('clusterid' => 1, 'userid' => $pmuserinusersetid, 'plugin' => 'manual'));
+        $usersetassign->save();
+
+        $field = new field(array('id' => 101));
+        $field->load();
+
+        $result = manual_field_is_view_or_editable($field, $syscontext, $editcap, $viewcap, 'user', $pmuserinusersetid);
+
+        $this->assertEquals(MANUAL_FIELD_VIEWABLE, $result);
+    }
+
+    /**
+     * Test user with view and edit permissions on a userset.
+     * This test only rund when elis/program/setuplib.php exists.
+     */
+    public function test_manual_field_is_view_or_editable_with_view_edit_permissions_on_userset() {
+        global $DB, $CFG;
+
+        // Skip test if elis/program doesn't exist.
+        if (!file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            $this->markTestSkipped('Requires elis/program to be installed.');
+        }
+
+        $this->resetAfterTest(true);
+        $this->load_libraries_for_additional_tests();
+        // Load CSV data.
+        $this->load_csv_data();
+
+        // Setup place holders for capabilities.
+        $editcap = 'elis/program:user_edit';
+        $viewcap = 'elis/program:user_view';
+
+        // Retrieve the PM user id to be assigned to a userset
+        $param = array('id' => 103);
+        $pmuserinusersetid = $DB->get_field('crlm_user', 'id', $param);
+
+        // Retrieve the user who will be assigned a role in the user set.
+        $param = array('id' => 101);
+        $userroleinuserset = $DB->get_record('user', $param);
+        // Set user with role as logged in user
+        $this->setUser($userroleinuserset);
+
+        // Get the userset context.
+        $usersetcontext = context_elis_userset::instance(1);
+        // System context.
+        $syscontext = context_system::instance();
+
+        // Create role and assign capabilites to it.
+        $roleid = create_role('testrole', 'testrole', 'testrole');
+        assign_capability($editcap, CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability($viewcap, CAP_ALLOW, $roleid, $syscontext->id);
+
+        // Assin role to user in the userset context.
+        role_assign($roleid, $userroleinuserset->id, $usersetcontext->id);
+
+        // Add user to cluster/userset.
+        $usersetassign = new clusterassignment(array('clusterid' => 1, 'userid' => $pmuserinusersetid, 'plugin' => 'manual'));
+        $usersetassign->save();
+
+        $field = new field(array('id' => 101));
+        $field->load();
+
+        $result = manual_field_is_view_or_editable($field, $syscontext, $editcap, $viewcap, 'user', $pmuserinusersetid);
+
+        $this->assertEquals(MANUAL_FIELD_EDITABLE, $result);
+    }
+
+    /**
+     * Require libraries needed to run additional tests on roles added to usersets
+     */
+    protected function load_libraries_for_additional_tests() {
+        global $CFG;
+
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
+    }
+
+    /**
+     * Load custom profile field data from CSV.
+     */
+    protected function load_csv_data() {
+        $dataset = $this->createCsvDataSet(array(
+            'user'             => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
+            'user_info_field'  => elis::component_file('program', 'tests/fixtures/user_info_field.csv'),
+            'user_info_data'   => elis::component_file('program', 'tests/fixtures/user_info_data.csv'),
+            user::TABLE        => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
+            usermoodle::TABLE  => elis::component_file('program', 'tests/fixtures/usermoodle.csv'),
+            field::TABLE       => elis::component_file('program', 'tests/fixtures/user_field.csv'),
+            field_owner::TABLE => elis::component_file('program', 'tests/fixtures/user_field_owner.csv'),
+            userset::TABLE     => elis::component_file('program', 'tests/fixtures/userset.csv')
+        ));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
+        $dataset->addSubStrReplacement('\n', "\n");
+        $this->loadDataSet($dataset);
+    }
 }

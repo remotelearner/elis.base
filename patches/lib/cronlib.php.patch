@@ -1,8 +1,18 @@
 diff --git a/lib/cronlib.php b/lib/cronlib.php
-index bc5e29a..8ed8a10 100644
+index bc5e29a..f77e572 100644
 --- a/lib/cronlib.php
 +++ b/lib/cronlib.php
-@@ -424,6 +424,11 @@ function cron_run() {
+@@ -170,6 +170,9 @@ function cron_run() {
+             mtrace(' Cleaned up read notifications');
+         }
+ 
++        mtrace(' Deleting temporary files...');
++        cron_delete_from_temp();
++
+         mtrace("...finished clean-up tasks");
+ 
+     } // End of occasional clean-up tasks
+@@ -424,6 +427,11 @@ function cron_run() {
      cron_execute_plugin_type('tool', 'admin tools');
  
  
@@ -14,3 +24,52 @@ index bc5e29a..8ed8a10 100644
      // and finally run any local cronjobs, if any
      if ($locals = get_plugin_list('local')) {
          mtrace('Processing customized cron scripts ...', '');
+@@ -733,3 +741,48 @@ function notify_login_failures() {
+ 
+     return true;
+ }
++
++/**
++ * Delete files and directories older than one week from directory provided by $CFG->tempdir.
++ *
++ * @exception Exception Failed reading/accessing file or directory
++ * @return bool True on successful file and directory deletion; otherwise, false on failure
++ */
++function cron_delete_from_temp() {
++    global $CFG;
++
++    $tmpdir = $CFG->tempdir;
++    // Default to last weeks time.
++    $time = strtotime('-1 week');
++
++    try {
++        $dir = new RecursiveDirectoryIterator($tmpdir);
++        // Show all child nodes prior to their parent.
++        $iter = new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::CHILD_FIRST);
++
++        for ($iter->rewind(); $iter->valid(); $iter->next()) {
++            $node = $iter->getRealPath();
++            if (!is_readable($node)) {
++                continue;
++            }
++            // Check if file or directory is older than the given time.
++            if ($iter->getMTime() < $time) {
++                if ($iter->isDir() && !$iter->isDot()) {
++                    if (@rmdir($node) === false) {
++                        mtrace("Failed removing directory '$node'.");
++                    }
++                }
++                if ($iter->isFile()) {
++                    if (@unlink($node) === false) {
++                        mtrace("Failed removing file '$node'.");
++                    }
++                }
++            }
++        }
++    } catch (Exception $e) {
++        mtrace('Failed reading/accessing file or directory.');
++        return false;
++    }
++
++    return true;
++}

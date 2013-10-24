@@ -288,45 +288,62 @@ function manual_field_save_form_data($form, $field, $data) {
 
 
 /**
- * Check whether a field has view or edit capability on context(s)
+ * Check whether a field has view or edit capability on either Moodle or ELIS context(s).
  *
  * @param object $field the custom field we are viewing / editing
- * @param mixed $context
- * @param string $context_edit_cap the edit capability to check if the field owner
+ * @param object $context Moodle context
+ * @param string $contexteditcap The edit capability to check if the field owner
  *                                 is set up to use the "edit this context" option for editing
- * @param string $context_view_cap the view capability to check if the field owner
+ * @param string $contextviewcap The view capability to check if the field owner
  *                                 is set up to use the "view this context" option for viewing
+ * @param string $entity optional entity/context name
+ * @param int $entityid The id of the entity.  Required only if an entity is passed.
  * @return int   MANUAL_FIELD_NO_VIEW_OR_EDIT (-1) if not viewable or editable
  *               MANUAL_FIELD_VIEWABLE (0) if viewable
  *               MANUAL_FIELD_EDITABLE (1) if editable (which implies viewable)
  */
-function manual_field_is_view_or_editable($field, $context, $context_edit_cap = NULL, $context_view_cap = NULL) {
+function manual_field_is_view_or_editable($field, $context, $contexteditcap = NULL, $contextviewcap = NULL, $entity = 'system', $entityid = 0) {
+    global $CFG, $USER;
+
+    $canview = 0;
+    $canedit = 0;
+
     if (!isset($field->owners['manual'])) {
         return MANUAL_FIELD_NO_VIEW_OR_EDIT;
     }
     $manual = new field_owner($field->owners['manual']);
 
-    //determine which exact capabilities we are checking
-    $edit_cap = $manual->param_edit_capability;
-    if ($edit_cap == '') {
-        //context-specific capability
-        $edit_cap = $context_edit_cap;
+    // Determine which exact capabilities we are checking
+    $editcap = $manual->param_edit_capability;
+    if ($editcap == '') {
+        // Context-specific capability
+        $editcap = $contexteditcap;
     }
 
-    $view_cap = $manual->param_view_capability;
-    if ($view_cap == '') {
-        //context-specific capability
-        $view_cap = $context_view_cap;
+    $viewcap = $manual->param_view_capability;
+    if ($viewcap == '') {
+        // Context-specific capability
+        $viewcap = $contextviewcap;
     }
 
-    if ($edit_cap == NULL || $view_cap == NULL) {
-        //capabilities for editing or viewing the context were not correctly specified
+    if ($editcap == NULL || $viewcap == NULL) {
+        // Capabilities for editing or viewing the context were not correctly specified
         return MANUAL_FIELD_NO_VIEW_OR_EDIT;
     }
 
-    if ($edit_cap == 'disabled' || !has_capability($edit_cap, $context)) {
-        if (!has_capability($view_cap, $context)) {
-            //do not have view or edit permissions
+    // Check if ELIS PM exists and if the given entity exists within PM
+    if (0 != $entityid && file_exists($CFG->dirroot.'/elis/program/lib/setup.php') && context_elis_helper::get_level_from_name($entity)) {
+        // Check ELIS contexts for the user's capability in an entity.
+        $contextset = pm_context_set::for_user_with_capability($entity, $editcap, $USER->id);
+        $canedit = $contextset->context_allowed($entityid, $entity);
+
+        $contextset = pm_context_set::for_user_with_capability($entity, $viewcap, $USER->id);
+        $canview = $contextset->context_allowed($entityid, $entity);
+    }
+
+    if ($editcap == 'disabled' || (!$canedit && !has_capability($editcap, $context))) {
+        if (!$canview && !has_capability($viewcap, $context)) {
+            // Do not have view or edit permissions
             return MANUAL_FIELD_NO_VIEW_OR_EDIT;
         }
         return MANUAL_FIELD_VIEWABLE;
@@ -340,28 +357,29 @@ function manual_field_is_view_or_editable($field, $context, $context_edit_cap = 
  *
  * @param object $form the moodle form object we are adding the element to
  * @param object $mform the moodle quick form object belonging to the moodle form
- * @param mixed $context
+ * @param mixed $context Moodle context
  * @param array $customdata any additional information to pass along to the element
  * @param object $field the custom field we are viewing / editing
- * @param boolean $check_required if true, add a required rule for this field
- * @param string $context_edit_cap the edit capability to check if the field owner
+ * @param boolean $checkrequired if true, add a required rule for this field
+ * @param string $contexteditcap the edit capability to check if the field owner
  *                                 is set up to use the "edit this context" option for editing
- * @param string $context_view_cap the view capability to check if the field owner
+ * @param string $contextviewcap the view capability to check if the field owner
  *                                 is set up to use the "view this context" option for viewing
+ * @param int $entityid The id of the entity.  Required only if an entity is passed.
  * @param string $entity  optional entity/context name
  */
-function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $check_required = true,
-                                       $context_edit_cap = NULL, $context_view_cap = NULL, $entity = 'system') {
+function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $checkrequired = true,
+                                       $contexteditcap = NULL, $contextviewcap = NULL, $entity = 'system', $entityid = 0) {
     //$mform = $form->_form;
 
-    $is_view_or_editable = manual_field_is_view_or_editable($field, $context, $context_edit_cap, $context_view_cap);
+    $isvieworeditable = manual_field_is_view_or_editable($field, $context, $contexteditcap, $contextviewcap, $entity, $entityid);
 
-    if ($is_view_or_editable == MANUAL_FIELD_NO_VIEW_OR_EDIT) {
+    if ($isvieworeditable == MANUAL_FIELD_NO_VIEW_OR_EDIT) {
         return;
     }
 
     $elem = "field_{$field->shortname}";
-    if ($is_view_or_editable == MANUAL_FIELD_VIEWABLE) {
+    if ($isvieworeditable == MANUAL_FIELD_VIEWABLE) {
         //have view but not edit, show as static
         $mform->addElement('static', $elem, $field->name);
         // TBD: help link?
@@ -406,7 +424,7 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
         }
     }
 
-    if ($check_required) {
+    if ($checkrequired) {
         if (!empty($manual_params['required'])) {
             $mform->addRule($elem, null, 'required', null, 'client'); // TBD
         }

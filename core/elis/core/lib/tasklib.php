@@ -249,6 +249,17 @@ function cron_next_run_time($lastrun, $job) {
     // get the specified timezone
     $run_date['timezone'] = $job['timezone'];
 
+    // ELIS-8580: Fix for '00' hour, minute & dayofweek used in task definintions to not be seen as empty '0'
+    if ($job['dayofweek'] == '00') {
+        $job['dayofweek'] = '0';
+    }
+    if ($job['hour'] == '00') {
+        $job['hour'] = '0';
+    }
+    if ($job['minute'] == '00') {
+        $job['minute'] = '0';
+    }
+
     // assert valid month
     if (!cron_valid_month($job, $run_date)) {
         cron_next_month($job, $run_date);
