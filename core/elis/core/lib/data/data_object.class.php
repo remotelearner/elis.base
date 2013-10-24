@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    elis_core
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -239,11 +238,23 @@ class elis_data_object {
         // don't bother saving if nothing has changed
         if (!$this->_is_saved) {
             $this->validate();
+
+            // Set time modified timestamp
+            $time = time();
+            if (property_exists(get_class($this), self::FIELD_PREFIX.'timemodified')) {
+                $this->timemodified = $time;
+            }
+
             // create a dumb object for Moodle
             $record = $this->to_object();
             if ($this->_dbfield_id !== self::$_unset && !empty($this->_dbfield_id)) {
                 $this->_db->update_record(static::TABLE, $record);
             } else {
+                // Set time created timestamp
+                if (property_exists(get_class($this), self::FIELD_PREFIX.'timecreated')) {
+                    $record->timecreated = $time;
+                }
+
                 $this->_dbfield_id = $this->_db->insert_record(static::TABLE, $record);
             }
             $this->_is_saved = true;

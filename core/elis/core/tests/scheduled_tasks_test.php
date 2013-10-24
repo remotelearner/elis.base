@@ -52,4 +52,31 @@ class scheduled_tasks_testcase extends elis_database_test {
         $this->assertNotEmpty($cachedtasks['s:7:"pm_cron";']);
         $this->assertInternalType('array', $cachedtasks['s:7:"pm_cron";']);
     }
+
+    /**
+     * test_elis_tasks_cron_next_run_time() data providea
+     * @return array the test data
+     */
+    public function elis_tasks_cron_next_run_time_data() {
+        return array(
+                array(array('minute' => '00', 'hour' => '00', 'day' => '*', 'dayofweek' => '*', 'month' => '*', 'timezone' => '99',
+                    'lastruntime' => array(2013, 1, 1, 1, 15)), array(2013, 1, 2, 0, 0)),
+                array(array('minute' => '00', 'hour' => '00', 'day' => '*', 'dayofweek' => '*', 'month' => '*', 'timezone' => '99',
+                    'lastruntime' => array(2012, 2, 19, 13, 13)), array(2012, 2, 20, 0, 0)),
+                array(array('minute' => '00', 'hour' => '00', 'day' => '*', 'dayofweek' => '*', 'month' => '*', 'timezone' => '99',
+                    'lastruntime' => array(2013, 10, 8, 20, 30)), array(2013, 10, 9, 0, 0)),
+        );
+    }
+
+    /**
+     * Validate cron_next_run_time() function for tasks with '00' hour and/or minute
+     * @param array $job array of cron task parameters
+     * @param array $expnextrun the expected next run time
+     * @dataProvider elis_tasks_cron_next_run_time_data
+     */
+    public function test_elis_tasks_cron_next_run_time($job, $expnextrun) {
+        $lastrun = $job['lastruntime'];
+        $this->assertEquals(make_timestamp($expnextrun[0], $expnextrun[1], $expnextrun[2], $expnextrun[3], $expnextrun[4]),
+                cron_next_run_time(make_timestamp($lastrun[0], $lastrun[1], $lastrun[2], $lastrun[3], $lastrun[4]), $job));
+    }
 }
