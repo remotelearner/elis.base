@@ -76,9 +76,9 @@ index bd8d621..c576004 100644
 @@ -157,13 +182,28 @@ function stats_cron_daily($maxdays=1) {
      mtrace("Running daily statistics gathering, starting at $timestart:");
  
-     $days = 0;
+     $days  = 0;
 +    $total = 0;
-     $failed = false; // failed stats flag
+     $failed  = false; // failed stats flag
 +    $timeout = false;
 +
 +    if (!stats_temp_table_create()) {
@@ -434,7 +434,7 @@ index bd8d621..c576004 100644
  
  
 -
-     /// individual user stats (including not-logged-in) in each course, this is slow - reuse this data if possible
+         /// individual user stats (including not-logged-in) in each course, this is slow - reuse this data if possible
          list($viewactionssql, $params1) = $DB->get_in_or_equal($viewactions, SQL_PARAMS_NAMED, 'view');
          list($postactionssql, $params2) = $DB->get_in_or_equal($postactions, SQL_PARAMS_NAMED, 'post');
 -        $sql = "INSERT INTO {stats_user_daily} (stattype, timeend, courseid, userid, statsreads, statswrites)
@@ -506,7 +506,7 @@ index bd8d621..c576004 100644
 +        stats_progress('11');
  
  
-     /// how many view actions for each course+role - excluding guests and frontpage
+         /// how many view actions for each course+role - excluding guests and frontpage
  
 -        $sql = "INSERT INTO {stats_daily} (stattype, timeend, courseid, roleid, stat1, stat2)
 +        $sql = "INSERT INTO {temp_stats_daily} (stattype, timeend, courseid, roleid, stat1, stat2)
@@ -531,7 +531,7 @@ index bd8d621..c576004 100644
 +                          FROM {temp_enroled} te
 +                         WHERE te.roleid <> $guestrole
 +                           AND te.userid <> $guest
-                                       ) pl
+                                                         ) pl
 -                            WHERE sud.userid = pl.userid AND
 -                                  sud.courseid = pl.courseid AND
 -                                  sud.timeend = $nextmidnight AND
@@ -555,8 +555,8 @@ index bd8d621..c576004 100644
 -        stats_daily_progress('12');
 +        stats_progress('12');
  
-     /// how many view actions from guests only in each course - excluding frontpage
-     /// normal users may enter course with temporary guest access too
+         /// how many view actions from guests only in each course - excluding frontpage
+         /// normal users may enter course with temporary guest access too
  
 -        $sql = "INSERT INTO {stats_daily} (stattype, timeend, courseid, roleid, stat1, stat2)
 +        $sql = "INSERT INTO {temp_stats_daily} (stattype, timeend, courseid, roleid, stat1, stat2)
@@ -617,8 +617,8 @@ index bd8d621..c576004 100644
 +                      FROM {temp_stats_user_daily} sud, (
 +
 +                        SELECT DISTINCT ra.userid, ra.roleid, c.instanceid AS courseid
-                                          FROM {role_assignments} ra
-                                          JOIN {context} c ON c.id = ra.contextid
+                           FROM {role_assignments} ra
+                           JOIN {context} c ON c.id = ra.contextid
 -                                        WHERE ra.contextid = :fpcontext AND
 -                                              ra.roleid <> $defaultfproleid AND
 -                                              ra.roleid <> $guestrole AND
@@ -627,7 +627,7 @@ index bd8d621..c576004 100644
 +                           AND ra.roleid <> $defaultfproleid
 +                           AND ra.roleid <> $guestrole
 +                           AND ra.userid <> $guest
-                                       ) pl
+                                                    ) pl
 -                            WHERE sud.userid = pl.userid AND
 -                                  sud.courseid = pl.courseid AND
 -                                  sud.timeend = $nextmidnight AND
@@ -676,7 +676,7 @@ index bd8d621..c576004 100644
 +                       AND sud.userid NOT IN (
 +
 +                        SELECT ra.userid
-                                             FROM {role_assignments} ra
+                           FROM {role_assignments} ra
 -                                           WHERE ra.roleid <> $guestrole AND
 -                                                 ra.roleid <> $defaultfproleid AND ra.contextid = :fpcontext)
 +                         WHERE ra.roleid <> $guestrole
@@ -706,7 +706,7 @@ index bd8d621..c576004 100644
 -                           SELECT $nextmidnight AS timeend, ".SITEID." AS courseid, $guestrole AS nroleid, pl.statsreads, pl.statswrites
 +                SELECT stattype, timeend, courseid, $guestrole AS roleid,
 +                       SUM(statsreads) AS stat1, SUM(statswrites) AS stat2
-                              FROM (
+                   FROM (
 -                                      SELECT sud.statsreads, sud.statswrites
 -                                        FROM {stats_user_daily} sud
 -                                       WHERE (sud.userid = $guest OR sud.userid = 0) AND
@@ -723,7 +723,7 @@ index bd8d621..c576004 100644
                         ) inline_view
 -              GROUP BY timeend, courseid, nroleid
 +                 GROUP BY stattype, timeend, courseid 
-                 HAVING SUM(statsreads) > 0 OR SUM(statswrites) > 0";
+                  HAVING SUM(statsreads) > 0 OR SUM(statswrites) > 0";
  
 -        if ($logspresent and !$DB->execute($sql)) {
 +        if ($logspresent && !stats_run_query($sql)) {
