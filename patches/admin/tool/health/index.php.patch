@@ -62,7 +62,7 @@ index 3966865..410832b 100644
 +        $description .= health_category_list_loops($loops);
 +
 +        return $description;
-             }
+     }
 -            $description .= "</ul>\n";
 +
 +    /**
@@ -95,11 +95,11 @@ index 3966865..410832b 100644
 +            $solution .= "<pre>UPDATE " . $CFG->prefix . "question_categories\n" .
 +                    "        SET parent = 0\n" .
 +                    "        WHERE id IN (" . implode(',', array_keys($loops)) . ");</pre>\n";
-                 }
+         }
 -                $description .= "</ul></li>\n";
 +
 +        return $solution;
-             }
+     }
 -            $description .= "</ul>\n";
 +}
 +
@@ -116,7 +116,7 @@ index 3966865..410832b 100644
 +     */
 +    function title() {
 +        return 'Course categories tree structure';
-         }
+     }
  
 +    /**
 +     * Search for problems in the course categories.
