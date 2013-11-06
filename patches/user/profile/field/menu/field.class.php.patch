@@ -69,7 +69,7 @@ index c0b8694..af03547 100644
 -            $defaultkey = (int)array_search($this->field->defaultdata, $this->options);
 -        } else {
 +        // RL EDIT: BJB121219 ELIS-8124
-             $defaultkey = '';
+         $defaultkey = '';
 +        $check = self::encode_data($this->field->defaultdata);
 +        foreach ($this->options as $key => $val) {
 +            if ($check == $key) {
@@ -99,7 +99,7 @@ index c0b8694..af03547 100644
 +            $val = format_string(self::decode_data($this->datakey));
 +            $mform->setConstant($this->inputname, $val);
 +        }
-         }
+     }
 +
 +    /**
 +     * Display the data for this field
