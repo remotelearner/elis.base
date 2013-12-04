@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    elis_core
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -477,36 +476,6 @@ function xmldb_elis_core_upgrade($oldversion=0) {
             $dbman->drop_table($table);
         }
         upgrade_plugin_savepoint(true, 2012091900, 'elis', 'core');
-    }
-
-    if ($result && $oldversion < 2012121900) {
-        // ELIS-8124: convert Moodle profile field menu-of-choices for ELIS
-        require_once($CFG->dirroot.'/user/profile/lib.php');
-        require_once($CFG->dirroot.'/user/profile/field/menu/field.class.php');
-        // Note: not using a recordset for fields because we require this as an array & the max number << 1000 (probably << 100)
-        $toconvertfields = $DB->get_records_select('user_info_field', "datatype  = 'menu' AND param1 <> '' AND param1 IS NOT NULL", null, '', 'id, param1');
-
-        if (!empty($toconvertfields)) {
-            array_walk($toconvertfields, function(&$item, $key) {
-                    $item->param1 = explode("\n", $item->param1);
-                }
-            );
-            $toconvertrecords = $DB->get_recordset_select('user_info_data', "fieldid IN ('". implode("','", array_keys($toconvertfields)) ."')");
-            if (!empty($toconvertrecords) && $toconvertrecords->valid()) {
-                foreach ($toconvertrecords as $rec) {
-                    $val = profile_field_menu::decode_data($rec->data);
-                    $valint = intval($val);
-                    if (is_numeric($val) && floatval($val) == (float)$valint && !in_array($val, $toconvertfields[$rec->fieldid]->param1)
-                        && $valint < count($toconvertfields[$rec->fieldid]->param1)) {
-                        $rec->data = profile_field_menu::encode_data($toconvertfields[$rec->fieldid]->param1[$valint]);
-                        $DB->update_record('user_info_data', $rec);
-                    }
-                }
-                $toconvertrecords->close();
-            }
-        }
-
-        upgrade_plugin_savepoint(true, 2012121900, 'elis', 'core');
     }
 
     if ($result && $oldversion < 2013022700) {

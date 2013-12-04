@@ -329,13 +329,29 @@ function manual_field_is_view_or_editable($field, $context, $contexteditcap = NU
     }
 
     // Check if ELIS PM exists and if the given entity exists within PM
-    if (0 != $entityid && file_exists($CFG->dirroot.'/elis/program/lib/setup.php') && context_elis_helper::get_level_from_name($entity)) {
-        // Check ELIS contexts for the user's capability in an entity.
-        $contextset = pm_context_set::for_user_with_capability($entity, $editcap, $USER->id);
-        $canedit = $contextset->context_allowed($entityid, $entity);
+    if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+        if (empty($entityid)) {
+            if ($entity !== 'system') {
+                // Validate entity.
+                context_elis_helper::get_level_from_name($entity);
 
-        $contextset = pm_context_set::for_user_with_capability($entity, $viewcap, $USER->id);
-        $canview = $contextset->context_allowed($entityid, $entity);
+                $contextset = pm_context_set::for_user_with_capability($entity, $editcap, $USER->id);
+                $canedit = !$contextset->is_empty();
+
+                $contextset = pm_context_set::for_user_with_capability($entity, $viewcap, $USER->id);
+                $canview = !$contextset->is_empty();
+            }
+        } else {
+            // Validate entity.
+            context_elis_helper::get_level_from_name($entity);
+
+            // Check ELIS contexts for the user's capability in an entity.
+            $contextset = pm_context_set::for_user_with_capability($entity, $editcap, $USER->id);
+            $canedit = $contextset->context_allowed($entityid, $entity);
+
+            $contextset = pm_context_set::for_user_with_capability($entity, $viewcap, $USER->id);
+            $canview = $contextset->context_allowed($entityid, $entity);
+        }
     }
 
     if ($editcap == 'disabled' || (!$canedit && !has_capability($editcap, $context))) {

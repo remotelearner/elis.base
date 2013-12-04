@@ -17,12 +17,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis-core
- * @subpackage filtering
+ * @package    elis_core
  * @author     Remote-Learner.net Inc
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -152,6 +151,7 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
 
         if ($this->_ui === 'inline') {
             $mform->addElement('hidden', $this->_uniqueid, $this->get_default(), array('id' => 'id_'.$this->_uniqueid));
+            $mform->setType($this->_uniqueid, PARAM_TEXT);
 
             $search_url = $filt_action_url_base.'&mode=search&q=';
             $config_url = $filt_action_url_base.'&mode=config';
@@ -172,6 +172,7 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
                     </div>');
 
             $mform->addGroup($text_input, 'grp', $this->_label);
+            $mform->setType($this->_uniqueid, PARAM_RAW);
 
             if ($this->_selection_enabled === true) {
                 if ($this->_required) {
@@ -222,7 +223,9 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
             $mform->addElement('static', 'selector', $this->_label,$popup_link);
             $mform->addElement('html','<div style="display:none;">');
             $mform->addElement('text', $this->_uniqueid.'_labelsave', '');
+            $mform->setType($this->_uniqueid.'_labelsave', PARAM_TEXT);
             $mform->addElement('text', $this->_uniqueid, '');
+            $mform->setType($this->_uniqueid, PARAM_TEXT);
             if (!empty($this->_default_label)) {
                 $mform->setDefault($this->_uniqueid.'_labelsave',$this->_default_label);
             }

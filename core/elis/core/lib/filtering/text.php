@@ -1,7 +1,7 @@
-<?php //$Id$
+<?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis-core
- * @subpackage filtering
+ * @package    elis_core
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -85,6 +84,7 @@ class generalized_filter_text extends generalized_filter_type {
         $objs[] =& $mform->createElement('select', $this->_uniqueid.'_op', null, $this->getOperators());
         $objs[] =& $mform->createElement('text', $this->_uniqueid, null);
         $grp =& $mform->addElement('group', $this->_uniqueid.'_grp', $this->_label, $objs, '', false);
+        $mform->setType($this->_uniqueid, PARAM_RAW);
         $mform->addHelpButton($this->_uniqueid.'_grp', $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */ ); // TBV
         $mform->disabledIf($this->_uniqueid, $this->_uniqueid.'_op', 'eq', 5);
         if ($this->_advanced) {

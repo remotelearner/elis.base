@@ -1,8 +1,8 @@
 diff --git a/admin/renderer.php b/admin/renderer.php
-index 3080d1e..97192f4 100644
+index ad36d34..6eec46b 100644
 --- a/admin/renderer.php
 +++ b/admin/renderer.php
-@@ -1146,13 +1146,14 @@ class core_admin_renderer extends plugin_renderer_base {
+@@ -1166,13 +1166,14 @@ class core_admin_renderer extends plugin_renderer_base {
              get_string('displayname', 'core_plugin'),
              get_string('source', 'core_plugin'),
              get_string('version', 'core_plugin'),
@@ -19,7 +19,7 @@ index 3080d1e..97192f4 100644
          );
  
          foreach ($plugininfo as $type => $plugins) {
-@@ -1205,6 +1206,24 @@ class core_admin_renderer extends plugin_renderer_base {
+@@ -1225,6 +1226,24 @@ class core_admin_renderer extends plugin_renderer_base {
  
                  $version = new html_table_cell($plugin->versiondb);
  
@@ -44,7 +44,7 @@ index 3080d1e..97192f4 100644
                  $isenabled = $plugin->is_enabled();
                  if (is_null($isenabled)) {
                      $availability = new html_table_cell('');
-@@ -1250,7 +1269,7 @@ class core_admin_renderer extends plugin_renderer_base {
+@@ -1270,7 +1289,7 @@ class core_admin_renderer extends plugin_renderer_base {
                  $notes = new html_table_cell($requiredby.$updateinfo);
  
                  $row->cells = array(

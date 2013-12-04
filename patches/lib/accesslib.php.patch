@@ -72,7 +72,7 @@ index 6a779e9..6ba3263 100644
 +        // RL EDIT: BJB130726 - support ELIS contexts
 +        global $CFG;
 +        try {
-             $classname = context_helper::get_class_for_level($record->contextlevel);
+         $classname = context_helper::get_class_for_level($record->contextlevel);
 +        } catch (Exception $e) {
 +            if (file_exists($CFG->dirroot.'/elis/program/accesslib.php')) {
 +                require_once($CFG->dirroot.'/elis/program/accesslib.php');
@@ -93,7 +93,7 @@ index 6a779e9..6ba3263 100644
 +    // RL EDIT: BJB130726 - support ELIS contexts
 +    global $CFG;
 +    try {
-         $classname = context_helper::get_class_for_level($contextlevel);
+     $classname = context_helper::get_class_for_level($contextlevel);
 +    } catch (Exception $e) {
 +        if (file_exists($CFG->dirroot.'/elis/program/accesslib.php')) {
 +            require_once($CFG->dirroot.'/elis/program/accesslib.php');
