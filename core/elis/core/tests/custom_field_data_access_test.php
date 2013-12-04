@@ -253,4 +253,54 @@ class custom_field_data_access_testcase extends elis_database_test {
         $this->assertTrue(!empty($field));
         $field->delete();
     }
+
+    /**
+     * Validate new library method fix_moodle_profile_fields()
+     */
+    public function test_fix_moodle_profile_fields() {
+        global $CFG;
+        require_once($CFG->dirroot.'/user/profile/lib.php');
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+        require_once($CFG->dirroot.'/user/profile/field/menu/define.class.php');
+        require_once($CFG->dirroot.'/user/profile/field/menu/field.class.php');
+        require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
+        require_once($CFG->dirroot.'/user/profile/field/checkbox/field.class.php');
+        require_once elis::lib('lib.php');
+        require_once elis::lib('testlib.php');
+
+        // Create a couple Moodle profile fields, one menu-of-choices
+        $profiledefinemenu = new profile_define_menu();
+        $data = new stdClass;
+        $data->datatype = 'menu';
+        $data->categoryid = 99999;
+        $data->shortname = 'testfieldmenu';
+        $data->name = 'testfieldmenu';
+        $data->param1 = 'Option1
+Option2';
+        $data->defaultdata = 'Option2';
+        $profiledefinemenu->define_save($data);
+
+        $profiledefinecheckbox = new profile_define_checkbox();
+        $data = new stdClass;
+        $data->datatype = 'checkbox';
+        $data->categoryid = 99999;
+        $data->shortname = 'testfieldcheckbox';
+        $data->name = 'testfieldcheckbox';
+        $profiledefinecheckbox->define_save($data);
+
+        $testuser = get_test_user();
+        $testuser->profile_field_testfieldmenu = 'Option3'; // illegal value
+        $testuser->profile_field_testfieldcheckbox = 0;
+
+        fix_moodle_profile_fields($testuser);
+        $this->assertTrue(!$testuser->profile_field_testfieldcheckbox);
+        $this->assertTrue(!isset($testuser->profile_field_testfieldmenu));
+
+        $testuser->profile_field_testfieldmenu = 'Option1'; // legal value
+        $testuser->profile_field_testfieldcheckbox = 1;
+
+        fix_moodle_profile_fields($testuser);
+        $this->assertTrue($testuser->profile_field_testfieldcheckbox == 1);
+        $this->assertTrue($testuser->profile_field_testfieldmenu == 'Option1');
+    }
 }
