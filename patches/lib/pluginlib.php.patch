@@ -1,5 +1,5 @@
 diff --git a/lib/pluginlib.php b/lib/pluginlib.php
-index f2a8e78..622cc77 100644
+index fbfaea9..1869137 100644
 --- a/lib/pluginlib.php
 +++ b/lib/pluginlib.php
 @@ -231,7 +231,9 @@ class plugin_manager {

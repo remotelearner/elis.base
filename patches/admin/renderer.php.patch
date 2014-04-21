@@ -1,5 +1,5 @@
 diff --git a/admin/renderer.php b/admin/renderer.php
-index ad36d34..6eec46b 100644
+index 6171a69..0c47189 100644
 --- a/admin/renderer.php
 +++ b/admin/renderer.php
 @@ -1166,13 +1166,14 @@ class core_admin_renderer extends plugin_renderer_base {

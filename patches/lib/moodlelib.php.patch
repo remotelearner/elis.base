@@ -1,8 +1,8 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index d001380..def05b4 100644
+index 51f2e839..cefccbf 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
-@@ -6785,6 +6785,10 @@ class core_string_manager implements string_manager {
+@@ -6782,6 +6782,10 @@ class core_string_manager implements string_manager {
              if ($plugintype === 'mod') {
                  // bloody mod hack
                  $file = $pluginname;
@@ -13,7 +13,7 @@ index d001380..def05b4 100644
              } else {
                  $file = $plugintype . '_' . $pluginname;
              }
-@@ -8276,6 +8280,9 @@ function get_plugin_types($fullpaths=true) {
+@@ -8268,6 +8272,9 @@ function get_plugin_types($fullpaths=true) {
                        'cachestore'    => 'cache/stores',
                        'cachelock'     => 'cache/locks',
                        'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
@@ -23,7 +23,7 @@ index d001380..def05b4 100644
          );
  
          $subpluginowners = array_merge(array_values(get_plugin_list('mod')),
-@@ -8290,6 +8297,32 @@ function get_plugin_types($fullpaths=true) {
+@@ -8282,6 +8289,32 @@ function get_plugin_types($fullpaths=true) {
              }
          }
  
@@ -56,7 +56,7 @@ index d001380..def05b4 100644
          // local is always last!
          $info['local'] = 'local';
  
-@@ -8351,7 +8384,12 @@ function get_plugin_list($plugintype) {
+@@ -8340,7 +8373,12 @@ function get_plugin_list($plugintype) {
      if ($plugintype === 'mod') {
          // mod is an exception because we have to call this function from get_plugin_types()
          $fulldirs[] = $CFG->dirroot.'/mod';
@@ -70,7 +70,7 @@ index d001380..def05b4 100644
      } else if ($plugintype === 'editor') {
          // Exception also needed for editor for same reason.
          $fulldirs[] = $CFG->dirroot . '/lib/editor';
-@@ -8362,7 +8400,12 @@ function get_plugin_list($plugintype) {
+@@ -8351,7 +8389,12 @@ function get_plugin_list($plugintype) {
          if (!empty($CFG->themedir) and file_exists($CFG->themedir) and is_dir($CFG->themedir) ) {
              $fulldirs[] = $CFG->themedir;
          }

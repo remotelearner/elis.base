@@ -1,5 +1,5 @@
 diff --git a/message/lib.php b/message/lib.php
-index b4fc106..25cb4fe 100644
+index 6805931..d2636f9 100644
 --- a/message/lib.php
 +++ b/message/lib.php
 @@ -772,6 +772,38 @@ function message_get_recent_conversations($user, $limitfrom=0, $limitto=100) {

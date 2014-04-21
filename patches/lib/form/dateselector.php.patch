@@ -1,8 +1,8 @@
 diff --git a/lib/form/dateselector.php b/lib/form/dateselector.php
-index f4cb2c5..d9f8f2b 100644
+index cb7ab39..e160907 100644
 --- a/lib/form/dateselector.php
 +++ b/lib/form/dateselector.php
-@@ -235,6 +235,17 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
+@@ -238,6 +238,17 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
       */
      function accept(&$renderer, $required = false, $error = null)
      {

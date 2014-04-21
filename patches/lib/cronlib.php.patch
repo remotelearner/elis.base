@@ -1,8 +1,8 @@
 diff --git a/lib/cronlib.php b/lib/cronlib.php
-index 0e7bbe1..99facf3 100644
+index e2c188a..7f11d72 100644
 --- a/lib/cronlib.php
 +++ b/lib/cronlib.php
-@@ -171,6 +171,9 @@ function cron_run() {
+@@ -170,6 +170,9 @@ function cron_run() {
              mtrace(' Cleaned up read notifications');
          }
  
@@ -12,7 +12,7 @@ index 0e7bbe1..99facf3 100644
          mtrace("...finished clean-up tasks");
  
      } // End of occasional clean-up tasks
-@@ -441,6 +444,10 @@ function cron_run() {
+@@ -440,6 +443,10 @@ function cron_run() {
      cron_execute_plugin_type('theme', 'themes');
      cron_execute_plugin_type('tool', 'admin tools');
  
@@ -23,7 +23,7 @@ index 0e7bbe1..99facf3 100644
  
      // and finally run any local cronjobs, if any
      if ($locals = get_plugin_list('local')) {
-@@ -768,3 +775,48 @@ function notify_login_failures() {
+@@ -767,3 +774,48 @@ function notify_login_failures() {
  
      return true;
  }
