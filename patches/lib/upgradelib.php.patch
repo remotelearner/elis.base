@@ -1,5 +1,5 @@
 diff --git a/lib/upgradelib.php b/lib/upgradelib.php
-index 38d4d5e..4a5cc2e 100644
+index c9c2870..60e3103 100644
 --- a/lib/upgradelib.php
 +++ b/lib/upgradelib.php
 @@ -355,6 +355,8 @@ function upgrade_stale_php_files_present() {

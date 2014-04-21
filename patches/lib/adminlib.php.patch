@@ -1,8 +1,8 @@
 diff --git a/lib/adminlib.php b/lib/adminlib.php
-index ca90fd2..7663550 100644
+index a862e96..b161606 100644
 --- a/lib/adminlib.php
 +++ b/lib/adminlib.php
-@@ -8217,3 +8217,108 @@ class admin_setting_configmultiselect_modules extends admin_setting_configmultis
+@@ -8244,3 +8244,108 @@ class admin_setting_configmultiselect_modules extends admin_setting_configmultis
          return true;
      }
  }

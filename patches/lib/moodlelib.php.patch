@@ -1,8 +1,8 @@
 diff --git a/lib/moodlelib.php b/lib/moodlelib.php
-index 1182900..7f013f9 100644
+index 2db916f..eca654d 100644
 --- a/lib/moodlelib.php
 +++ b/lib/moodlelib.php
-@@ -5599,7 +5599,14 @@ function setnew_password_and_mail($user) {
+@@ -5603,7 +5603,14 @@ function setnew_password_and_mail($user) {
  
      $newpassword = generate_password();
  
@@ -18,7 +18,7 @@ index 1182900..7f013f9 100644
  
      $user->password = $hashedpassword;
  
-@@ -6597,6 +6604,10 @@ class core_string_manager implements string_manager {
+@@ -6601,6 +6608,10 @@ class core_string_manager implements string_manager {
              if ($plugintype === 'mod') {
                  // bloody mod hack
                  $file = $pluginname;
@@ -29,7 +29,7 @@ index 1182900..7f013f9 100644
              } else {
                  $file = $plugintype . '_' . $pluginname;
              }
-@@ -8076,6 +8087,9 @@ function get_plugin_types($fullpaths=true) {
+@@ -8080,6 +8091,9 @@ function get_plugin_types($fullpaths=true) {
                        'cachestore'    => 'cache/stores',
                        'cachelock'     => 'cache/locks',
                        'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
@@ -39,7 +39,7 @@ index 1182900..7f013f9 100644
          );
  
          $subpluginowners = array_merge(array_values(get_plugin_list('mod')),
-@@ -8090,6 +8104,32 @@ function get_plugin_types($fullpaths=true) {
+@@ -8094,6 +8108,32 @@ function get_plugin_types($fullpaths=true) {
              }
          }
  
@@ -72,7 +72,7 @@ index 1182900..7f013f9 100644
          // local is always last!
          $info['local'] = 'local';
  
-@@ -8137,7 +8177,12 @@ function get_plugin_list($plugintype) {
+@@ -8141,7 +8181,12 @@ function get_plugin_list($plugintype) {
      if ($plugintype === 'mod') {
          // mod is an exception because we have to call this function from get_plugin_types()
          $fulldirs[] = $CFG->dirroot.'/mod';
@@ -86,7 +86,7 @@ index 1182900..7f013f9 100644
      } else if ($plugintype === 'editor') {
          // Exception also needed for editor for same reason.
          $fulldirs[] = $CFG->dirroot . '/lib/editor';
-@@ -8148,7 +8193,12 @@ function get_plugin_list($plugintype) {
+@@ -8152,7 +8197,12 @@ function get_plugin_list($plugintype) {
          if (!empty($CFG->themedir) and file_exists($CFG->themedir) and is_dir($CFG->themedir) ) {
              $fulldirs[] = $CFG->themedir;
          }
