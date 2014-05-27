@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    elis_core
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -386,7 +385,6 @@ function manual_field_is_view_or_editable($field, $context, $contexteditcap = NU
  */
 function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $checkrequired = true,
                                        $contexteditcap = NULL, $contextviewcap = NULL, $entity = 'system', $entityid = 0) {
-    //$mform = $form->_form;
 
     $isvieworeditable = manual_field_is_view_or_editable($field, $context, $contexteditcap, $contextviewcap, $entity, $entityid);
 
@@ -395,21 +393,14 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
     }
 
     $elem = "field_{$field->shortname}";
-    if ($isvieworeditable == MANUAL_FIELD_VIEWABLE) {
-        //have view but not edit, show as static
-        $mform->addElement('static', $elem, $field->name);
-        // TBD: help link?
-        return;
-    }
-
     $manual = new field_owner($field->owners['manual']);
     $control = $manual->param_control;
     require_once elis::plugin_file('elisfields_manual',"field_controls/{$control}.php");
     call_user_func("{$control}_control_display", $form, $mform, $customdata, $field, false, $entity);
 
-    $manual_params = unserialize($manual->params);
+    $manualparams = unserialize($manual->params);
 
-    // set default data if no over-riding value set!
+    // Set default data if no over-riding value set!
     if (!isset($customdata['obj']->$elem)) {
         $defaultdata = field_data::get_for_context_and_field(NULL, $field);
         if (!empty($defaultdata)) {
@@ -427,21 +418,24 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
             }
         }
 
-        // Format decimal numbers
-        if ($field->datatype == 'num' && $manual_params['control'] != 'menu') {
+        // Format decimal numbers.
+        if ($field->datatype == 'num' && $manualparams['control'] != 'menu') {
             $defaultdata = $field->format_number($defaultdata);
         }
 
         if (!is_null($defaultdata) && !is_object($defaultdata) && $defaultdata !== false) {
             if (is_string($defaultdata)) {
-                $defaultdata = trim($defaultdata, "\r\n"); // radio buttons!
+                $defaultdata = trim($defaultdata, "\r\n"); // Radio buttons!
             }
             $mform->setDefault($elem, $defaultdata);
         }
     }
 
-    if ($checkrequired) {
-        if (!empty($manual_params['required'])) {
+    if ($isvieworeditable == MANUAL_FIELD_VIEWABLE) {
+        // Have view but not edit permission.
+        $mform->freeze($elem);
+    } else if ($checkrequired) {
+        if (!empty($manualparams['required'])) {
             $mform->addRule($elem, null, 'required', null, 'client'); // TBD
         }
     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    elis_core
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -218,7 +218,7 @@ class custom_field_permissions_testcase extends elis_database_test {
         $mform = $form->get_mform();
         manual_field_add_form_element($form, $mform, $coursecontext, array(), $field, false, $editparam, $viewparam);
         $element = $mform->getElement('field_field');
-        $this->assertEquals('static', $element->getType());
+        $this->assertTrue($element->isFrozen());
 
         // User without edit or view.
         role_unassign($viewroleid, $USER->id, $coursecontext->id);
@@ -282,7 +282,7 @@ class custom_field_permissions_testcase extends elis_database_test {
         $mform = $form->get_mform();
         manual_field_add_form_element($form, $mform, $coursecontext, array(), $field, false, null, 'moodle/course:enrolreview');
         $element = $mform->getElement('field_field');
-        $this->assertEquals('static', $element->getType());
+        $this->assertTrue($element->isFrozen());
 
         // User without capability.
         role_unassign($roleid, $USER->id, $coursecontext->id);
@@ -318,7 +318,7 @@ class custom_field_permissions_testcase extends elis_database_test {
         $mform = $form->get_mform();
         manual_field_add_form_element($form, $mform, $coursecontext, array(), $field, false);
         $element = $mform->getElement('field_field');
-        $this->assertEquals('static', $element->getType());
+        $this->assertTrue($element->isFrozen());
 
         // User without capability.
         role_unassign($roleid, $USER->id, $coursecontext->id);
