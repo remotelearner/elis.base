@@ -75,7 +75,7 @@ index c0b8694..e3f03a3 100644
 +        if (isset($this->options[$value])) {
 +            $retval = $value;
 +        } else {
-         $retval = array_search($value, $this->options);
+             $retval = array_search($value, $this->options);
 +        }
 +        // End RL EDIT
  

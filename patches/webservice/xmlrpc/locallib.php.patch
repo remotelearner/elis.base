@@ -16,8 +16,8 @@ index 3a85311..da1ba67 100644
          //when DEBUG >= NORMAL then the thrown exceptions are "casted" into a plain PHP Exception class
          //in order to display the $debuginfo (see moodle_zend_xmlrpc_server class - MDL-29435)
 -        if (debugging()) {
-             Zend_XmlRpc_Server_Fault::attachFaultException('Exception');
-         }
+         Zend_XmlRpc_Server_Fault::attachFaultException('Exception');
+     }
 -    }
  
  }

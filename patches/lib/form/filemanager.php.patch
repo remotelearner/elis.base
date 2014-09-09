@@ -1,8 +1,8 @@
 diff --git a/lib/form/filemanager.php b/lib/form/filemanager.php
-index 77ee169..5f203b9 100644
+index 8140fec..c43359f 100644
 --- a/lib/form/filemanager.php
 +++ b/lib/form/filemanager.php
-@@ -233,7 +233,27 @@ class MoodleQuickForm_filemanager extends HTML_QuickForm_element {
+@@ -251,7 +251,27 @@ class MoodleQuickForm_filemanager extends HTML_QuickForm_element {
          $subdirs     = $this->_options['subdirs'];
          $maxbytes    = $this->_options['maxbytes'];
          $draftitemid = $this->getValue();
