@@ -1,8 +1,8 @@
 diff --git a/lib/upgradelib.php b/lib/upgradelib.php
-index f02e20e..185671a 100644
+index 1024a46..97d23d1 100644
 --- a/lib/upgradelib.php
 +++ b/lib/upgradelib.php
-@@ -376,6 +376,10 @@ function upgrade_stale_php_files_present() {
+@@ -399,6 +399,10 @@ function upgrade_stale_php_files_present() {
  function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
      global $CFG, $DB;
  
@@ -13,7 +13,7 @@ index f02e20e..185671a 100644
  /// special cases
      if ($type === 'mod') {
          return upgrade_plugins_modules($startcallback, $endcallback, $verbose);
-@@ -481,6 +485,9 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
+@@ -502,6 +506,9 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
              log_update_descriptions($component);
              external_update_descriptions($component);
              events_update_definition($component);
@@ -23,7 +23,7 @@ index f02e20e..185671a 100644
              message_update_providers($component);
              if ($type === 'message') {
                  message_update_processors($plug);
-@@ -514,6 +521,9 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
+@@ -535,6 +542,9 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
              log_update_descriptions($component);
              external_update_descriptions($component);
              events_update_definition($component);

@@ -1,0 +1,80 @@
+diff --git a/lib/tests/moodlelib_test.php b/lib/tests/moodlelib_test.php
+index bc80f17..e33a222 100644
+--- a/lib/tests/moodlelib_test.php
++++ b/lib/tests/moodlelib_test.php
+@@ -2699,5 +2699,75 @@ class moodlelib_testcase extends advanced_testcase {
+         $this->assertSame($messagetext2, trim($result[1]->body));
+         $this->assertSame($user2->email, $result[1]->to);
+         $this->assertSame($user1->email, $result[1]->from);
++
++        email_to_user($user1, $user2, $subject, $messagetext);
++        $this->assertDebuggingCalled('Unit tests must not send real emails! Use $this->start_phpmailer_redirection()');
++
++        // Test $CFG->emailonlyfromnoreplyaddress.
++        set_config('emailonlyfromnoreplyaddress', 1);
++        $this->assertNotEmpty($CFG->emailonlyfromnoreplyaddress);
++        $sink = $this->redirectEmails();
++        email_to_user($user1, $user2, $subject, $messagetext);
++        unset_config('emailonlyfromnoreplyaddress');
++        email_to_user($user1, $user2, $subject, $messagetext);
++        $result = $sink->get_messages();
++        $this->assertEquals($CFG->noreplyaddress, $result[0]->from);
++        $this->assertNotEquals($CFG->noreplyaddress, $result[1]->from);
++        $sink->close();
++    }
++
++    /**
++     * Test user_updated event trigger by various apis.
++     */
++    public function test_user_updated_event() {
++        global $DB, $CFG;
++
++        $this->resetAfterTest();
++
++        $user = $this->getDataGenerator()->create_user();
++
++        // Set config to allow email_to_user() to be called.
++        $CFG->noemailever = false;
++
++        // Update user password.
++        $sink2 = $this->redirectEmails(); // Make sure we are redirecting emails.
++        setnew_password_and_mail($user);
++        update_internal_user_password($user, 'randompass');
++        $sink2->close();
++
++        // Test updated value.
++        $dbuser = $DB->get_record('user', array('id' => $user->id));
++        $this->assertSame($user->firstname, $dbuser->firstname);
++        $this->assertNotSame('M00dLe@T', $dbuser->password);
++
++        // Test event.
++        foreach ($events as $event) {
++            $this->assertInstanceOf('\core\event\user_updated', $event);
++            $this->assertSame($user->id, $event->objectid);
++            $this->assertSame('user_updated', $event->get_legacy_eventname());
++            $this->assertEventLegacyData($user, $event);
++            $this->assertEquals(context_user::instance($user->id), $event->get_context());
++            $expectedlogdata = array(SITEID, 'user', 'update', 'view.php?id='.$user->id, '');
++            $this->assertEventLegacyLogData($expectedlogdata, $event);
++        }
+     }
++
++    /**
++     * Test remove_course_content deletes course contents
++     * TODO Add asserts to verify other data related to course is deleted as well.
++     */
++    public function test_remove_course_contents() {
++
++        $this->resetAfterTest();
++
++        $course = $this->getDataGenerator()->create_course();
++        $user = $this->getDataGenerator()->create_user();
++        $gen = $this->getDataGenerator()->get_plugin_generator('core_notes');
++        $note = $gen->create_instance(array('courseid' => $course->id, 'userid' => $user->id));
++
++        $this->assertNotEquals(false, note_load($note->id));
++        remove_course_contents($course->id, false);
++        $this->assertFalse(note_load($note->id));
++    }
++
+ }
